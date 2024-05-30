@@ -13,17 +13,27 @@
             margin: 0;
             font-family: Arial, sans-serif;
         }
-        #countdown {
-            font-size: 2em;
+        #countdown, #welcome {
+            font-size: 5vw; /* 使用相对单位，以保持不同设备上的比例 */
             text-align: center;
+            letter-spacing: 0.1em; /* 增加字母间距，使其更宽大舒适 */
+        }
+        #welcome {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div id="countdown"></div>
-    <audio id="audio" src="your-music-file.mp3" style="display:none;"></audio>
-    <video id="video" style="display:none;" width="800" height="450" controls>
-        <source src="your-video-file.mp4" type="video/mp4">
+    <div id="welcome">Welcome To The New Horizon.</div>
+    <audio id="audio1" src="media/your-music-file1.mp3" style="display:none;"></audio>
+    <audio id="audio2" src="media/your-music-file2.mp3" style="display:none;"></audio>
+    <video id="video1" style="display:none;" width="800" height="450" controls>
+        <source src="media/your-video-file1.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <video id="video2" style="display:none;" width="800" height="450" controls>
+        <source src="media/your-video-file2.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
     <script>
@@ -37,30 +47,29 @@
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            document.getElementById('countdown').innerHTML = 
-                days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
-
-            if (distance < 0) {
+            if (distance > 0) {
+                document.getElementById('countdown').innerHTML = 
+                    days + "D " + hours + "H " + minutes + "M " + seconds + "S ";
+            } else {
                 clearInterval(x);
-                document.getElementById('countdown').innerHTML = "EXPIRED";
+                document.getElementById('countdown').style.display = 'none';
+                document.getElementById('welcome').style.display = 'block';
             }
         }
 
         countdown();
-        setInterval(countdown, 1000);
+        const x = setInterval(countdown, 1000);
 
         document.body.addEventListener('click', function() {
             // Simulate authentication by checking a condition
             if (true) { // Replace with your authentication logic
-                const audio = document.getElementById('audio');
-                const video = document.getElementById('video');
+                const mediaFiles = ['audio1', 'audio2', 'video1', 'video2'];
+                const randomFile = mediaFiles[Math.floor(Math.random() * mediaFiles.length)];
+                const mediaElement = document.getElementById(randomFile);
                 
-                if (Math.random() > 0.5) {
-                    audio.style.display = 'block';
-                    audio.play();
-                } else {
-                    video.style.display = 'block';
-                    video.play();
+                if (mediaElement.tagName === 'AUDIO' || mediaElement.tagName === 'VIDEO') {
+                    mediaElement.style.display = 'block';
+                    mediaElement.play();
                 }
             } else {
                 alert('You are not authorized to play media.');
