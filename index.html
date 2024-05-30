@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to My GitHub Page</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #countdown {
+            font-size: 2em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="countdown"></div>
+    <audio id="audio" src="your-music-file.mp3" style="display:none;"></audio>
+    <video id="video" style="display:none;" width="800" height="450" controls>
+        <source src="your-video-file.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <script>
+        function countdown() {
+            const endDate = new Date('2024-06-19T00:00:00').getTime();
+            const now = new Date().getTime();
+            const distance = endDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('countdown').innerHTML = 
+                days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+
+            if (distance < 0) {
+                clearInterval(x);
+                document.getElementById('countdown').innerHTML = "EXPIRED";
+            }
+        }
+
+        countdown();
+        setInterval(countdown, 1000);
+
+        document.body.addEventListener('click', function() {
+            // Simulate authentication by checking a condition
+            if (true) { // Replace with your authentication logic
+                const audio = document.getElementById('audio');
+                const video = document.getElementById('video');
+                
+                if (Math.random() > 0.5) {
+                    audio.style.display = 'block';
+                    audio.play();
+                } else {
+                    video.style.display = 'block';
+                    video.play();
+                }
+            } else {
+                alert('You are not authorized to play media.');
+            }
+        });
+    </script>
+</body>
+</html>
