@@ -73,17 +73,11 @@
             }
         }
 
-        function isCreator() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.has('creator');
-        }
-
         countdown();
         const x = setInterval(countdown, 1000);
 
-        if (isCreator()) {
-            playBackgroundMusic();
-        }
+        // 自动播放背景音乐，无论是创建者还是普通用户
+        playBackgroundMusic();
     </script>
 </body>
 </html>
