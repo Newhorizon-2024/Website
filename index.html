@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Welcome to My GitHub Page</title>
+    <title>New Horizon</title>
     <style>
         body {
             background-color: black;
@@ -21,21 +21,26 @@
         #welcome {
             display: none;
         }
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000; /* 确保覆盖在其他元素之上 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     <div id="countdown"></div>
     <div id="welcome">Welcome To The New Horizon.</div>
-    <audio id="audio1" src="media/your-music-file1.mp3" style="display:none;"></audio>
-    <audio id="audio2" src="media/your-music-file2.mp3" style="display:none;"></audio>
-    <video id="video1" style="display:none;" width="800" height="450" controls>
-        <source src="media/your-video-file1.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-    <video id="video2" style="display:none;" width="800" height="450" controls>
-        <source src="media/your-video-file2.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+    <div id="overlay"></div>
+    <audio id="background-music" src="media/background-music.mp3"></audio>
     <script>
         function countdown() {
             const endDate = new Date('2024-06-19T00:00:00').getTime();
@@ -49,7 +54,10 @@
 
             if (distance > 0) {
                 document.getElementById('countdown').innerHTML = 
-                    days + "D " + hours + "H " + minutes + "M " + seconds + "S ";
+                    (days < 10 ? '0' : '') + days + ":" + 
+                    (hours < 10 ? '0' : '') + hours + ":" + 
+                    (minutes < 10 ? '0' : '') + minutes + ":" + 
+                    (seconds < 10 ? '0' : '') + seconds;
             } else {
                 clearInterval(x);
                 document.getElementById('countdown').style.display = 'none';
@@ -57,24 +65,25 @@
             }
         }
 
+        function playBackgroundMusic() {
+            const audio = document.getElementById('background-music');
+            if (!localStorage.getItem('musicPlayed')) {
+                audio.play();
+                localStorage.setItem('musicPlayed', 'true');
+            }
+        }
+
+        function isCreator() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.has('creator');
+        }
+
         countdown();
         const x = setInterval(countdown, 1000);
 
-        document.body.addEventListener('click', function() {
-            // Simulate authentication by checking a condition
-            if (true) { // Replace with your authentication logic
-                const mediaFiles = ['audio1', 'audio2', 'video1', 'video2'];
-                const randomFile = mediaFiles[Math.floor(Math.random() * mediaFiles.length)];
-                const mediaElement = document.getElementById(randomFile);
-                
-                if (mediaElement.tagName === 'AUDIO' || mediaElement.tagName === 'VIDEO') {
-                    mediaElement.style.display = 'block';
-                    mediaElement.play();
-                }
-            } else {
-                alert('You are not authorized to play media.');
-            }
-        });
+        if (isCreator()) {
+            playBackgroundMusic();
+        }
     </script>
 </body>
 </html>
