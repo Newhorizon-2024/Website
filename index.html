@@ -41,7 +41,7 @@
     <div id="countdown"></div>
     <div id="welcome">Welcome To The New Horizon.</div>
     <div id="overlay"></div>
-    <audio id="background-music" loop></audio>
+    <audio id="background-music" loop autoplay></audio>
     <script>
         function countdown() {
             const endDate = new Date('2024-06-19T00:00:00').getTime();
@@ -76,13 +76,14 @@
             ];
             const randomIndex = Math.floor(Math.random() * musicFiles.length);
             audio.src = musicFiles[randomIndex];
-            audio.play();
+            audio.play().catch(error => {
+                console.log('Auto-play was prevented:', error);
+            });
         }
 
         countdown();
         const x = setInterval(countdown, 1000);
 
-        // 自动播放背景音乐，无论是创建者还是普通用户
         document.addEventListener('DOMContentLoaded', (event) => {
             playBackgroundMusic();
         });
