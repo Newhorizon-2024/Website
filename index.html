@@ -37,10 +37,13 @@
             color: white;
             font-size: 2em;
         }
+        .highlight {
+            color: yellow; /* 倒计时高亮显示 */
+        }
     </style>
 </head>
 <body>
-    <div id="countdown"></div>
+    <div id="countdown" class="highlight"></div>
     <div id="welcome">Welcome To The New Horizon.</div>
     <div id="overlay" onclick="startExperience()">
         <h2>Click to start.</h2>
@@ -88,7 +91,7 @@
             document.getElementById('countdown').style.display = 'block';
             document.getElementById('overlay').removeEventListener('click', startExperience);
             document.getElementById('overlay').style.cursor = 'not-allowed';
-            document.getElementById('overlay').style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            document.getElementById('overlay').style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
             document.getElementById('overlay').innerHTML = ''; // 隐藏提示文本
         }
 
