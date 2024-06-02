@@ -15,9 +15,9 @@
             overflow: hidden;
         }
         #countdown, #welcome {
-            font-size: 5vw; /* 使用相对单位，以保持不同设备上的比例 */
+            font-size: 5vw;
             text-align: center;
-            letter-spacing: 0.1em; /* 增加字母间距，使其更宽大舒适 */
+            letter-spacing: 0.1em;
         }
         #welcome {
             display: none;
@@ -29,19 +29,25 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000; /* 确保覆盖在其他元素之上 */
+            z-index: 1000;
             display: flex;
             justify-content: center;
             align-items: center;
-            cursor: not-allowed;
+            cursor: pointer;
+        }
+        #overlay h2 {
+            color: white;
+            font-size: 2em;
         }
     </style>
 </head>
 <body>
     <div id="countdown"></div>
     <div id="welcome">Welcome To The New Horizon.</div>
-    <div id="overlay"></div>
-    <audio id="background-music" loop autoplay></audio>
+    <div id="overlay" onclick="startExperience()">
+        <h2>Click to Start</h2>
+    </div>
+    <audio id="background-music" loop></audio>
     <script>
         function countdown() {
             const endDate = new Date('2024-06-19T00:00:00').getTime();
@@ -76,17 +82,16 @@
             ];
             const randomIndex = Math.floor(Math.random() * musicFiles.length);
             audio.src = musicFiles[randomIndex];
-            audio.play().catch(error => {
-                console.log('Auto-play was prevented:', error);
-            });
+            audio.play();
+        }
+
+        function startExperience() {
+            playBackgroundMusic();
+            document.getElementById('overlay').style.display = 'none';
         }
 
         countdown();
         const x = setInterval(countdown, 1000);
-
-        document.addEventListener('DOMContentLoaded', (event) => {
-            playBackgroundMusic();
-        });
     </script>
 </body>
 </html>
