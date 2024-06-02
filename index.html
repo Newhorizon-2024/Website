@@ -18,9 +18,7 @@
             font-size: 5vw;
             text-align: center;
             letter-spacing: 0.1em;
-        }
-        #welcome {
-            display: none;
+            display: none; /* 初始时隐藏 */
         }
         #overlay {
             position: fixed;
@@ -45,7 +43,7 @@
     <div id="countdown"></div>
     <div id="welcome">Welcome To The New Horizon.</div>
     <div id="overlay" onclick="startExperience()">
-        <h2>Click to Start</h2>
+        <h2>Click to start.</h2>
     </div>
     <audio id="background-music" loop></audio>
     <script>
@@ -87,11 +85,19 @@
 
         function startExperience() {
             playBackgroundMusic();
-            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('countdown').style.display = 'block';
+            document.getElementById('overlay').removeEventListener('click', startExperience);
+            document.getElementById('overlay').style.cursor = 'not-allowed';
+            document.getElementById('overlay').style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            document.getElementById('overlay').innerHTML = ''; // 隐藏提示文本
         }
 
         countdown();
         const x = setInterval(countdown, 1000);
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('overlay').addEventListener('click', startExperience, { once: true });
+        });
     </script>
 </body>
 </html>
