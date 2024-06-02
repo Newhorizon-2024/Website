@@ -19,6 +19,7 @@
             text-align: center;
             letter-spacing: 0.1em;
             display: none; /* 初始时隐藏 */
+            color: white; /* 确保倒计时为白色 */
         }
         #overlay {
             position: fixed;
@@ -37,13 +38,10 @@
             color: white;
             font-size: 2em;
         }
-        .highlight {
-            color: yellow; /* 倒计时高亮显示 */
-        }
     </style>
 </head>
 <body>
-    <div id="countdown" class="highlight"></div>
+    <div id="countdown"></div>
     <div id="welcome">Welcome To The New Horizon.</div>
     <div id="overlay" onclick="startExperience()">
         <h2>Click to start.</h2>
@@ -89,10 +87,9 @@
         function startExperience() {
             playBackgroundMusic();
             document.getElementById('countdown').style.display = 'block';
-            document.getElementById('overlay').removeEventListener('click', startExperience);
             document.getElementById('overlay').style.cursor = 'not-allowed';
             document.getElementById('overlay').style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            document.getElementById('overlay').innerHTML = ''; // 隐藏提示文本
+            document.getElementById('overlay').innerHTML = ''; // 隐藏提示文本，但保持遮罩
         }
 
         countdown();
