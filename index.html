@@ -12,6 +12,7 @@
             height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
+            overflow: hidden;
         }
         #countdown, #welcome {
             font-size: 5vw; /* 使用相对单位，以保持不同设备上的比例 */
@@ -40,7 +41,7 @@
     <div id="countdown"></div>
     <div id="welcome">Welcome To The New Horizon.</div>
     <div id="overlay"></div>
-    <audio id="background-music" src="media/background-music.mp3"></audio>
+    <audio id="background-music" loop></audio>
     <script>
         function countdown() {
             const endDate = new Date('2024-06-19T00:00:00').getTime();
@@ -53,10 +54,10 @@
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
             if (distance > 0) {
-                document.getElementById('countdown').innerHTML = 
-                    (days < 10 ? '0' : '') + days + ":" + 
-                    (hours < 10 ? '0' : '') + hours + ":" + 
-                    (minutes < 10 ? '0' : '') + minutes + ":" + 
+                document.getElementById('countdown').innerHTML = 
+                    (days < 10 ? '0' : '') + days + ":" + 
+                    (hours < 10 ? '0' : '') + hours + ":" + 
+                    (minutes < 10 ? '0' : '') + minutes + ":" + 
                     (seconds < 10 ? '0' : '') + seconds;
             } else {
                 clearInterval(x);
@@ -67,17 +68,24 @@
 
         function playBackgroundMusic() {
             const audio = document.getElementById('background-music');
-            if (!localStorage.getItem('musicPlayed')) {
-                audio.play();
-                localStorage.setItem('musicPlayed', 'true');
-            }
+            const musicFiles = [
+                'media/music1.mp3',
+                'media/music2.mp3',
+                'media/music3.mp3',
+                // 添加更多音乐文件路径
+            ];
+            const randomIndex = Math.floor(Math.random() * musicFiles.length);
+            audio.src = musicFiles[randomIndex];
+            audio.play();
         }
 
         countdown();
         const x = setInterval(countdown, 1000);
 
         // 自动播放背景音乐，无论是创建者还是普通用户
-        playBackgroundMusic();
+        document.addEventListener('DOMContentLoaded', (event) => {
+            playBackgroundMusic();
+        });
     </script>
 </body>
 </html>
