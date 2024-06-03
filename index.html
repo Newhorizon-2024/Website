@@ -44,35 +44,29 @@
             color: white;
             font-size: 2em;
         }
-        /* 移除悬停效果 */
-        /* #overlay h2:hover {
-            background-color: white;
-            color: black;
-        } */
         .box {
             position: absolute;
-            width: 50px;
-            height: 50px;
             background-color: rgba(255, 255, 255, 0.1);
-            animation: moveBox 20s linear infinite;
+            opacity: 0;
+            animation: fadeInOut 0.25s ease-in-out forwards, moveBox linear infinite;
         }
         .near {
-            width: 70px;
-            height: 70px;
             background-color: rgba(255, 255, 255, 0.3);
         }
         .far {
-            width: 30px;
-            height: 30px;
             background-color: rgba(255, 255, 255, 0.05);
         }
         @keyframes moveBox {
             0% {
-                transform: translate(-50vw, -50vh);
+                transform: translate(-10%, -10%);
             }
             100% {
-                transform: translate(100vw, 100vh);
+                transform: translate(110%, 110%);
             }
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
@@ -146,19 +140,19 @@
         });
 
         function createFlyingBoxes() {
-            const numBoxes = 10;
+            const numBoxes = 20;
             const body = document.body;
             for (let i = 0; i < numBoxes; i++) {
                 const box = document.createElement('div');
                 box.className = 'box';
-                if (i % 3 === 0) {
-                    box.classList.add('near');
-                } else if (i % 3 === 1) {
-                    box.classList.add('far');
-                }
-                box.style.top = Math.random() * 100 + 'vh';
-                box.style.left = Math.random() * 100 + 'vw';
+                box.classList.add(Math.random() < 0.5 ? 'near' : 'far');
+                box.style.width = Math.random() * 70 + 10 + 'px';
+                box.style.height = box.style.width;
+                box.style.top = Math.random() * -10 + 'vh';
+                box.style.left = Math.random() * -10 + 'vw';
+                box.style.animationDuration = Math.random() * 15 + 5 + 's';
                 body.appendChild(box);
+                box.style.animation = `moveBox ${box.style.animationDuration} linear`;
             }
         }
     </script>
