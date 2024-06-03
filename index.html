@@ -45,7 +45,6 @@
             color: white;
             font-size: 2em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
         #overlay h2:hover {
             background-color: white;
@@ -55,7 +54,7 @@
             position: absolute;
             background-color: rgba(255, 255, 255, 0.1);
             opacity: 0;
-            animation: fadeInOut 0.25s ease-in-out forwards;
+            animation: fadeIn 0.25s ease-in-out forwards;
         }
         .near {
             background-color: rgba(255, 255, 255, 0.3);
@@ -71,7 +70,7 @@
                 transform: translate(100vw, 100vh);
             }
         }
-        @keyframes fadeInOut {
+        @keyframes fadeIn {
             0% { opacity: 0; }
             100% { opacity: 1; }
         }
@@ -155,11 +154,11 @@
                 box.classList.add(Math.random() < 0.5 ? 'near' : 'far');
                 box.style.width = Math.random() * 70 + 10 + 'px';
                 box.style.height = box.style.width;
-                box.style.top = Math.random() * 100 + 'vh';
-                box.style.left = Math.random() * 100 + 'vw';
+                box.style.top = Math.random() < 0.8 ? Math.random() * -10 + 'vh' : Math.random() * 100 + 'vh';
+                box.style.left = Math.random() < 0.8 ? Math.random() * -10 + 'vw' : Math.random() * 100 + 'vw';
                 box.style.animationDuration = Math.random() * 15 + 5 + 's';
                 body.appendChild(box);
-                box.style.animation = `moveBox ${box.style.animationDuration} linear infinite, fadeInOut 0.25s ease-in-out`;
+                box.style.animation = `moveBox ${box.style.animationDuration} linear infinite, fadeIn 0.25s ease-in-out`;
             }
         }
     </script>
