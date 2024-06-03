@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Horizon</title>
     <style>
         body {
@@ -119,13 +121,18 @@
 
         function startExperience() {
             playBackgroundMusic();
-            const countdownElement = document.getElementById('countdown');
-            countdownElement.style.display = 'block';
-            setTimeout(() => countdownElement.style.opacity = 1, 10); // 渐变显示倒计时
-
             const overlayElement = document.getElementById('overlay');
             overlayElement.style.opacity = 0; // 渐变隐藏开始按钮
-            setTimeout(() => overlayElement.style.display = 'none', 2000); // 完全隐藏
+            setTimeout(() => {
+                overlayElement.style.display = 'none'; // 完全隐藏
+
+                setTimeout(() => {
+                    const countdownElement = document.getElementById('countdown');
+                    countdownElement.style.display = 'block';
+                    setTimeout(() => countdownElement.style.opacity = 1, 10); // 渐变显示倒计时
+                }, 500); // 停顿0.5秒后显示倒计时
+
+            }, 2000); // 等待2秒让渐变效果完成
         }
 
         countdown();
