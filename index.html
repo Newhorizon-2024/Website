@@ -54,6 +54,8 @@
         .box {
             position: absolute;
             background-color: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            animation: fadeInOut 0.25s ease-in-out forwards;
         }
         .near {
             background-color: rgba(255, 255, 255, 0.3);
@@ -68,6 +70,10 @@
             100% {
                 transform: translate(100vw, 100vh);
             }
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
@@ -153,7 +159,7 @@
                 box.style.left = Math.random() * 100 + 'vw';
                 box.style.animationDuration = Math.random() * 15 + 5 + 's';
                 body.appendChild(box);
-                box.style.animation = `moveBox ${box.style.animationDuration} linear infinite`;
+                box.style.animation = `moveBox ${box.style.animationDuration} linear infinite, fadeInOut 0.25s ease-in-out`;
             }
         }
     </script>
