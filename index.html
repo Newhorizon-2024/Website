@@ -44,30 +44,6 @@
             color: white;
             font-size: 2em;
         }
-        .box {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.1);
-            opacity: 0;
-            animation: fadeInOut 0.25s ease-in-out forwards, moveBox linear infinite;
-        }
-        .near {
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-        .far {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-        @keyframes moveBox {
-            0% {
-                transform: translate(-10%, -10%);
-            }
-            100% {
-                transform: translate(110%, 110%);
-            }
-        }
-        @keyframes fadeInOut {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
-        }
     </style>
 </head>
 <body>
@@ -136,25 +112,7 @@
 
         document.addEventListener('DOMContentLoaded', (event) => {
             document.getElementById('overlay').addEventListener('click', startExperience, { once: true });
-            createFlyingBoxes();
         });
-
-        function createFlyingBoxes() {
-            const numBoxes = 20;
-            const body = document.body;
-            for (let i = 0; i < numBoxes; i++) {
-                const box = document.createElement('div');
-                box.className = 'box';
-                box.classList.add(Math.random() < 0.5 ? 'near' : 'far');
-                box.style.width = Math.random() * 70 + 10 + 'px';
-                box.style.height = box.style.width;
-                box.style.top = Math.random() * -10 + 'vh';
-                box.style.left = Math.random() * -10 + 'vw';
-                box.style.animationDuration = Math.random() * 15 + 5 + 's';
-                body.appendChild(box);
-                box.style.animation = `moveBox ${box.style.animationDuration} linear`;
-            }
-        }
     </script>
 </body>
 </html>
