@@ -4,22 +4,23 @@
     <title>New Horizon</title>
     <style>
         body {
-            background-color: black;
-            color: white;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            background: linear-gradient(120deg, #000000, #434343); /* 黑灰渐变背景 */
             font-family: Arial, sans-serif;
-            overflow: hidden;
         }
         #countdown, #welcome {
             font-size: 5vw;
             text-align: center;
             letter-spacing: 0.1em;
             display: none; /* 初始时隐藏 */
-            color: white; /* 确保倒计时为白色 */
+            color: white;
+            opacity: 0;
+            transition: opacity 2s ease-in-out; /* 渐变效果 */
         }
         #overlay {
             position: fixed;
@@ -33,10 +34,41 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            opacity: 1;
+            transition: opacity 2s ease-in-out; /* 渐变效果 */
         }
         #overlay h2 {
             color: white;
             font-size: 2em;
+        }
+        .box {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.1);
+            animation: moveBox 10s linear infinite;
+        }
+        .near {
+            width: 70px;
+            height: 70px;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .far {
+            width: 30px;
+            height: 30px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        @keyframes moveBox {
+            0% {
+                transform: translate(-10%, -10%);
+            }
+            100% {
+                transform: translate(110%, 110%);
+            }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
@@ -68,6 +100,7 @@
                 clearInterval(x);
                 document.getElementById('countdown').style.display = 'none';
                 document.getElementById('welcome').style.display = 'block';
+                document.getElementById('welcome').style.opacity = 1; // 渐变显示欢迎信息
             }
         }
 
@@ -86,10 +119,13 @@
 
         function startExperience() {
             playBackgroundMusic();
-            document.getElementById('countdown').style.display = 'block';
-            document.getElementById('overlay').style.cursor = 'not-allowed';
-            document.getElementById('overlay').style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            document.getElementById('overlay').innerHTML = ''; // 隐藏提示文本，但保持遮罩
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.style.display = 'block';
+            setTimeout(() => countdownElement.style.opacity = 1, 10); // 渐变显示倒计时
+
+            const overlayElement = document.getElementById('overlay');
+            overlayElement.style.opacity = 0; // 渐变隐藏开始按钮
+            setTimeout(() => overlayElement.style.display = 'none', 2000); // 完全隐藏
         }
 
         countdown();
@@ -97,7 +133,25 @@
 
         document.addEventListener('DOMContentLoaded', (event) => {
             document.getElementById('overlay').addEventListener('click', startExperience, { once: true });
+            createFlyingBoxes();
         });
+
+        function createFlyingBoxes() {
+            const numBoxes = 10;
+            const body = document.body;
+            for (let i = 0; i < numBoxes; i++) {
+                const box = document.createElement('div');
+                box.className = 'box';
+                if (i % 3 === 0) {
+                    box.classList.add('near');
+                } else if (i % 3 === 1) {
+                    box.classList.add('far');
+                }
+                box.style.top = Math.random() * 100 + 'vh';
+                box.style.left = Math.random() * 100 + 'vw';
+                body.appendChild(box);
+            }
+        }
     </script>
 </body>
 </html>
