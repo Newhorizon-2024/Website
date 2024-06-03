@@ -45,9 +45,6 @@
             color: white;
             font-size: 2em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            padding: 20px 40px;
-            border: 2px solid white;
-            border-radius: 5px;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         #overlay h2:hover {
@@ -56,26 +53,17 @@
         }
         .box {
             position: absolute;
-            width: 50px;
-            height: 50px;
             background-color: rgba(255, 255, 255, 0.1);
-            animation: moveBox 20s linear infinite;
-            border-radius: 50%;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         .near {
-            width: 70px;
-            height: 70px;
             background-color: rgba(255, 255, 255, 0.3);
         }
         .far {
-            width: 30px;
-            height: 30px;
             background-color: rgba(255, 255, 255, 0.05);
         }
         @keyframes moveBox {
             0% {
-                transform: translate(-50vw, -50vh);
+                transform: translate(0, 0);
             }
             100% {
                 transform: translate(100vw, 100vh);
@@ -153,19 +141,19 @@
         });
 
         function createFlyingBoxes() {
-            const numBoxes = 10;
+            const numBoxes = 20;
             const body = document.body;
             for (let i = 0; i < numBoxes; i++) {
                 const box = document.createElement('div');
                 box.className = 'box';
-                if (i % 3 === 0) {
-                    box.classList.add('near');
-                } else if (i % 3 === 1) {
-                    box.classList.add('far');
-                }
+                box.classList.add(Math.random() < 0.5 ? 'near' : 'far');
+                box.style.width = Math.random() * 70 + 10 + 'px';
+                box.style.height = box.style.width;
                 box.style.top = Math.random() * 100 + 'vh';
                 box.style.left = Math.random() * 100 + 'vw';
+                box.style.animationDuration = Math.random() * 15 + 5 + 's';
                 body.appendChild(box);
+                box.style.animation = `moveBox ${box.style.animationDuration} linear infinite`;
             }
         }
     </script>
