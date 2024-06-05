@@ -65,10 +65,10 @@
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
             if (distance > 0) {
-                document.getElementById('countdown').innerHTML = 
-                    (days < 10 ? '0' : '') + days + ":" + 
-                    (hours < 10 ? '0' : '') + hours + ":" + 
-                    (minutes < 10 ? '0' : '') + minutes + ":" + 
+                document.getElementById('countdown').innerHTML = 
+                    (days < 10 ? '0' : '') + days + ":" + 
+                    (hours < 10 ? '0' : '') + hours + ":" + 
+                    (minutes < 10 ? '0' : '') + minutes + ":" + 
                     (seconds < 10 ? '0' : '') + seconds;
             } else {
                 clearInterval(x);
@@ -78,7 +78,7 @@
             }
         }
 
-        function playBackgroundMusic() {
+        function playNextMusic() {
             const audio = document.getElementById('background-music');
             const musicFiles = [
                 'media/music1.mp3',
@@ -92,7 +92,10 @@
         }
 
         function startExperience() {
-            playBackgroundMusic();
+            playNextMusic();
+            const audio = document.getElementById('background-music');
+            audio.addEventListener('ended', playNextMusic);
+
             const overlayElement = document.getElementById('overlay');
             overlayElement.style.opacity = 0; // 渐变隐藏开始按钮
             setTimeout(() => {
