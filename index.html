@@ -13,17 +13,17 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(120deg, #000000, #434343); /* 黑灰渐变背景 */
+            background: linear-gradient(120deg, #000000, #434343);
             font-family: 'Roboto', sans-serif;
         }
         #countdown, #welcome {
             font-size: 5vw;
             text-align: center;
             letter-spacing: 0.1em;
-            display: none; /* 初始时隐藏 */
+            display: none;
             color: white;
             opacity: 0;
-            transition: opacity 2s ease-in-out; /* 渐变效果 */
+            transition: opacity 2s ease-in-out;
         }
         #overlay {
             position: fixed;
@@ -38,21 +38,34 @@
             align-items: center;
             cursor: pointer;
             opacity: 1;
-            transition: opacity 2s ease-in-out; /* 渐变效果 */
+            transition: opacity 2s ease-in-out;
         }
         #overlay h2 {
             color: white;
             font-size: 2em;
         }
+        #background-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
     </style>
 </head>
 <body>
+    <div id="background-3d"></div>
     <div id="countdown"></div>
     <div id="welcome">Welcome To The New Horizon.</div>
     <div id="overlay" onclick="startExperience()">
         <h2>Click to start.</h2>
     </div>
     <audio id="background-music" loop></audio>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://threejs.org/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://threejs.org/examples/js/postprocessing/BokehPass.js"></script>
     <script>
         function countdown() {
             const endDate = new Date('2024-06-19T00:00:00').getTime();
@@ -65,16 +78,16 @@
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
             if (distance > 0) {
-                document.getElementById('countdown').innerHTML = 
-                    (days < 10 ? '0' : '') + days + ":" + 
-                    (hours < 10 ? '0' : '') + hours + ":" + 
-                    (minutes < 10 ? '0' : '') + minutes + ":" + 
+                document.getElementById('countdown').innerHTML = 
+                    (days < 10 ? '0' : '') + days + ":" + 
+                    (hours < 10 ? '0' : '') + hours + ":" + 
+                    (minutes < 10 ? '0' : '') + minutes + ":" + 
                     (seconds < 10 ? '0' : '') + seconds;
             } else {
                 clearInterval(x);
                 document.getElementById('countdown').style.display = 'none';
                 document.getElementById('welcome').style.display = 'block';
-                document.getElementById('welcome').style.opacity = 1; // 渐变显示欢迎信息
+                document.getElementById('welcome').style.opacity = 1;
             }
         }
 
@@ -83,8 +96,7 @@
             const musicFiles = [
                 'media/music1.mp3',
                 'media/music2.mp3',
-                'media/music3.mp3',
-                // 添加更多音乐文件路径
+                'media/music3.mp3'
             ];
             const randomIndex = Math.floor(Math.random() * musicFiles.length);
             audio.src = musicFiles[randomIndex];
@@ -97,17 +109,17 @@
             audio.addEventListener('ended', playNextMusic);
 
             const overlayElement = document.getElementById('overlay');
-            overlayElement.style.opacity = 0; // 渐变隐藏开始按钮
+            overlayElement.style.opacity = 0;
             setTimeout(() => {
-                overlayElement.style.display = 'none'; // 完全隐藏
+                overlayElement.style.display = 'none';
 
                 setTimeout(() => {
                     const countdownElement = document.getElementById('countdown');
                     countdownElement.style.display = 'block';
-                    setTimeout(() => countdownElement.style.opacity = 1, 10); // 渐变显示倒计时
-                }, 500); // 停顿0.5秒后显示倒计时
+                    setTimeout(() => countdownElement.style.opacity = 1, 10);
+                }, 500);
 
-            }, 2000); // 等待2秒让渐变效果完成
+            }, 2000);
         }
 
         countdown();
@@ -115,6 +127,91 @@
 
         document.addEventListener('DOMContentLoaded', (event) => {
             document.getElementById('overlay').addEventListener('click', startExperience, { once: true });
+        });
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('background-3d').appendChild(renderer.domElement);
+
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 5, 5).normalize();
+        scene.add(light);
+
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const geometry = new THREE.BoxGeometry();
+        const material = new THREE.MeshStandardMaterial({ color: 0x888888, transparent: true });
+        const cubes = [];
+
+        for (let i = 0; i < 20; i++) {
+            const cube = new THREE.Mesh(geometry, material);
+            const size = Math.random() * 4 + 1;
+            cube.scale.set(size, size, size);
+            cube.position.set(
+                Math.random() * 40 + 10,
+                Math.random() * 40 + 10,
+                Math.random() * 40 + 10
+            );
+            cube.userData = {
+                speedX: -(Math.random() * 0.02 + 0.01),
+                speedY: -(Math.random() * 0.02 + 0.01),
+                speedZ: -(Math.random() * 0.02 + 0.01),
+                opacity: 1
+            };
+            scene.add(cube);
+            cubes.push(cube);
+        }
+
+        camera.position.z = 30;
+
+        const composer = new THREE.EffectComposer(renderer);
+        const renderPass = new THREE.RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        const bokehPass = new THREE.BokehPass(scene, camera, {
+            focus: 10,
+            aperture: 0.0002,
+            maxblur: 0.01
+        });
+        composer.addPass(bokehPass);
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            cubes.forEach(cube => {
+                cube.rotation.x += cube.userData.speedX * 0.1;
+                cube.rotation.y += cube.userData.speedY * 0.1;
+                cube.position.x += cube.userData.speedX;
+                cube.position.y += cube.userData.speedY;
+                cube.position.z += cube.userData.speedZ;
+
+                cube.userData.opacity -= 0.01;
+                cube.material.opacity = Math.max(cube.userData.opacity, 0);
+
+                if (cube.position.x < -20 || cube.position.y < -20 || cube.position.z < -20 || cube.material.opacity === 0) {
+                    cube.position.set(
+                        Math.random() * 40 + 10,
+                        Math.random() * 40 + 10,
+                        Math.random() * 40 + 10
+                    );
+                    cube.userData.opacity = 1;
+                }
+            });
+
+            composer.render();
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
