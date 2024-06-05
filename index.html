@@ -65,7 +65,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://threejs.org/examples/js/postprocessing/EffectComposer.js"></script>
     <script src="https://threejs.org/examples/js/postprocessing/RenderPass.js"></script>
-    <script src="https://threejs.org/examples/js/postprocessing/BokehPass.js"></script>
+    <script src="https://threejs.org/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://threejs.org/examples/js/shaders/BokehShader2.js"></script>
     <script>
         function countdown() {
             const endDate = new Date('2024-06-19T00:00:00').getTime();
@@ -129,6 +130,7 @@
             document.getElementById('overlay').addEventListener('click', startExperience, { once: true });
         });
 
+        // Three.js 3D背景动画
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ alpha: true });
