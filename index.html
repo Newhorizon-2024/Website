@@ -10,20 +10,77 @@
             margin: 0;
             height: 100vh;
             overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(120deg, #000000, #434343);
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(120deg, #000000, #434343);
-            font-family: 'Roboto', sans-serif;
+            flex-direction: column;
         }
-        #countdown, #welcome {
-            font-size: 5vw;
-            text-align: center;
-            letter-spacing: 0.1em;
-            display: none;
-            color: white;
+        .parallax {
+            height: 100vh;
+            background-attachment: fixed;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        #section1 {
+            background-image: url('path/to/your/image1.jpg');
+        }
+        #section2 {
+            background-image: url('path/to/your/image2.jpg');
+        }
+        .fade-in {
             opacity: 0;
-            transition: opacity 2s ease-in-out;
+            transition: opacity 2s ease-in;
+        }
+        .fade-in.visible {
+            opacity: 1;
+        }
+        #background-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        #volume-sensor {
+            position: fixed;
+            bottom: 10px;
+            left: 0;
+            width: 50px;
+            height: 100px;
+            z-index: 1000;
+            cursor: pointer;
+        }
+        #volume-controls {
+            position: fixed;
+            bottom: 10px;
+            left: 10px; /* Start offscreen */
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: left 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        #volume-slider {
+            width: 100px;
+            accent-color: #b0b0b0; /* Neutral color for slider thumb */
+        }
+        #volume-controls button {
+            color: #b0b0b0; /* Neutral color for button text */
+            background: none;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+        #volume-controls button:hover {
+            color: #d0d0d0; /* Slightly lighter neutral color on hover */
         }
         #overlay {
             position: fixed;
@@ -44,50 +101,28 @@
             color: white;
             font-size: 2em;
         }
-        #background-3d {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
     </style>
 </head>
 <body>
     <div id="background-3d"></div>
-    <div id="countdown"></div>
-    <div id="welcome">Welcome To The New Horizon.</div>
+    <audio id="background-music" loop>
+        <source src="media/music1.mp3" type="audio/mp3">
+    </audio>
+    <div id="volume-sensor" onmouseenter="showVolumeControls()" onclick="toggleVolumeControls()"></div>
+    <div id="volume-controls">
+        <input type="range" id="volume-slider" min="0" max="100" value="50" onchange="adjustVolume(this.value)">
+        <button onclick="muteVolume()">Mute</button>
+    </div>
     <div id="overlay" onclick="startExperience()">
         <h2>Click to start.</h2>
     </div>
-    <audio id="background-music" loop></audio>
+
+    <div class="parallax" id="section1"></div>
+    <div class="parallax fade-in" id="animated-section"></div>
+    <div class="parallax" id="section2"></div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        function countdown() {
-            const endDate = new Date('2024-06-19T00:00:00').getTime();
-            const now = new Date().getTime();
-            const distance = endDate - now;
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            if (distance > 0) {
-                document.getElementById('countdown').innerHTML = 
-                    (days < 10 ? '0' : '') + days + ":" + 
-                    (hours < 10 ? '0' : '') + hours + ":" + 
-                    (minutes < 10 ? '0' : '') + minutes + ":" + 
-                    (seconds < 10 ? '0' : '') + seconds;
-            } else {
-                clearInterval(x);
-                document.getElementById('countdown').style.display = 'none';
-                document.getElementById('welcome').style.display = 'block';
-                document.getElementById('welcome').style.opacity = 1;
-            }
-        }
-
         function playNextMusic() {
             const audio = document.getElementById('background-music');
             const musicFiles = [
@@ -100,6 +135,28 @@
             audio.play();
         }
 
+        function showVolumeControls() {
+            const controls = document.getElementById('volume-controls');
+            controls.style.left = '10px';
+            controls.style.opacity = '1';
+        }
+
+        function hideVolumeControls() {
+            const controls = document.getElementById('volume-controls');
+            controls.style.left = '-150px';
+            controls.style.opacity = '0';
+        }
+
+        function adjustVolume(value) {
+            const audio = document.getElementById('background-music');
+            audio.volume = value / 100;
+        }
+
+        function muteVolume() {
+            const audio = document.getElementById('background-music');
+            audio.muted = !audio.muted;
+        }
+
         function startExperience() {
             playNextMusic();
             const audio = document.getElementById('background-music');
@@ -109,21 +166,24 @@
             overlayElement.style.opacity = 0;
             setTimeout(() => {
                 overlayElement.style.display = 'none';
-
-                setTimeout(() => {
-                    const countdownElement = document.getElementById('countdown');
-                    countdownElement.style.display = 'block';
-                    setTimeout(() => countdownElement.style.opacity = 1, 10);
-                }, 500);
-
             }, 2000);
         }
 
-        countdown();
-        const x = setInterval(countdown, 1000);
-
-        document.addEventListener('DOMContentLoaded', (event) => {
+        document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('overlay').addEventListener('click', startExperience, { once: true });
+
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            });
+
+            observer.observe(document.getElementById('animated-section'));
+
+            const volumeSensor = document.getElementById('volume-sensor');
+            volumeSensor.addEventListener('mouseleave', hideVolumeControls);
         });
 
         const scene = new THREE.Scene();
