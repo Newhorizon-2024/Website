@@ -24,7 +24,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: 1;
         }
         #volume-sensor {
             position: fixed;
@@ -88,7 +88,7 @@
             white-space: nowrap;
         }
         #welcome-message, #countdown {
-            position: fixed;
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -96,6 +96,7 @@
             opacity: 0;
             transition: opacity 2.5s ease-in-out;
             white-space: nowrap;
+            z-index: 2; /* Ensure text is above background but below 3D elements */
         }
         #welcome-message {
             font-size: 3vw;
@@ -119,7 +120,7 @@
     </style>
 </head>
 <body>
-    <div id="background-3d"></div>
+    <canvas id="background-3d"></canvas>
     <audio id="background-music" loop>
         <source src="media/music1.mp3" type="audio/mp3">
     </audio>
@@ -238,12 +239,12 @@
             observer.observe(document.getElementById('animated-section'));
         });
 
+        const canvas = document.getElementById('background-3d');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
-        document.getElementById('background-3d').appendChild(renderer.domElement);
 
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(5, 5, 5).normalize();
@@ -308,5 +309,3 @@
     </script>
 </body>
 </html>
-
-
