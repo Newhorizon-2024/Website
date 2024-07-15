@@ -18,25 +18,6 @@
             align-items: center;
             flex-direction: column;
         }
-        .parallax {
-            height: 100vh;
-            background-attachment: fixed;
-            background-size: cover;
-            background-repeat: no-repeat;
-        }
-        #section1 {
-            background-image: url('path/to/your/image1.jpg');
-        }
-        #section2 {
-            background-image: url('path/to/your/image2.jpg');
-        }
-        .fade-in {
-            opacity: 0;
-            transition: opacity 2s ease-in;
-        }
-        .fade-in.visible {
-            opacity: 1;
-        }
         #background-3d {
             position: fixed;
             top: 0;
@@ -49,16 +30,18 @@
             position: fixed;
             bottom: 10px;
             left: 0;
-            width: 50px;
-            height: 100px;
+            width: 100px;
+            height: 200px;
             z-index: 1000;
             cursor: pointer;
+            background-color: transparent;
         }
         #volume-controls {
             position: fixed;
             bottom: 10px;
-            left: 10px; /* Start offscreen */
-            background-color: rgba(0, 0, 0, 0.7);
+            left: -150px;
+            backdrop-filter: blur(10px);
+            background-color: rgba(0, 0, 0, 0.5);
             color: white;
             border: none;
             padding: 10px;
@@ -67,20 +50,21 @@
             align-items: center;
             opacity: 0;
             transition: left 0.3s ease-out, opacity 0.3s ease-out;
+            z-index: 1001;
         }
         #volume-slider {
             width: 100px;
-            accent-color: #b0b0b0; /* Neutral color for slider thumb */
+            accent-color: #b0b0b0;
         }
         #volume-controls button {
-            color: #b0b0b0; /* Neutral color for button text */
+            color: #b0b0b0;
             background: none;
             border: none;
             padding: 5px;
             cursor: pointer;
         }
         #volume-controls button:hover {
-            color: #d0d0d0; /* Slightly lighter neutral color on hover */
+            color: #d0d0d0;
         }
         #overlay {
             position: fixed;
@@ -100,6 +84,22 @@
         #overlay h2 {
             color: white;
             font-size: 2em;
+            font-family: 'Roboto', sans-serif;
+        }
+        #welcome-message, #countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Roboto', sans-serif;
+            opacity: 0;
+            transition: opacity 2.5s ease-in-out; /* Changed to 2.5 seconds */
+        }
+        #welcome-message {
+            font-size: 2em;
+        }
+        #countdown {
+            font-size: 1.5em;
         }
     </style>
 </head>
@@ -108,21 +108,21 @@
     <audio id="background-music" loop>
         <source src="media/music1.mp3" type="audio/mp3">
     </audio>
-    <div id="volume-sensor" onmouseenter="showVolumeControls()" onclick="toggleVolumeControls()"></div>
-    <div id="volume-controls">
+    <div id="volume-sensor" onmouseenter="showVolumeControls()" onmouseleave="hideVolumeControls()"></div>
+    <div id="volume-controls" onmouseenter="clearHideTimeout()" onmouseleave="hideVolumeControls()">
         <input type="range" id="volume-slider" min="0" max="100" value="50" onchange="adjustVolume(this.value)">
         <button onclick="muteVolume()">Mute</button>
     </div>
     <div id="overlay" onclick="startExperience()">
         <h2>Click to start.</h2>
     </div>
-
-    <div class="parallax" id="section1"></div>
-    <div class="parallax fade-in" id="animated-section"></div>
-    <div class="parallax" id="section2"></div>
+    <div id="welcome-message">Welcome to the New Horizon.</div>
+    <div id="countdown"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        let hideTimeout;
+
         function playNextMusic() {
             const audio = document.getElementById('background-music');
             const musicFiles = [
@@ -142,9 +142,15 @@
         }
 
         function hideVolumeControls() {
-            const controls = document.getElementById('volume-controls');
-            controls.style.left = '-150px';
-            controls.style.opacity = '0';
+            hideTimeout = setTimeout(() => {
+                const controls = document.getElementById('volume-controls');
+                controls.style.left = '-150px';
+                controls.style.opacity = '0';
+            }, 1000);
+        }
+
+        function clearHideTimeout() {
+            clearTimeout(hideTimeout);
         }
 
         function adjustVolume(value) {
@@ -166,7 +172,39 @@
             overlayElement.style.opacity = 0;
             setTimeout(() => {
                 overlayElement.style.display = 'none';
+                showWelcomeMessage();
             }, 2000);
+        }
+
+        function showWelcomeMessage() {
+            const welcomeMessage = document.getElementById('welcome-message');
+            welcomeMessage.style.opacity = 1;
+            setTimeout(() => {
+                welcomeMessage.style.opacity = 0;
+                setTimeout(() => {
+                    showCountdown();
+                }, 2500); // Changed to 2.5 seconds
+            }, 2500); // Changed to 2.5 seconds
+        }
+
+        function showCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.style.opacity = 1;
+            setInterval(updateCountdown, 1000);
+        }
+
+        function updateCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            const startDate = new Date('2024-06-19T00:00:00');
+            const now = new Date();
+            const elapsedTime = now - startDate;
+
+            const days = String(Math.floor(elapsedTime / (1000 * 60 * 60 * 24))).padStart(2, '0');
+            const hours = String(Math.floor((elapsedTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+            const minutes = String(Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            const seconds = String(Math.floor((elapsedTime % (1000 * 60)) / 1000)).padStart(2, '0');
+
+            countdownElement.textContent = `${days}:${hours}:${minutes}:${seconds}`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -181,9 +219,6 @@
             });
 
             observer.observe(document.getElementById('animated-section'));
-
-            const volumeSensor = document.getElementById('volume-sensor');
-            volumeSensor.addEventListener('mouseleave', hideVolumeControls);
         });
 
         const scene = new THREE.Scene();
@@ -201,45 +236,45 @@
         scene.add(ambientLight);
 
         const geometry = new THREE.BoxGeometry();
-        const material = new THREE.MeshStandardMaterial({ color: 0x888888 });
+        const material = new THREE.MeshStandardMaterial({ color: 0x888888, transparent: true, opacity: 1 });
         const cubes = [];
 
-        for (let i = 0; i < 20; i++) {
+        function createCube() {
             const cube = new THREE.Mesh(geometry, material);
-            const size = Math.random() * 4 + 1;
+            const size = Math.random() * 10 + 3; // Further increase average size
             cube.scale.set(size, size, size);
-            cube.position.set(
-                Math.random() * 40 + 10,
-                Math.random() * 40 + 10,
-                Math.random() * 40 + 10
-            );
+            cube.position.x = window.innerWidth / 2 + Math.random() * window.innerWidth;
+            cube.position.y = window.innerHeight / 2 + Math.random() * window.innerHeight;
+            cube.position.z = (Math.random() - 0.5) * 100;
             cube.userData = {
-                speedX: -(Math.random() * 0.02 + 0.01),
-                speedY: -(Math.random() * 0.02 + 0.01),
-                speedZ: -(Math.random() * 0.02 + 0.01)
+                speedX: Math.random() * 0.2 + 0.03, // Further decrease speed
+                speedY: Math.random() * 0.2 + 0.03, // Further decrease speed
+                rotationSpeedX: Math.random() * 0.01 - 0.005, // Restore previous rotation speed
+                rotationSpeedY: Math.random() * 0.01 - 0.005 // Restore previous rotation speed
             };
             scene.add(cube);
             cubes.push(cube);
         }
 
-        camera.position.z = 30;
+        for (let i = 0; i < 640; i++) { // Increase the number of cubes to 640
+            createCube();
+        }
+
+        camera.position.z = 50;
 
         function animate() {
             requestAnimationFrame(animate);
 
             cubes.forEach(cube => {
-                cube.rotation.x += cube.userData.speedX * 0.1;
-                cube.rotation.y += cube.userData.speedY * 0.1;
-                cube.position.x += cube.userData.speedX;
-                cube.position.y += cube.userData.speedY;
-                cube.position.z += cube.userData.speedZ;
+                cube.position.x -= cube.userData.speedX;
+                cube.position.y -= cube.userData.speedY;
+                cube.rotation.x += cube.userData.rotationSpeedX;
+                cube.rotation.y += cube.userData.rotationSpeedY;
 
-                if (cube.position.x < -20 || cube.position.y < -20 || cube.position.z < -20) {
-                    cube.position.set(
-                        Math.random() * 40 + 10,
-                        Math.random() * 40 + 10,
-                        Math.random() * 40 + 10
-                    );
+                if (cube.position.x < -window.innerWidth / 2 || cube.position.y < -window.innerHeight / 2) {
+                    scene.remove(cube);
+                    cubes.splice(cubes.indexOf(cube), 1);
+                    createCube();
                 }
             });
 
