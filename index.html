@@ -105,6 +105,43 @@
             font-size: 4vw;
         }
 
+        #fullscreen-sensor {
+            position: fixed;
+            bottom: 10px;
+            right: 0;
+            width: 100px;
+            height: 200px;
+            z-index: 1000;
+            cursor: pointer;
+            background-color: transparent;
+        }
+        #fullscreen-controls {
+            position: fixed;
+            bottom: 10px;
+            right: -150px;
+            backdrop-filter: blur(10px);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: right 0.3s ease-out, opacity 0.3s ease-out;
+            z-index: 1001;
+        }
+        #fullscreen-controls button {
+            color: #b0b0b0;
+            background: none;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+        #fullscreen-controls button:hover {
+            color: #d0d0d0;
+        }
+
         /* Media query for smaller screens */
         @media (max-width: 600px) {
             #overlay h2 {
@@ -129,6 +166,10 @@
         <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="adjustVolume(this.value)">
         <button onclick="muteVolume()">Mute</button>
     </div>
+    <div id="fullscreen-sensor" onmouseenter="showFullscreenControls()" onmouseleave="hideFullscreenControls()"></div>
+    <div id="fullscreen-controls" onmouseenter="clearHideTimeoutFullscreen()" onmouseleave="hideFullscreenControls()">
+        <button onclick="toggleFullScreen()">Fullscreen</button>
+    </div>
     <div id="overlay" onclick="startExperience()">
         <h2>Click to start.</h2>
     </div>
@@ -138,6 +179,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         let hideTimeout;
+        let hideFullscreenTimeout;
 
         function playNextMusic() {
             const audio = document.getElementById('background-music');
@@ -177,6 +219,32 @@
         function muteVolume() {
             const audio = document.getElementById('background-music');
             audio.muted = !audio.muted;
+        }
+
+        function showFullscreenControls() {
+            const controls = document.getElementById('fullscreen-controls');
+            controls.style.right = '10px';
+            controls.style.opacity = '1';
+        }
+
+        function hideFullscreenControls() {
+            hideFullscreenTimeout = setTimeout(() => {
+                const controls = document.getElementById('fullscreen-controls');
+                controls.style.right = '-150px';
+                controls.style.opacity = '0';
+            }, 1000);
+        }
+
+        function clearHideTimeoutFullscreen() {
+            clearTimeout(hideFullscreenTimeout);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
         }
 
         function startExperience() {
