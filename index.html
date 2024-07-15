@@ -93,7 +93,7 @@
             transform: translate(-50%, -50%);
             font-family: 'Roboto', sans-serif;
             opacity: 0;
-            transition: opacity 2.5s ease-in-out; /* Changed to 2.5 seconds */
+            transition: opacity 2.5s ease-in-out;
         }
         #welcome-message {
             font-size: 2em;
@@ -110,7 +110,7 @@
     </audio>
     <div id="volume-sensor" onmouseenter="showVolumeControls()" onmouseleave="hideVolumeControls()"></div>
     <div id="volume-controls" onmouseenter="clearHideTimeout()" onmouseleave="hideVolumeControls()">
-        <input type="range" id="volume-slider" min="0" max="100" value="50" onchange="adjustVolume(this.value)">
+        <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="adjustVolume(this.value)">
         <button onclick="muteVolume()">Mute</button>
     </div>
     <div id="overlay" onclick="startExperience()">
@@ -180,11 +180,13 @@
             const welcomeMessage = document.getElementById('welcome-message');
             welcomeMessage.style.opacity = 1;
             setTimeout(() => {
-                welcomeMessage.style.opacity = 0;
                 setTimeout(() => {
-                    showCountdown();
-                }, 2500); // Changed to 2.5 seconds
-            }, 2500); // Changed to 2.5 seconds
+                    welcomeMessage.style.opacity = 0;
+                    setTimeout(() => {
+                        showCountdown();
+                    }, 2500);
+                }, 1000); // Pause for 1 second before fading out
+            }, 2500); // Fade in duration
         }
 
         function showCountdown() {
@@ -291,3 +293,4 @@
     </script>
 </body>
 </html>
+
