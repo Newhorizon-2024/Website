@@ -5,21 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Horizon</title>
     
-    <!-- 标准 favicon -->
+    <!-- 图标设置 -->
     <link rel="icon" href="icons/favicon-16x16.png" sizes="16x16" type="image/png">
     <link rel="icon" href="icons/favicon-32x32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="icons/favicon-48x48.png" sizes="48x48" type="image/png">
-
-    <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-180x180.png" sizes="180x180">
-
-    <!-- Android Chrome Icon -->
     <link rel="icon" href="icons/android-chrome-192x192.png" sizes="192x192" type="image/png">
-
-    <!-- MS Application Icon -->
     <meta name="msapplication-TileImage" content="icons/mstile-144x144.png">
-
-    <!-- 其他图标尺寸 -->
     <link rel="icon" href="icons/icon-96x96.png" sizes="96x96" type="image/png">
     <link rel="icon" href="icons/icon-128x128.png" sizes="128x128" type="image/png">
     <link rel="icon" href="icons/icon-256x256.png" sizes="256x256" type="image/png">
@@ -182,7 +174,7 @@
 <body>
     <canvas id="background-3d"></canvas>
     <audio id="background-music" loop>
-        <source src="media/music1.mp3" type="audio/mp3">
+        <source src="Media/loki.flac" type="audio/flac">
     </audio>
     <div id="volume-sensor" onmouseenter="showVolumeControls()" onmouseleave="hideVolumeControls()"></div>
     <div id="volume-controls" onmouseenter="clearHideTimeout()" onmouseleave="hideVolumeControls()">
@@ -203,18 +195,6 @@
     <script>
         let hideTimeout;
         let hideFullscreenTimeout;
-
-        function playNextMusic() {
-            const audio = document.getElementById('background-music');
-            const musicFiles = [
-                'media/music1.mp3',
-                'media/music2.mp3',
-                'media/music3.mp3'
-            ];
-            const randomIndex = Math.floor(Math.random() * musicFiles.length);
-            audio.src = musicFiles[randomIndex];
-            audio.play();
-        }
 
         function showVolumeControls() {
             const controls = document.getElementById('volume-controls');
@@ -271,9 +251,8 @@
         }
 
         function startExperience() {
-            playNextMusic();
             const audio = document.getElementById('background-music');
-            audio.addEventListener('ended', playNextMusic);
+            audio.play();
 
             const overlayElement = document.getElementById('overlay');
             overlayElement.style.opacity = 0;
@@ -350,22 +329,22 @@
 
         function createCube() {
             const cube = new THREE.Mesh(geometry, material);
-            const size = Math.random() * 10 + 3; // Further increase average size
+            const size = Math.random() * 10 + 3;
             cube.scale.set(size, size, size);
             cube.position.x = window.innerWidth / 2 + Math.random() * window.innerWidth;
             cube.position.y = window.innerHeight / 2 + Math.random() * window.innerHeight;
             cube.position.z = (Math.random() - 0.5) * 100;
             cube.userData = {
-                speedX: Math.random() * 0.2 + 0.03, // Further decrease speed
-                speedY: Math.random() * 0.2 + 0.03, // Further decrease speed
-                rotationSpeedX: Math.random() * 0.01 - 0.005, // Restore previous rotation speed
-                rotationSpeedY: Math.random() * 0.01 - 0.005 // Restore previous rotation speed
+                speedX: Math.random() * 0.2 + 0.03,
+                speedY: Math.random() * 0.2 + 0.03,
+                rotationSpeedX: Math.random() * 0.01 - 0.005,
+                rotationSpeedY: Math.random() * 0.01 - 0.005
             };
             scene.add(cube);
             cubes.push(cube);
         }
 
-        for (let i = 0; i < 640; i++) { // Increase the number of cubes to 640
+        for (let i = 0; i < 640; i++) {
             createCube();
         }
 
