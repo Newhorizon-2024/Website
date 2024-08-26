@@ -25,7 +25,7 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow: hidden;
+            overflow-x: hidden;
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(120deg, #000000, #434343);
             color: white;
@@ -171,9 +171,6 @@
             background-color: #222;
             color: white;
             z-index: 1001;
-            opacity: 0;
-            transform: translateY(100px);
-            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
         }
         /* Media query for smaller screens */
         @media (max-width: 600px) {
@@ -189,14 +186,6 @@
             #about-section {
                 font-size: 3vw;
             }
-        }
-        /* 隐藏滚动条 */
-        ::-webkit-scrollbar {
-            display: none;
-        }
-        body {
-            -ms-overflow-style: none;  /* 适用于 IE 和 Edge */
-            scrollbar-width: none;  /* 适用于 Firefox */
         }
     </style>
 </head>
@@ -223,6 +212,7 @@
     </div>
 
     <div id="about-section">
+        <p>关于 New Horizon</p>
         <p>New Horizon是一个为娱乐而生的数字平台，皆在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。</p>
     </div>
 
@@ -335,18 +325,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('overlay').addEventListener('click', startExperience, { once: true });
-
-            const observer = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const aboutSection = document.getElementById('about-section');
-                        aboutSection.style.opacity = 1;
-                        aboutSection.style.transform = 'translateY(0)';
-                    }
-                });
-            });
-
-            observer.observe(document.getElementById('about-section'));
         });
 
         const canvas = document.getElementById('background-3d');
