@@ -21,13 +21,17 @@
     <!-- 样式 -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        body, html {
             margin: 0;
+            padding: 0;
             height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(120deg, #000000, #434343);
             color: white;
+        }
+        #content {
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -119,7 +123,6 @@
         #countdown {
             font-size: 4vw;
         }
-
         #fullscreen-sensor {
             position: fixed;
             bottom: 10px;
@@ -156,7 +159,16 @@
         #fullscreen-controls button:hover {
             color: #d0d0d0;
         }
-
+        #about-section {
+            padding: 50px;
+            background-color: #222;
+            color: white;
+            font-size: 2vw;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(100px);
+            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+        }
         /* Media query for smaller screens */
         @media (max-width: 600px) {
             #overlay h2 {
@@ -168,28 +180,37 @@
             #countdown {
                 font-size: 6vw;
             }
+            #about-section {
+                font-size: 4vw;
+            }
         }
     </style>
 </head>
 <body>
-    <canvas id="background-3d"></canvas>
-    <audio id="background-music" loop>
-        <source src="media/loki.flac" type="audio/flac">
-    </audio>
-    <div id="volume-sensor" onmouseenter="showVolumeControls()" onmouseleave="hideVolumeControls()"></div>
-    <div id="volume-controls" onmouseenter="clearHideTimeout()" onmouseleave="hideVolumeControls()">
-        <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="adjustVolume(this.value)">
-        <button id="mute-button" onclick="toggleMute()">Mute</button>
+    <div id="content">
+        <canvas id="background-3d"></canvas>
+        <audio id="background-music" loop>
+            <source src="media/loki.flac" type="audio/flac">
+        </audio>
+        <div id="volume-sensor" onmouseenter="showVolumeControls()" onmouseleave="hideVolumeControls()"></div>
+        <div id="volume-controls" onmouseenter="clearHideTimeout()" onmouseleave="hideVolumeControls()">
+            <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="adjustVolume(this.value)">
+            <button id="mute-button" onclick="toggleMute()">Mute</button>
+        </div>
+        <div id="fullscreen-sensor" onmouseenter="showFullscreenControls()" onmouseleave="hideFullscreenControls()"></div>
+        <div id="fullscreen-controls" onmouseenter="clearHideTimeoutFullscreen()" onmouseleave="hideFullscreenControls()">
+            <button onclick="toggleFullScreen()">Fullscreen</button>
+        </div>
+        <div id="overlay" onclick="startExperience()">
+            <h2>Click to start.</h2>
+        </div>
+        <div id="welcome-message">Welcome to the New Horizon.</div>
+        <div id="countdown"></div>
     </div>
-    <div id="fullscreen-sensor" onmouseenter="showFullscreenControls()" onmouseleave="hideFullscreenControls()"></div>
-    <div id="fullscreen-controls" onmouseenter="clearHideTimeoutFullscreen()" onmouseleave="hideFullscreenControls()">
-        <button onclick="toggleFullScreen()">Fullscreen</button>
+    
+    <div id="about-section">
+        <p>New Horizon是一个为娱乐而生的数字平台，皆在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。</p>
     </div>
-    <div id="overlay" onclick="startExperience()">
-        <h2>Click to start.</h2>
-    </div>
-    <div id="welcome-message">Welcome to the New Horizon.</div>
-    <div id="countdown"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
@@ -304,11 +325,14 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('visible');
+                        const aboutSection = document.getElementById('about-section');
+                        aboutSection.style.opacity = 1;
+                        aboutSection.style.transform = 'translateY(0)';
                     }
                 });
             });
 
-            observer.observe(document.getElementById('animated-section'));
+            observer.observe(document.getElementById('about-section'));
         });
 
         const canvas = document.getElementById('background-3d');
@@ -326,7 +350,7 @@
         scene.add(ambientLight);
 
         const geometry = new THREE.BoxGeometry();
-        const material = new THREE.MeshStandardMaterial({ color: 0x888888, transparent: true, opacity: 1 });
+        const material = new THREE.MeshStandardMaterial({ color: '#808080', transparent: true, opacity: 1 });
         const cubes = [];
 
         function createCube() {
