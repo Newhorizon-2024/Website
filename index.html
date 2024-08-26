@@ -24,9 +24,7 @@
         body {
             margin: 0;
             height: 100vh;
-            overflow-y: scroll;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none;  /* IE and Edge */
+            overflow: hidden;
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(120deg, #000000, #434343);
             color: white;
@@ -37,10 +35,6 @@
             user-select: none; /* 禁止文本选择 */
         }
 
-        body::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, and Opera */
-        }
-
         #background-3d {
             position: fixed;
             top: 0;
@@ -49,6 +43,7 @@
             height: 100%;
             z-index: 1;
         }
+
         #volume-sensor {
             position: fixed;
             bottom: 10px;
@@ -59,6 +54,7 @@
             cursor: pointer;
             background-color: transparent;
         }
+
         #volume-controls {
             position: fixed;
             bottom: 10px;
@@ -75,10 +71,12 @@
             transition: left 0.3s ease-out, opacity 0.3s ease-out;
             z-index: 1001;
         }
+
         #volume-slider {
             width: 100px;
             accent-color: #b0b0b0;
         }
+
         #volume-controls button {
             color: #b0b0b0;
             background: none;
@@ -86,9 +84,11 @@
             padding: 5px;
             cursor: pointer;
         }
+
         #volume-controls button:hover {
             color: #d0d0d0;
         }
+
         #overlay {
             position: fixed;
             top: 0;
@@ -104,12 +104,14 @@
             opacity: 1;
             transition: opacity 2s ease-in-out;
         }
+
         #overlay h2 {
             color: white;
             font-size: 3vw;
             font-family: 'Roboto', sans-serif;
             white-space: nowrap;
         }
+
         #welcome-message, #countdown {
             position: absolute;
             top: 50%;
@@ -121,9 +123,11 @@
             white-space: nowrap;
             z-index: 2; /* Ensure text is above background but below 3D elements */
         }
+
         #welcome-message {
             font-size: 3vw;
         }
+
         #countdown {
             font-size: 4vw;
         }
@@ -138,6 +142,7 @@
             cursor: pointer;
             background-color: transparent;
         }
+
         #fullscreen-controls {
             position: fixed;
             bottom: 10px;
@@ -154,6 +159,7 @@
             transition: right 0.3s ease-out, opacity 0.3s ease-out;
             z-index: 1001;
         }
+
         #fullscreen-controls button {
             color: #b0b0b0;
             background: none;
@@ -161,6 +167,7 @@
             padding: 5px;
             cursor: pointer;
         }
+
         #fullscreen-controls button:hover {
             color: #d0d0d0;
         }
@@ -170,23 +177,43 @@
             #overlay h2 {
                 font-size: 6vw;
             }
+
             #welcome-message {
                 font-size: 5vw;
             }
+
             #countdown {
                 font-size: 6vw;
             }
         }
 
-        #intro-text {
-            margin-top: 50px; /* 增加下移的距离 */
-            font-size: 1vw; /* 缩小一倍 */
+        #intro {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             text-align: center;
+            font-size: 2vw;
+            background-color: #202020;
+            z-index: 1001;
+        }
+
+        #intro-text {
             max-width: 90%;
+            font-size: 1vw;
+        }
+
+        .section {
+            height: 100vh;
+            width: 100%;
+        }
+
+        .scroll-lock {
+            overflow: hidden;
         }
     </style>
 </head>
-<body>
+<body class="scroll-lock">
     <canvas id="background-3d"></canvas>
     <audio id="background-music" loop>
         <source src="media/loki.flac" type="audio/flac">
@@ -205,7 +232,10 @@
     </div>
     <div id="welcome-message">Welcome to the New Horizon.</div>
     <div id="countdown"></div>
-    <div id="intro-text">New Horizon是一个为娱乐而生的数字平台，旨在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。</div>
+
+    <div id="intro" class="section">
+        <div id="intro-text">New Horizon是一个为娱乐而生的数字平台，旨在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。</div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
@@ -276,6 +306,7 @@
             overlayElement.style.opacity = 0;
             setTimeout(() => {
                 overlayElement.style.display = 'none';
+                document.body.classList.remove('scroll-lock'); // 启用滚动
                 showWelcomeMessage();
             }, 2000);
         }
