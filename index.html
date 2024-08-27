@@ -109,7 +109,7 @@
             white-space: nowrap;
             z-index: 2; /* 确保overlay文本不会被方块遮住 */
         }
-        #welcome-message, #countdown {
+        #welcome-message {
             position: absolute;
             top: 50%;
             left: 50%;
@@ -118,12 +118,18 @@
             opacity: 0;
             transition: opacity 2.5s ease-in-out;
             white-space: nowrap;
-            z-index: 2; /* 确保倒计时文本不会被方块遮住 */
-        }
-        #welcome-message {
+            z-index: 3; /* 确保欢迎信息不会被方块遮住 */
             font-size: 3vw;
         }
         #countdown {
+            position: relative;
+            margin: 20px auto 0 auto;
+            text-align: center;
+            font-family: 'Roboto', sans-serif;
+            opacity: 0;
+            transition: opacity 2.5s ease-in-out;
+            white-space: nowrap;
+            z-index: 1; /* 确保倒计时文本可以被方块遮住 */
             font-size: 4vw;
         }
         #fullscreen-sensor {
@@ -174,7 +180,7 @@
             justify-content: center;
             align-items: center;
             margin: 50px auto; /* 在屏幕中央 */
-            z-index: 1; /* 确保about-section可以被方块遮住 */
+            z-index: 2; /* 确保about-section不会被方块遮住 */
         }
         #about-section p {
             margin: 0;
@@ -371,7 +377,7 @@
             cubes.push(cube);
         }
 
-        for (let i = 0; i < 640; i++) {
+        for (let i = 0; 640; i++) {
             createCube();
         }
 
