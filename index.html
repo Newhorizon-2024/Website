@@ -25,10 +25,10 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow-y: auto; /* 启用垂直滚动条 */
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(120deg, #000000, #434343);
             color: white;
+            overflow-y: scroll; /* 启用滚动 */
         }
         #content {
             min-height: 100vh; /* 让content部分至少占满一个视窗高度 */
@@ -57,9 +57,8 @@
             cursor: pointer;
             background-color: transparent;
         }
-        #volume-controls, #fullscreen-controls {
+        #volume-controls, #fullscreen-controls, #scrollbar-controls {
             position: fixed;
-            bottom: 10px;
             backdrop-filter: blur(5px); /* 毛玻璃效果减弱一倍 */
             background-color: rgba(40, 40, 40, 0.9); /* 深灰色背景 */
             color: white;
@@ -75,22 +74,31 @@
         }
         #volume-controls {
             left: -150px;
+            bottom: 10px;
         }
         #fullscreen-controls {
             right: -150px;
+            bottom: 10px;
+        }
+        #scrollbar-controls {
+            right: -150px;
+            top: 50%;
+            transform: translateY(-50%);
         }
         #volume-slider {
             width: 100px;
             accent-color: #b0b0b0;
         }
-        #volume-controls button, #fullscreen-controls button {
+        #volume-controls button, #fullscreen-controls button, #scrollbar-controls button {
             color: #b0b0b0;
             background: none;
             border: none;
             padding: 5px;
             cursor: pointer;
+            width: 30px;
+            height: 30px;
         }
-        #volume-controls button:hover, #fullscreen-controls button:hover {
+        #volume-controls button:hover, #fullscreen-controls button:hover, #scrollbar-controls button:hover {
             color: #d0d0d0;
         }
         #overlay {
@@ -149,6 +157,17 @@
             cursor: pointer;
             background-color: transparent;
         }
+        #scrollbar-sensor {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            width: 100px;
+            height: 50px;
+            z-index: 1000;
+            cursor: pointer;
+            background-color: transparent;
+            transform: translateY(-50%);
+        }
         #about-section {
             position: relative; /* 保持原有定位 */
             height: 40vh; /* 将about-section设置为视窗高度的40% */
@@ -168,17 +187,15 @@
             z-index: 2; /* 确保about-section不会被方块遮住 */
             flex-direction: column; /* 使文字居中显示 */
             border-radius: 5px; /* 圆角边框减弱一倍 */
-        }
-        #about-section h1 {
-            font-size: 2vw;
-            margin-bottom: 20px;
-            font-weight: bold;
+            overflow: hidden; /* 隐藏内部滚动条 */
         }
         #about-section p {
             margin: 0;
             text-align: center;
             word-wrap: break-word;
+            overflow-y: auto; /* 启用垂直滚动 */
         }
+
         /* Media query for smaller screens */
         @media (max-width: 600px) {
             #overlay h2 {
@@ -216,6 +233,10 @@
         <div id="fullscreen-controls" onmouseenter="clearHideTimeoutFullscreen()" onmouseleave="hideFullscreenControls()">
             <button onclick="toggleFullScreen()">Fullscreen</button>
         </div>
+        <div id="scrollbar-sensor" onmouseenter="showScrollbarControls()" onmouseleave="hideScrollbarControls()"></div>
+        <div id="scrollbar-controls" onmouseenter="clearHideTimeoutScrollbar()" onmouseleave="hideScrollbarControls()">
+            <button id="scrollbar-button" onclick="toggleScrollbar()"></button>
+        </div>
         <div id="overlay" onclick="startExperience()">
             <h2>Click to start.</h2>
         </div>
@@ -225,13 +246,14 @@
 
     <div id="about-section">
         <h1>关于 New Horizon</h1>
-        <p>New Horizon是一个为娱乐而生的数字平台，皆在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。</p>
+        <p>New Horizon是一个为娱乐而生的数字平台，旨在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。</p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         let hideTimeout;
         let hideFullscreenTimeout;
+        let hideScrollbarTimeout;
 
         function showVolumeControls() {
             const controls = document.getElementById('volume-controls');
@@ -286,6 +308,38 @@
                 document.documentElement.requestFullscreen();
             } else if (document.exitFullscreen) {
                 document.exitFullscreen();
+            }
+        }
+
+        function showScrollbarControls() {
+            const controls = document.getElementById('scrollbar-controls');
+            controls.style.right = '10px';
+            controls.style.opacity = '1';
+        }
+
+        function hideScrollbarControls() {
+            hideScrollbarTimeout = setTimeout(() => {
+                const controls = document.getElementById('scrollbar-controls');
+                controls.style.right = '-150px';
+                controls.style.opacity = '0';
+            }, 1000);
+        }
+
+        function clearHideTimeoutScrollbar() {
+            clearTimeout(hideScrollbarTimeout);
+        }
+
+        function toggleScrollbar() {
+            const body = document.body;
+            const html = document.documentElement;
+            const scrollbarButton = document.getElementById('scrollbar-button');
+            
+            if (body.style.overflowY === 'hidden') {
+                body.style.overflowY = 'scroll';
+                html.style.overflowY = 'scroll';
+            } else {
+                body.style.overflowY = 'hidden';
+                html.style.overflowY = 'hidden';
             }
         }
 
