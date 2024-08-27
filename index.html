@@ -101,6 +101,7 @@
             cursor: pointer;
             opacity: 1;
             transition: opacity 2s ease-in-out;
+            pointer-events: auto; /* 确保点击事件可以被触发 */
         }
         #overlay h2 {
             color: white;
@@ -169,6 +170,7 @@
             color: #d0d0d0;
         }
         #about-section {
+            position: relative; /* 增加 position 属性 */
             height: 40vh; /* 将about-section设置为视窗高度的40% */
             width: 80%;  /* 调整about-section宽度 */
             background-color: rgba(0, 0, 0, 0.7);
@@ -377,7 +379,7 @@
             cubes.push(cube);
         }
 
-        for (let i = 0; 640; i++) {
+        for (let i = 0; i < 640; i++) {
             createCube();
         }
 
