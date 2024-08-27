@@ -25,7 +25,7 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            overflow: hidden;
+            overflow-y: auto; /* 启用垂直滚动条 */
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(120deg, #000000, #434343);
             color: white;
@@ -118,6 +118,7 @@
             opacity: 0;
             transition: opacity 2.5s ease-in-out;
             white-space: nowrap;
+            z-index: 1002; /* 确保文本在滚动区域上方 */
         }
         #welcome-message {
             font-size: 3vw;
@@ -161,42 +162,21 @@
         #fullscreen-controls button:hover {
             color: #d0d0d0;
         }
-        #about-section {
-            height: 100vh;
+        #about {
+            width: 100%;
+            height: 50vh; /* 长方形部件的高度可以根据需要调整 */
+            background-color: #222;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
-            font-size: 1.5vw;
-            background-color: #222;
+            font-size: 2vw;
             color: white;
+            position: relative;
             z-index: 1001;
-            opacity: 0;
-            transform: translateY(100px);
-            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
         }
-        /* Media query for smaller screens */
-        @media (max-width: 600px) {
-            #overlay h2 {
-                font-size: 6vw;
-            }
-            #welcome-message {
-                font-size: 5vw;
-            }
-            #countdown {
-                font-size: 6vw;
-            }
-            #about-section {
-                font-size: 3vw;
-            }
-        }
-        /* 隐藏滚动条 */
-        ::-webkit-scrollbar {
-            display: none;
-        }
-        body {
-            -ms-overflow-style: none;  /* 适用于 IE 和 Edge */
-            scrollbar-width: none;  /* 适用于 Firefox */
+        #about p {
+            max-width: 800px;
         }
     </style>
 </head>
@@ -222,7 +202,8 @@
         <div id="countdown"></div>
     </div>
 
-    <div id="about-section">
+    <!-- About Section -->
+    <div id="about">
         <p>New Horizon是一个为娱乐而生的数字平台，皆在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。</p>
     </div>
 
@@ -335,18 +316,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('overlay').addEventListener('click', startExperience, { once: true });
-
-            const observer = new IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const aboutSection = document.getElementById('about-section');
-                        aboutSection.style.opacity = 1;
-                        aboutSection.style.transform = 'translateY(0)';
-                    }
-                });
-            });
-
-            observer.observe(document.getElementById('about-section'));
         });
 
         const canvas = document.getElementById('background-3d');
