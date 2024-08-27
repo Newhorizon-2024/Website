@@ -57,12 +57,11 @@
             cursor: pointer;
             background-color: transparent;
         }
-        #volume-controls {
+        #volume-controls, #fullscreen-controls {
             position: fixed;
             bottom: 10px;
-            left: -150px;
             backdrop-filter: blur(10px);
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(40, 40, 40, 0.9); /* 深灰色背景 */
             color: white;
             border: none;
             padding: 10px;
@@ -70,21 +69,28 @@
             flex-direction: column;
             align-items: center;
             opacity: 0;
-            transition: left 0.3s ease-out, opacity 0.3s ease-out;
+            transition: opacity 0.3s ease-out, left 0.3s ease-out, right 0.3s ease-out;
             z-index: 1001;
+            border-radius: 10px; /* 1.5倍圆角边框 */
+        }
+        #volume-controls {
+            left: -150px;
+        }
+        #fullscreen-controls {
+            right: -150px;
         }
         #volume-slider {
             width: 100px;
             accent-color: #b0b0b0;
         }
-        #volume-controls button {
+        #volume-controls button, #fullscreen-controls button {
             color: #b0b0b0;
             background: none;
             border: none;
             padding: 5px;
             cursor: pointer;
         }
-        #volume-controls button:hover {
+        #volume-controls button:hover, #fullscreen-controls button:hover {
             color: #d0d0d0;
         }
         #overlay {
@@ -143,51 +149,35 @@
             cursor: pointer;
             background-color: transparent;
         }
-        #fullscreen-controls {
-            position: fixed;
-            bottom: 10px;
-            right: -150px;
-            backdrop-filter: blur(10px);
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            opacity: 0;
-            transition: right 0.3s ease-out, opacity 0.3s ease-out;
-            z-index: 1001;
-        }
-        #fullscreen-controls button {
-            color: #b0b0b0;
-            background: none;
-            border: none;
-            padding: 5px;
-            cursor: pointer;
-        }
-        #fullscreen-controls button:hover {
-            color: #d0d0d0;
-        }
         #about-section {
-            position: relative; /* 增加 position 属性 */
+            position: relative; /* 保持原有定位 */
             height: 40vh; /* 将about-section设置为视窗高度的40% */
-            width: 80%;  /* 调整about-section宽度 */
-            background-color: rgba(0, 0, 0, 0.7);
+            width: 80%;  /* 调整宽度 */
+            background-color: rgba(40, 40, 40, 0.9); /* 深灰色背景 */
+            backdrop-filter: blur(10px); /* 毛玻璃效果 */
             color: white;
             padding: 20px;
             text-align: center;
-            font-size: 1.5vw;
+            font-family: 'Roboto', sans-serif; /* 使用与其他文本相同的字体 */
+            font-size: 1.5vw; /* 缩小文字尺寸 */
+            line-height: 1.5; /* 增加行高 */
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 50px auto; /* 在屏幕中央 */
+            margin: 50px auto; /* 居中 */
             z-index: 2; /* 确保about-section不会被方块遮住 */
+            flex-direction: column; /* 使文字居中显示 */
+            border-radius: 10px; /* 1.5倍圆角边框 */
+        }
+        #about-section h1 {
+            font-size: 2vw;
+            margin-bottom: 20px;
+            font-weight: bold;
         }
         #about-section p {
             margin: 0;
-            font-size: 1.5vw;
             text-align: center;
+            word-wrap: break-word;
         }
         /* Media query for smaller screens */
         @media (max-width: 600px) {
@@ -201,8 +191,11 @@
                 font-size: 6vw;
             }
             #about-section {
-                font-size: 3vw;
+                font-size: 3.5vw;
                 padding: 15px;
+            }
+            #about-section h1 {
+                font-size: 4vw;
             }
         }
     </style>
@@ -231,6 +224,7 @@
     </div>
 
     <div id="about-section">
+        <h1>关于 New Horizon</h1>
         <p>New Horizon是一个为娱乐而生的数字平台，皆在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。</p>
     </div>
 
@@ -353,6 +347,18 @@
 
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(5, 5, 5).normalize();
+        light.castShadow = true; // 启用阴影
+        light.shadow.mapSize.width = 1024; // 调整阴影质量
+        light.shadow.mapSize.height = 1024;
+        light.shadow.camera.near = 0.5;
+        light.shadow.camera.far = 500;
+
+        // 设置阴影颜色为深灰色
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        light.shadow.bias = -0.002; // 控制阴影位置
+        light.shadow.darkness = 0.5; // 控制阴影的深度（深灰色效果）
+
         scene.add(light);
 
         const ambientLight = new THREE.AmbientLight(0x404040);
@@ -369,6 +375,8 @@
             cube.position.x = window.innerWidth / 2 + Math.random() * window.innerWidth;
             cube.position.y = window.innerHeight / 2 + Math.random() * window.innerHeight;
             cube.position.z = (Math.random() - 0.5) * 100;
+            cube.castShadow = true; // 允许模型投射阴影
+            cube.receiveShadow = true; // 允许模型接收阴影
             cube.userData = {
                 speedX: Math.random() * 0.2 + 0.03,
                 speedY: Math.random() * 0.2 + 0.03,
