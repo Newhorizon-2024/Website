@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,10 +25,10 @@
             margin: 0;
             padding: 0;
             height: 100%;
+            overflow-y: auto; /* 启用垂直滚动条 */
             font-family: 'Roboto', sans-serif;
             background: linear-gradient(120deg, #000000, #434343);
             color: white;
-            overflow-y: scroll; /* 启用滚动 */
         }
         #content {
             min-height: 100vh; /* 让content部分至少占满一个视窗高度 */
@@ -47,17 +47,31 @@
             height: 100%;
             z-index: 1;
         }
-        #volume-sensor {
+        #volume-sensor, #fullscreen-sensor, #scrollbar-sensor, #language-sensor {
             position: fixed;
-            bottom: 10px;
-            left: 0;
             width: 100px;
             height: 200px;
             z-index: 1000;
             cursor: pointer;
             background-color: transparent;
         }
-        #volume-controls, #fullscreen-controls, #scrollbar-controls {
+        #volume-sensor {
+            bottom: 10px;
+            left: 0;
+        }
+        #fullscreen-sensor {
+            bottom: 10px;
+            right: 0;
+        }
+        #scrollbar-sensor {
+            bottom: 220px;
+            right: 0;
+        }
+        #language-sensor {
+            top: 10px;
+            right: 0;
+        }
+        #volume-controls, #fullscreen-controls, #scrollbar-controls, #language-controls {
             position: fixed;
             backdrop-filter: blur(5px); /* 毛玻璃效果减弱一倍 */
             background-color: rgba(40, 40, 40, 0.9); /* 深灰色背景 */
@@ -82,23 +96,24 @@
         }
         #scrollbar-controls {
             right: -150px;
-            top: 50%;
-            transform: translateY(-50%);
+            bottom: 220px;
+        }
+        #language-controls {
+            right: -150px;
+            top: 10px;
         }
         #volume-slider {
             width: 100px;
             accent-color: #b0b0b0;
         }
-        #volume-controls button, #fullscreen-controls button, #scrollbar-controls button {
+        #volume-controls button, #fullscreen-controls button, #scrollbar-controls button, #language-controls button {
             color: #b0b0b0;
             background: none;
             border: none;
             padding: 5px;
             cursor: pointer;
-            width: 30px;
-            height: 30px;
         }
-        #volume-controls button:hover, #fullscreen-controls button:hover, #scrollbar-controls button:hover {
+        #volume-controls button:hover, #fullscreen-controls button:hover, #scrollbar-controls button:hover, #language-controls button:hover {
             color: #d0d0d0;
         }
         #overlay {
@@ -147,27 +162,6 @@
             z-index: 1; /* 确保倒计时文本可以被方块遮住 */
             font-size: 4vw;
         }
-        #fullscreen-sensor {
-            position: fixed;
-            bottom: 10px;
-            right: 0;
-            width: 100px;
-            height: 200px;
-            z-index: 1000;
-            cursor: pointer;
-            background-color: transparent;
-        }
-        #scrollbar-sensor {
-            position: fixed;
-            top: 50%;
-            right: 0;
-            width: 100px;
-            height: 50px;
-            z-index: 1000;
-            cursor: pointer;
-            background-color: transparent;
-            transform: translateY(-50%);
-        }
         #about-section {
             position: relative; /* 保持原有定位 */
             height: 40vh; /* 将about-section设置为视窗高度的40% */
@@ -187,15 +181,17 @@
             z-index: 2; /* 确保about-section不会被方块遮住 */
             flex-direction: column; /* 使文字居中显示 */
             border-radius: 5px; /* 圆角边框减弱一倍 */
-            overflow: hidden; /* 隐藏内部滚动条 */
+        }
+        #about-section h1 {
+            font-size: 2vw;
+            margin-bottom: 20px;
+            font-weight: bold;
         }
         #about-section p {
             margin: 0;
             text-align: center;
             word-wrap: break-word;
-            overflow-y: auto; /* 启用垂直滚动 */
         }
-
         /* Media query for smaller screens */
         @media (max-width: 600px) {
             #overlay h2 {
@@ -227,15 +223,19 @@
         <div id="volume-sensor" onmouseenter="showVolumeControls()" onmouseleave="hideVolumeControls()"></div>
         <div id="volume-controls" onmouseenter="clearHideTimeout()" onmouseleave="hideVolumeControls()">
             <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="adjustVolume(this.value)">
-            <button id="mute-button" onclick="toggleMute()">Mute</button>
+            <button id="mute-button" onclick="toggleMute()">静音</button>
         </div>
         <div id="fullscreen-sensor" onmouseenter="showFullscreenControls()" onmouseleave="hideFullscreenControls()"></div>
         <div id="fullscreen-controls" onmouseenter="clearHideTimeoutFullscreen()" onmouseleave="hideFullscreenControls()">
-            <button onclick="toggleFullScreen()">Fullscreen</button>
+            <button onclick="toggleFullScreen()">全屏</button>
         </div>
         <div id="scrollbar-sensor" onmouseenter="showScrollbarControls()" onmouseleave="hideScrollbarControls()"></div>
         <div id="scrollbar-controls" onmouseenter="clearHideTimeoutScrollbar()" onmouseleave="hideScrollbarControls()">
-            <button id="scrollbar-button" onclick="toggleScrollbar()"></button>
+            <button id="scrollbar-button" onclick="toggleScrollbar()">隐藏滚动条</button>
+        </div>
+        <div id="language-sensor" onmouseenter="showLanguageControls()" onmouseleave="hideLanguageControls()"></div>
+        <div id="language-controls" onmouseenter="clearHideTimeoutLanguage()" onmouseleave="hideLanguageControls()">
+            <button id="language-button" onclick="toggleLanguage()">切换语言</button>
         </div>
         <div id="overlay" onclick="startExperience()">
             <h2>Click to start.</h2>
@@ -254,6 +254,9 @@
         let hideTimeout;
         let hideFullscreenTimeout;
         let hideScrollbarTimeout;
+        let hideLanguageTimeout;
+        let scrollbarEnabled = true;
+        let isEnglish = false;
 
         function showVolumeControls() {
             const controls = document.getElementById('volume-controls');
@@ -282,7 +285,7 @@
             const audio = document.getElementById('background-music');
             const muteButton = document.getElementById('mute-button');
             audio.muted = !audio.muted;
-            muteButton.textContent = audio.muted ? "Unmute" : "Mute";
+            muteButton.textContent = audio.muted ? "取消静音" : "静音";
         }
 
         function showFullscreenControls() {
@@ -331,16 +334,40 @@
 
         function toggleScrollbar() {
             const body = document.body;
-            const html = document.documentElement;
             const scrollbarButton = document.getElementById('scrollbar-button');
-            
-            if (body.style.overflowY === 'hidden') {
-                body.style.overflowY = 'scroll';
-                html.style.overflowY = 'scroll';
-            } else {
-                body.style.overflowY = 'hidden';
-                html.style.overflowY = 'hidden';
-            }
+            scrollbarEnabled = !scrollbarEnabled;
+            body.style.overflowY = scrollbarEnabled ? 'auto' : 'hidden';
+            scrollbarButton.textContent = scrollbarEnabled ? "隐藏滚动条" : "显示滚动条";
+        }
+
+        function showLanguageControls() {
+            const controls = document.getElementById('language-controls');
+            controls.style.right = '10px';
+            controls.style.opacity = '1';
+        }
+
+        function hideLanguageControls() {
+            hideLanguageTimeout = setTimeout(() => {
+                const controls = document.getElementById('language-controls');
+                controls.style.right = '-150px';
+                controls.style.opacity = '0';
+            }, 1000);
+        }
+
+        function clearHideTimeoutLanguage() {
+            clearTimeout(hideLanguageTimeout);
+        }
+
+        function toggleLanguage() {
+            isEnglish = !isEnglish;
+            document.getElementById('mute-button').textContent = isEnglish ? "Mute" : "静音";
+            document.getElementById('fullscreen-controls').querySelector('button').textContent = isEnglish ? "Fullscreen" : "全屏";
+            document.getElementById('scrollbar-button').textContent = scrollbarEnabled ? (isEnglish ? "Hide Scrollbar" : "隐藏滚动条") : (isEnglish ? "Show Scrollbar" : "显示滚动条");
+            document.getElementById('language-button').textContent = isEnglish ? "Switch Language" : "切换语言";
+            document.querySelector('#about-section h1').textContent = isEnglish ? "About New Horizon" : "关于 New Horizon";
+            document.querySelector('#about-section p').textContent = isEnglish ?
+                "New Horizon is a digital platform born for entertainment, aiming to provide users with a space for free expression, growth, and emotional relief through the combination of creativity and technology. We believe that entertainment is not just a way to relax, but also an important way to explore and expand oneself." :
+                "New Horizon是一个为娱乐而生的数字平台，旨在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。";
         }
 
         function startExperience() {
