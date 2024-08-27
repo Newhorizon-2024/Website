@@ -60,7 +60,7 @@
         #volume-controls, #fullscreen-controls {
             position: fixed;
             bottom: 10px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px); /* 毛玻璃效果减弱一倍 */
             background-color: rgba(40, 40, 40, 0.9); /* 深灰色背景 */
             color: white;
             border: none;
@@ -71,7 +71,7 @@
             opacity: 0;
             transition: opacity 0.3s ease-out, left 0.3s ease-out, right 0.3s ease-out;
             z-index: 1001;
-            border-radius: 10px; /* 1.5倍圆角边框 */
+            border-radius: 5px; /* 圆角边框减弱一倍 */
         }
         #volume-controls {
             left: -150px;
@@ -154,7 +154,7 @@
             height: 40vh; /* 将about-section设置为视窗高度的40% */
             width: 80%;  /* 调整宽度 */
             background-color: rgba(40, 40, 40, 0.9); /* 深灰色背景 */
-            backdrop-filter: blur(10px); /* 毛玻璃效果 */
+            backdrop-filter: blur(5px); /* 毛玻璃效果减弱一倍 */
             color: white;
             padding: 20px;
             text-align: center;
@@ -167,7 +167,7 @@
             margin: 50px auto; /* 居中 */
             z-index: 2; /* 确保about-section不会被方块遮住 */
             flex-direction: column; /* 使文字居中显示 */
-            border-radius: 10px; /* 1.5倍圆角边框 */
+            border-radius: 5px; /* 圆角边框减弱一倍 */
         }
         #about-section h1 {
             font-size: 2vw;
