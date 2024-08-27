@@ -190,6 +190,14 @@
                 font-size: 3vw;
             }
         }
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            -ms-overflow-style: none;  /* 适用于 IE 和 Edge */
+            scrollbar-width: none;  /* 适用于 Firefox */
+        }
     </style>
 </head>
 <body>
