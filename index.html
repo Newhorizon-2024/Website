@@ -49,8 +49,8 @@
         }
         #volume-sensor, #fullscreen-sensor, #scrollbar-sensor, #language-sensor {
             position: fixed;
-            width: 100px;
-            height: 200px;
+            width: 50px; /* 缩小感应区域的宽度 */
+            height: 100px; /* 缩小感应区域的高度 */
             z-index: 1000;
             cursor: pointer;
             background-color: transparent;
@@ -164,7 +164,7 @@
         }
         #about-section {
             position: relative; /* 保持原有定位 */
-            height: 40vh; /* 将about-section设置为视窗高度的40% */
+            height: 50vh; /* 将about-section设置为视窗高度的50% */
             width: 80%;  /* 调整宽度 */
             background-color: rgba(40, 40, 40, 0.9); /* 深灰色背景 */
             backdrop-filter: blur(5px); /* 毛玻璃效果减弱一倍 */
@@ -192,6 +192,38 @@
             text-align: center;
             word-wrap: break-word;
         }
+
+        #statement-section {
+            position: relative;
+            height: 40vh; /* 将声明栏设置为视窗高度的40% */
+            width: 80%;  /* 调整宽度 */
+            background-color: rgba(40, 40, 40, 0.9); /* 深灰色背景 */
+            backdrop-filter: blur(5px); /* 毛玻璃效果减弱一倍 */
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.5vw;
+            line-height: 1.5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 50px auto;
+            z-index: 2;
+            flex-direction: column;
+            border-radius: 5px;
+        }
+        #statement-section h1 {
+            font-size: 2vw;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        #statement-section p {
+            margin: 0;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
         /* Media query for smaller screens */
         @media (max-width: 600px) {
             #overlay h2 {
@@ -203,11 +235,11 @@
             #countdown {
                 font-size: 6vw;
             }
-            #about-section {
+            #about-section, #statement-section {
                 font-size: 3.5vw;
                 padding: 15px;
             }
-            #about-section h1 {
+            #about-section h1, #statement-section h1 {
                 font-size: 4vw;
             }
         }
@@ -246,7 +278,16 @@
 
     <div id="about-section">
         <h1>关于 New Horizon</h1>
-        <p>New Horizon是一个为娱乐而生的数字平台，旨在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。</p>
+        <p>New Horizon 是一个为娱乐而生的数字平台，旨在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。我们相信，娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。
+        无论灰烬，相信每一个灵感火花都值得被点燃，每一个故事都值得被倾听。在这里，用户不仅仅是观众，更是缔造者。我们鼓励每一个人释放自己的创意，通过多种形式展示和分享自己的作品。
+        社区是一个充满活力的交流平台，汇聚来自世界各地的创作者和思想家。你可以与志同道合的人们交流想法，获得反馈，并取得成长、能力提升或任何可能的进步及延伸。无论你是探寻放松身心，还是寻求灵感，希望这里能够成为你的理想地，一片港湾。</p>
+    </div>
+
+    <div id="statement-section">
+        <h1>声明</h1>
+        <p>New Horizon 致力于创建一个和谐、尊重与包容的社区，所有内容和服务都应遵循和平共处的原则。我们希望每一位用户在享受平台提供的创意空间时，也能以尊重和理解的态度对待他人。
+        如果您有任何疑问，或者认为某些内容侵犯了您的权益，请通过社区、电子邮件或社交媒体与我们取得联系。我们承诺认真对待每一条意见，并在第一时间采取必要的措施，确保平台的安全与和谐。
+        如需提出涉及当地法律的纠纷，请直接发律师函至我们指定的地址，与相关方迅速沟通，确保在法律框架内尽快解决争议。</p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -366,8 +407,12 @@
             document.getElementById('language-button').textContent = isEnglish ? "Switch Language" : "切换语言";
             document.querySelector('#about-section h1').textContent = isEnglish ? "About New Horizon" : "关于 New Horizon";
             document.querySelector('#about-section p').textContent = isEnglish ?
-                "New Horizon is a digital platform born for entertainment, aiming to provide users with a space for free expression, growth, and emotional relief through the combination of creativity and technology. We believe that entertainment is not just a way to relax, but also an important way to explore and expand oneself." :
-                "New Horizon是一个为娱乐而生的数字平台，旨在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。相信娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。";
+                "New Horizon is a digital platform born for entertainment, aiming to provide users with a space for free expression, growth, and emotional relief through the combination of creativity and technology. We believe that entertainment is not just a way to relax, but also an important way to explore and expand oneself. No matter the ashes, we believe that every spark of inspiration deserves to be ignited, and every story deserves to be heard. Here, users are not just spectators, but creators. We encourage everyone to unleash their creativity, showcase, and share their works in various forms. The community is a vibrant exchange platform that brings together creators and thinkers from around the world. You can exchange ideas with like-minded people, receive feedback, and achieve growth, skill enhancement, or any possible progress and extension. Whether you're seeking to relax or seeking inspiration, we hope this place can become your ideal place, a haven." :
+                "New Horizon 是一个为娱乐而生的数字平台，旨在通过创意与技术的结合，为用户提供一个自由表达、成长、以及尽可能解决情绪的空间。我们相信，娱乐不仅是放松的方式，更是探索和开拓自我的重要途径。无论灰烬，相信每一个灵感火花都值得被点燃，每一个故事都值得被倾听。在这里，用户不仅仅是观众，更是缔造者。我们鼓励每一个人释放自己的创意，通过多种形式展示和分享自己的作品。社区是一个充满活力的交流平台，汇聚来自世界各地的创作者和思想家。你可以与志同道合的人们交流想法，获得反馈，并取得成长、能力提升或任何可能的进步及延伸。无论你是探寻放松身心，还是寻求灵感，希望这里能够成为你的理想地，一片港湾。";
+            document.querySelector('#statement-section h1').textContent = isEnglish ? "Statement" : "声明";
+            document.querySelector('#statement-section p').textContent = isEnglish ?
+                "New Horizon is committed to creating a harmonious, respectful, and inclusive community, where all content and services must adhere to the principle of peaceful coexistence. We hope that every user, while enjoying the creative space provided by the platform, will also treat others with respect and understanding. If you have any questions or believe that certain content infringes on your rights, please contact us through the community, email, or social media. We promise to take every opinion seriously and take necessary measures as soon as possible to ensure the safety and harmony of the platform. If you need to raise a dispute involving local laws, please send a lawyer's letter directly to our designated address, and communicate with the relevant parties quickly to ensure that the dispute is resolved as soon as possible within the legal framework." :
+                "New Horizon 致力于创建一个和谐、尊重与包容的社区，所有内容和服务都应遵循和平共处的原则。我们希望每一位用户在享受平台提供的创意空间时，也能以尊重和理解的态度对待他人。如果您有任何疑问，或者认为某些内容侵犯了您的权益，请通过社区、电子邮件或社交媒体与我们取得联系。我们承诺认真对待每一条意见，并在第一时间采取必要的措施，确保平台的安全与和谐。如需提出涉及当地法律的纠纷，请直接发律师函至我们指定的地址，与相关方迅速沟通，确保在法律框架内尽快解决争议。";
         }
 
         function startExperience() {
