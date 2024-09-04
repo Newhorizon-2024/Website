@@ -193,6 +193,17 @@
             word-wrap: break-word;
         }
 
+        #qr-code-section {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        #qr-code-section img {
+            width: 200px;
+            height: 200px;
+        }
+
         #statement-section {
             position: relative;
             height: 40vh; /* 将声明栏设置为视窗高度的40% */
@@ -283,8 +294,9 @@
         社区是一个充满活力的交流平台，汇聚来自世界各地的创作者和思想家。你可以与志同道合的人们交流想法，获得反馈，并取得成长、能力提升或任何可能的进步及延伸。无论你是探寻放松身心，还是寻求灵感，希望这里能够成为你的理想地，一片港湾。</p>
     </div>
 
-    <div id="qr-code-section" style="display: flex; justify-content: center; margin: 20px 0;">
-    <img src="images/interact-qr-code.png" alt="群二维码" style="width: 200px; height: 200px;">
+    <!-- 添加二维码展示区 -->
+    <div id="qr-code-section">
+        <img src="images/interact-qr-code.png" alt="群二维码">
     </div>
 
     <div id="statement-section">
