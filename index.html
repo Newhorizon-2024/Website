@@ -293,13 +293,14 @@
             <div id="music-song-info">歌曲: 无名曲<br>歌手: 未知艺术家</div>
             <div id="music-controls-bar">
                 <div id="music-controls-left">
-                    <button id="playlist-button">≡</button>
-                    <button id="prev-button">⏮</button>
+                    <button id="prev-button">◁</button>
                 </div>
                 <button id="play-button" onclick="togglePlayPause()">▶</button>
                 <div id="music-controls-right">
-                    <button id="next-button">⏭️</button>
-                    <button id="shuffle-button">🔀</button>
+                    <button id="next-button">▷</button>
+                    <button id="shuffle-button">⇌</button>
+                    <button id="order-button">⥤</button>
+                    <button id="loop-button">∞</button>
                 </div>
             </div>
         </div>
@@ -369,7 +370,7 @@
             const playButton = document.getElementById('play-button');
             if (audio.paused) {
                 audio.play();
-                playButton.textContent = "⏸️";
+                playButton.textContent = "∥";
             } else {
                 audio.pause();
                 playButton.textContent = "▶";
