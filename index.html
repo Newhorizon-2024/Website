@@ -37,7 +37,7 @@
             align-items: center;
             flex-direction: column;
             position: relative;
-            z-index: 3;
+            z-index: 2;
         }
         #background-3d {
             position: fixed;
@@ -51,7 +51,7 @@
             position: fixed;
             width: 50px; /* 缩小感应区域的宽度 */
             height: 100px; /* 缩小感应区域的高度 */
-            z-index: 4;
+            z-index: 1000;
             cursor: pointer;
             background-color: transparent;
         }
@@ -83,7 +83,7 @@
             align-items: center;
             opacity: 0;
             transition: opacity 0.3s ease-out, left 0.3s ease-out, right 0.3s ease-out;
-            z-index: 4;
+            z-index: 1001;
             border-radius: 5px; /* 圆角边框减弱一倍 */
         }
         #volume-controls {
@@ -123,7 +123,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            z-index: 6;
+            z-index: 1; /* 倒计时的z-index为1 */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -137,7 +137,7 @@
             font-size: 3vw;
             font-family: 'Roboto', sans-serif;
             white-space: nowrap;
-            z-index: 6;
+            z-index: 2; /* 确保overlay文本不会被方块遮住 */
         }
         #welcome-message {
             position: absolute;
@@ -148,7 +148,7 @@
             opacity: 0;
             transition: opacity 2.5s ease-in-out;
             white-space: nowrap;
-            z-index: 5;
+            z-index: 1; /* 倒计时的z-index为1 */
             font-size: 3vw;
         }
         #countdown {
@@ -159,7 +159,7 @@
             opacity: 0;
             transition: opacity 2.5s ease-in-out;
             white-space: nowrap;
-            z-index: 1;
+            z-index: 1; /* 确保倒计时文本不会被方块遮住 */
             font-size: 4vw;
         }
         #about-section {
@@ -178,7 +178,7 @@
             justify-content: center;
             align-items: center;
             margin: 50px auto; /* 居中 */
-            z-index: 3;
+            z-index: 2; /* 确保about-section不会被方块遮住 */
             flex-direction: column; /* 使文字居中显示 */
             border-radius: 5px; /* 圆角边框减弱一倍 */
         }
@@ -209,7 +209,7 @@
             justify-content: center;
             align-items: center;
             margin: 50px auto;
-            z-index: 3;
+            z-index: 2;
             flex-direction: column;
             border-radius: 5px;
         }
@@ -229,7 +229,7 @@
             margin: 20px auto;
             width: 150px;
             height: 150px;
-            z-index: 3;
+            z-index: 3; /* 二维码的z-index为3 */
         }
 
         /* Media query for smaller screens */
@@ -474,7 +474,7 @@
             const minutes = String(Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
             const seconds = String(Math.floor((elapsedTime % (1000 * 60)) / 1000)).padStart(2, '0');
 
-            countdownElement.textContent = `${days}:${hours}:${minutes}:${seconds}`;
+            countdownElement.textContent = ${days}:${hours}:${minutes}:${seconds};
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -483,7 +483,7 @@
 
         const canvas = document.getElementById('background-3d');
         const scene = new THREE.Scene();
-        const camera = new.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
