@@ -89,6 +89,8 @@
         #music-controls {
             left: -250px;
             bottom: 10px;
+            width: 400px;  /* 增加宽度 */
+            height: 200px; /* 增加高度，确保文本和图标不重叠 */
         }
         #fullscreen-controls {
             right: -150px;
@@ -110,8 +112,10 @@
             border: none;
             padding: 5px;
             cursor: pointer;
-            font-size: 1.5rem; /* 增大按钮字体尺寸 */
+            font-size: 2rem; /* 增大按钮字体尺寸 */
+            outline: none; /* 移除按钮的默认高亮框 */
         }
+
         #music-controls button:hover {
             color: #d0d0d0;
         }
@@ -121,27 +125,15 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            width: 250px;
+            width: 350px;
+            margin-top: 20px; /* 增加上方空隙，确保按钮在文本下方 */
         }
-        #music-controls-left, #music-controls-right {
-            display: flex;
-            align-items: center;
-        }
+
         #music-song-info {
             position: absolute;
             top: 10px;
             left: 10px;
             color: white;
-        }
-
-        /* 音谱 */
-        #audio-visualizer {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 50px;
-            height: 50px;
-            background-color: black;
         }
 
         #overlay {
@@ -292,19 +284,13 @@
         <div id="music-controls" onmouseenter="clearHideTimeout()" onmouseleave="hideMusicControls()">
             <div id="music-song-info">歌曲: 无名曲<br>歌手: 未知艺术家</div>
             <div id="music-controls-bar">
-                <div id="music-controls-left">
-                    <button id="prev-button">◁</button>
-                </div>
-                <button id="play-button" onclick="togglePlayPause()">▶</button>
-                <div id="music-controls-right">
-                    <button id="next-button">▷</button>
-                    <button id="shuffle-button">⇌</button>
-                    <button id="order-button">⥤</button>
-                    <button id="loop-button">∞</button>
-                </div>
+                <button id="playlist-button">≡</button>
+                <button id="prev-button">◁</button>
+                <button id="play-button" onclick="togglePlayPause()">∥</button>
+                <button id="next-button">▷</button>
+                <button id="play-mode-button" onclick="togglePlayMode()">⥤</button>
             </div>
         </div>
-        <div id="audio-visualizer"></div>
         <div id="fullscreen-sensor" onmouseenter="showFullscreenControls()" onmouseleave="hideFullscreenControls()"></div>
         <div id="fullscreen-controls" onmouseenter="clearHideTimeoutFullscreen()" onmouseleave="hideFullscreenControls()">
             <button onclick="toggleFullScreen()">全屏</button>
@@ -346,6 +332,9 @@
         let hideLanguageTimeout;
         let scrollbarEnabled = true;
         let isEnglish = false;
+        let isPlaying = true;
+        let playModes = ["⥤", "⇌", "∞"];
+        let currentPlayModeIndex = 0;
 
         function showMusicControls() {
             const controls = document.getElementById('music-controls');
@@ -366,15 +355,20 @@
         }
 
         function togglePlayPause() {
-            const audio = document.getElementById('background-music');
             const playButton = document.getElementById('play-button');
-            if (audio.paused) {
-                audio.play();
-                playButton.textContent = "∥";
+            if (isPlaying) {
+                playButton.textContent = "▶"; // 切换到播放符号
             } else {
-                audio.pause();
-                playButton.textContent = "▶";
+                playButton.textContent = "∥"; // 切换到暂停符号
             }
+            isPlaying = !isPlaying; // 切换状态
+        }
+
+        // 切换播放模式
+        function togglePlayMode() {
+            const playModeButton = document.getElementById('play-mode-button');
+            currentPlayModeIndex = (currentPlayModeIndex + 1) % playModes.length;
+            playModeButton.textContent = playModes[currentPlayModeIndex]; // 更新播放模式符号
         }
 
         function showFullscreenControls() {
@@ -449,7 +443,7 @@
 
         function toggleLanguage() {
             isEnglish = !isEnglish;
-            document.getElementById('play-button').textContent = isEnglish ? "Play" : "▶";
+            document.getElementById('play-button').textContent = isEnglish ? "Play" : "∥";
             document.getElementById('fullscreen-controls').querySelector('button').textContent = isEnglish ? "Fullscreen" : "全屏";
             document.getElementById('scrollbar-button').textContent = scrollbarEnabled ? (isEnglish ? "Hide Scrollbar" : "隐藏滚动条") : (isEnglish ? "Show Scrollbar" : "显示滚动条");
             document.getElementById('language-button').textContent = isEnglish ? "Switch Language" : "切换语言";
