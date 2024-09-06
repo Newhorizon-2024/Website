@@ -47,7 +47,7 @@
             height: 100%;
             z-index: 1;
         }
-        #volume-sensor, #fullscreen-sensor, #scrollbar-sensor, #language-sensor {
+        #music-sensor, #fullscreen-sensor, #scrollbar-sensor, #language-sensor {
             position: fixed;
             width: 50px; /* 缩小感应区域的宽度 */
             height: 100px; /* 缩小感应区域的高度 */
@@ -55,7 +55,7 @@
             cursor: pointer;
             background-color: transparent;
         }
-        #volume-sensor {
+        #music-sensor {
             bottom: 10px;
             left: 0;
         }
@@ -71,7 +71,7 @@
             top: 10px;
             right: 0;
         }
-        #volume-controls, #fullscreen-controls, #scrollbar-controls, #language-controls {
+        #music-controls, #fullscreen-controls, #scrollbar-controls, #language-controls {
             position: fixed;
             backdrop-filter: blur(5px); /* 毛玻璃效果减弱一倍 */
             background-color: rgba(40, 40, 40, 0.9); /* 深灰色背景 */
@@ -86,8 +86,8 @@
             z-index: 1001;
             border-radius: 5px; /* 圆角边框减弱一倍 */
         }
-        #volume-controls {
-            left: -150px;
+        #music-controls {
+            left: -250px;
             bottom: 10px;
         }
         #fullscreen-controls {
@@ -102,20 +102,48 @@
             right: -150px;
             top: 10px;
         }
-        #volume-slider {
-            width: 100px;
-            accent-color: #b0b0b0;
-        }
-        #volume-controls button, #fullscreen-controls button, #scrollbar-controls button, #language-controls button {
+
+        /* 音乐控制按钮样式 */
+        #music-controls button {
             color: #b0b0b0;
             background: none;
             border: none;
             padding: 5px;
             cursor: pointer;
+            font-size: 1.5rem; /* 增大按钮字体尺寸 */
         }
-        #volume-controls button:hover, #fullscreen-controls button:hover, #scrollbar-controls button:hover, #language-controls button:hover {
+        #music-controls button:hover {
             color: #d0d0d0;
         }
+
+        /* 音乐控制部件显示 */
+        #music-controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 250px;
+        }
+        #music-controls-left, #music-controls-right {
+            display: flex;
+            align-items: center;
+        }
+        #music-song-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+        }
+
+        /* 音谱 */
+        #audio-visualizer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            background-color: black;
+        }
+
         #overlay {
             position: fixed;
             top: 0;
@@ -260,11 +288,22 @@
         <audio id="background-music" loop>
             <source src="media/loki.flac" type="audio/flac">
         </audio>
-        <div id="volume-sensor" onmouseenter="showVolumeControls()" onmouseleave="hideVolumeControls()"></div>
-        <div id="volume-controls" onmouseenter="clearHideTimeout()" onmouseleave="hideVolumeControls()">
-            <input type="range" id="volume-slider" min="0" max="100" value="50" oninput="adjustVolume(this.value)">
-            <button id="mute-button" onclick="toggleMute()">静音</button>
+        <div id="music-sensor" onmouseenter="showMusicControls()" onmouseleave="hideMusicControls()"></div>
+        <div id="music-controls" onmouseenter="clearHideTimeout()" onmouseleave="hideMusicControls()">
+            <div id="music-song-info">歌曲: 无名曲<br>歌手: 未知艺术家</div>
+            <div id="music-controls-bar">
+                <div id="music-controls-left">
+                    <button id="playlist-button">≡</button>
+                    <button id="prev-button">⏮</button>
+                </div>
+                <button id="play-button" onclick="togglePlayPause()">▶</button>
+                <div id="music-controls-right">
+                    <button id="next-button">⏭️</button>
+                    <button id="shuffle-button">🔀</button>
+                </div>
+            </div>
         </div>
+        <div id="audio-visualizer"></div>
         <div id="fullscreen-sensor" onmouseenter="showFullscreenControls()" onmouseleave="hideFullscreenControls()"></div>
         <div id="fullscreen-controls" onmouseenter="clearHideTimeoutFullscreen()" onmouseleave="hideFullscreenControls()">
             <button onclick="toggleFullScreen()">全屏</button>
@@ -307,16 +346,16 @@
         let scrollbarEnabled = true;
         let isEnglish = false;
 
-        function showVolumeControls() {
-            const controls = document.getElementById('volume-controls');
+        function showMusicControls() {
+            const controls = document.getElementById('music-controls');
             controls.style.left = '10px';
             controls.style.opacity = '1';
         }
 
-        function hideVolumeControls() {
+        function hideMusicControls() {
             hideTimeout = setTimeout(() => {
-                const controls = document.getElementById('volume-controls');
-                controls.style.left = '-150px';
+                const controls = document.getElementById('music-controls');
+                controls.style.left = '-250px';
                 controls.style.opacity = '0';
             }, 1000);
         }
@@ -325,16 +364,16 @@
             clearTimeout(hideTimeout);
         }
 
-        function adjustVolume(value) {
+        function togglePlayPause() {
             const audio = document.getElementById('background-music');
-            audio.volume = value / 100;
-        }
-
-        function toggleMute() {
-            const audio = document.getElementById('background-music');
-            const muteButton = document.getElementById('mute-button');
-            audio.muted = !audio.muted;
-            muteButton.textContent = audio.muted ? "取消静音" : "静音";
+            const playButton = document.getElementById('play-button');
+            if (audio.paused) {
+                audio.play();
+                playButton.textContent = "⏸️";
+            } else {
+                audio.pause();
+                playButton.textContent = "▶";
+            }
         }
 
         function showFullscreenControls() {
@@ -409,7 +448,7 @@
 
         function toggleLanguage() {
             isEnglish = !isEnglish;
-            document.getElementById('mute-button').textContent = isEnglish ? "Mute" : "静音";
+            document.getElementById('play-button').textContent = isEnglish ? "Play" : "▶";
             document.getElementById('fullscreen-controls').querySelector('button').textContent = isEnglish ? "Fullscreen" : "全屏";
             document.getElementById('scrollbar-button').textContent = scrollbarEnabled ? (isEnglish ? "Hide Scrollbar" : "隐藏滚动条") : (isEnglish ? "Show Scrollbar" : "显示滚动条");
             document.getElementById('language-button').textContent = isEnglish ? "Switch Language" : "切换语言";
