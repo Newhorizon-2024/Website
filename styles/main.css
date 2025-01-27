@@ -1,0 +1,496 @@
+/* 自定义滚动条的外观 */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(120deg, #000000, #434343);
+    color: white;
+    overflow-y: auto;
+}
+
+/* 1. 设置滚动条的宽度 */
+::-webkit-scrollbar {
+    width: 12px;  /* 设置滚动条的宽度 */
+}
+
+/* 2. 设置滚动条轨道（背景） */
+::-webkit-scrollbar-track {
+    background: #434343;  /* 轨道颜色 */
+    border-radius: 10px;
+}
+
+/* 3. 设置滚动条滑块（实际可拖动的部分） */
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.6);  /* 设置滑块的颜色 */
+    border-radius: 10px;  /* 圆角 */
+}
+
+/* 4. 当鼠标悬停时，滚动条滑块的颜色改变 */
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 1);  /* 鼠标悬停时不透明 */
+}
+
+#content {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3;
+    cursor: pointer;
+    transition: opacity 2s ease-in-out;
+}
+
+#overlay h2 {
+    color: white;
+    font-size: 3vw;
+    font-family: 'Roboto', sans-serif;
+    white-space: nowrap;
+}
+
+#welcome-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    font-size: 3vw;
+    transition: opacity 2.5s ease-in-out;
+    z-index: 2;
+    white-space: nowrap;  /* 防止文本换行 */
+    overflow: hidden;     /* 超出部分隐藏 */
+    text-overflow: ellipsis;  /* 超出部分显示省略号 */
+    width: 100%;  /* 宽度设置为100%，适应容器 */
+    text-align: center;  /* 居中文本 */
+}
+
+#countdown {
+    position: relative;
+    margin: 20px auto 0 auto;
+    text-align: center;
+    font-size: 4vw;
+    opacity: 0;
+    transition: opacity 2.5s ease-in-out;
+    z-index: 2;
+}
+
+#about-section, #statement-section {
+    position: relative;
+    margin: 50px auto;
+    padding: 20px;
+    width: 80%;
+    background-color: rgba(40, 40, 40, 0.9);
+    backdrop-filter: blur(5px);
+    color: white;
+    text-align: center;
+    font-size: 1.5vw;
+    line-height: 1.5;
+    z-index: 2;
+    border-radius: 5px;
+}
+
+#about-section h1, #statement-section h1 {
+    font-size: 2vw;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+#about-section p, #statement-section p {
+    margin: 0;
+}
+
+#qr-code {
+    display: block;
+    margin: 20px auto;
+    width: 150px;
+    height: 150px;
+}
+
+@media (max-width: 600px) {
+    #overlay h2 {
+        font-size: 6vw;
+    }
+    #welcome-message {
+        font-size: 5vw;
+    }
+    #countdown {
+        font-size: 6vw;
+    }
+    #about-section, #statement-section {
+        font-size: 3.5vw;
+    }
+    #about-section h1, #statement-section h1 {
+        font-size: 4vw;
+    }
+}
+
+/* 赞助商部分 */
+#sponsor-section {
+    padding: 30px 0;
+    text-align: center;
+    background: linear-gradient(120deg, #000000, #434343); /* 渐变背景 */
+    color: white; /* 确保文本是白色的 */
+    margin-top: 50px;
+}
+
+#sponsor-section h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: white; /* 确保标题是白色的 */
+}
+
+/* 控制图片显示 */
+.sponsor-images {
+    display: flex;
+    justify-content: center;
+    gap: 80px;  /* 增加图片之间的距离 */
+    margin-top: 40px;
+    flex-wrap: wrap;  /* 确保图片能换行 */
+}
+
+.sponsor-images img {
+    width: 300px;  /* 默认图片宽度 */
+    height: 200px;  /* 默认图片高度 */
+    object-fit: contain;  /* 保证图片按比例缩放，不会被拉伸 */
+}
+
+/* 竖屏模式下，season 图片显示在第三张 */
+@media (orientation: portrait) {
+    #season-image {
+        order: 3;  /* 将 season 图片放到第三个位置 */
+    }
+}
+
+/* 横屏模式下，season 图片显示在第二张 */
+@media (orientation: landscape) {
+    #season-image {
+        order: 0;  /* 将 season 图片在原位置 */
+    }
+}
+
+/* 调整不同屏幕尺寸下的图片大小 */
+@media (max-width: 1200px) {
+    .sponsor-images img {
+        width: 250px;  /* 中等屏幕下每个图片宽度减少 */
+    }
+
+    .sponsor-images {
+        gap: 50px;  /* 减少图片之间的距离 */
+    }
+}
+
+@media (max-width: 768px) {
+    .sponsor-images img {
+        width: 200px;  /* 小屏幕设备下每个图片宽度进一步减少 */
+    }
+
+    .sponsor-images {
+        gap: 30px;  /* 减少图片之间的距离 */
+    }
+}
+
+@media (max-width: 480px) {
+    .sponsor-images img {
+        width: 150px;  /* 超小屏幕设备下图片宽度进一步调整 */
+    }
+
+    .sponsor-images {
+        gap: 20px;  /* 最小屏幕下减少图片间距 */
+    }
+
+    #sponsor-section h1 {
+        font-size: 1.5em;  /* 小屏幕下标题文字变小 */
+    }
+
+    #sponsor-section {
+        padding: 20px 0;  /* 超小屏幕下减少部件的上下内边距 */
+    }
+}
+
+@media (orientation: landscape) {
+    /* 横屏状态下，确保图片容器的宽度足够容纳所有图片 */
+    .sponsor-images {
+        gap: 20px; /* 在横屏时调整图片间距 */
+    }
+
+    .sponsor-images img {
+        width: 220px;  /* 横屏下减小图片宽度，确保所有图片都能显示 */
+        height: 150px; /* 横屏下适当调整图片高度 */
+    }
+}
+
+/* 鼠标悬浮时改变按钮样式 */
+.toggle-scrollbar-btn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* 导航栏样式 */
+#navbar {
+    display: flex;
+    justify-content: center; /* 居中对齐 */
+    background-color: #333;
+    padding: 10px 0;
+    width: 80%;  /* 与其它部件一致的宽度 */
+    max-width: 1200px; /* 最大宽度 */
+    margin: 0 auto; /* 居中 */
+    position: relative; /* 确保它不是固定的 */
+    margin-top: 50px; /* 确保导航栏与上面的部件有一定的间距 */
+    z-index: 10; /* 确保导航栏在最上层 */
+    gap: 20px;
+}
+
+/* 导航栏的选项卡 */
+.navbar .tab {
+    padding: 10px 20px;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+    flex: 1; /* 使选项卡平均分配空间 */
+    transition: background-color 0.3s;
+}
+
+.navbar .tab:hover {
+    background-color: #444; /* 鼠标悬停时的效果 */
+}
+
+.navbar .tab.bold {
+    font-weight: bold; /* "悬赏令"加粗 */
+}
+
+.navbar .tab.selected {
+    background-color: #555; /* 选中的选项卡 */
+}
+
+/* 给页面内容添加足够的内边距，避免被导航栏遮挡 */
+#content {
+    padding-top: 0px;  /* 留出空间，让内容不被导航栏遮挡 */
+    z-index: 1; /* 确保内容的层级低于导航栏 */
+}
+
+/* 设置部件 */
+#settings-section {
+    display: flex;
+    flex-direction: column; /* 使标题和按钮上下排列 */
+    justify-content: center; /* 居中对齐 */
+    background-color: rgba(40, 40, 40, 0.9); /* 背景颜色与关于信息部件一致 */
+    backdrop-filter: blur(5px); 
+    color: white;
+    margin-top: 5vh; /* 让顶部间距随着屏幕大小变化 */
+    padding: 5vh 0; /* 上下内边距也随着视口变化 */
+    width: 80%;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 9;  /* 确保设置部件在顶部 */
+}
+
+/* 设置标题 */
+#settings-section h1 {
+    font-size: 2.5vw; /* 使标题的字体大小根据视口宽度动态变化 */
+    margin-bottom: 2vh; /* 设置标题与其他内容的间距，使用 vh 让间距自适应 */
+    color: white;  /* 保证标题颜色为白色 */
+    text-align: center;
+}
+
+/* 音乐控制按钮容器 */
+#music-controls {
+    display: flex;  /* 使用 Flexbox 布局 */
+    justify-content: center;  /* 按钮居中对齐 */
+    gap: 3vw;  /* 按钮之间的间距，使用 vw 单位使其随屏幕大小调整 */
+    margin-top: 2vh;
+    font-size: 1.5vw; /* 按钮文字大小动态调整 */
+    width: 100%;
+    z-index: 10; /* 确保按钮位于内容层级 */
+}
+
+/* 音乐控制按钮样式 */
+#music-controls button {
+    padding: 2vh 4vw; /* 按钮内边距，使用 vh 和 vw 使按钮大小自适应 */
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#music-controls button:hover {
+    background-color: #444; /* 鼠标悬停时的效果 */
+}
+
+/* 音量按钮的样式 */
+#volume-btn {
+    background-color: #333;
+    padding: 2vh 4vw;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#volume-btn:hover {
+    background-color: #444;
+}
+
+/* 音量控制条的样式 */
+#volume-slider-container {
+    margin-top: 2vh;
+    display: block;
+    text-align: center;
+}
+
+#volume-slider {
+    width: 25%;
+    margin: 10px 0;
+}
+
+/* 音乐进度条部分 */
+#progress-bar-container {
+    display: flex;  /* 使用 Flexbox 布局 */
+    justify-content: space-between; /* 使已播放时间和剩余时间两端对齐 */
+    align-items: center; /* 垂直居中对齐 */
+    margin-top: 2vh; /* 设置顶部间距 */
+    width: 100%;
+}
+
+#current-time {
+    font-size: 1.5vw; /* 使字体大小根据视口宽度变化 */
+    left: 0;  /* 将已播放时间定位到进度条的左端 */
+    padding-left: 125px;  /* 给左边加一些间距 */
+}
+
+#remaining-time {
+    font-size: 1.5vw; /* 使字体大小根据视口宽度变化 */
+    right: 0;  /* 将剩余时间定位到进度条的右端 */
+    padding-right: 125px;  /* 给右边加一些间距 */
+}
+
+#progress-bar {
+    width: 70%;  /* 使进度条占据大部分宽度 */
+}
+
+/* 歌单部件样式 */
+#playlist-container {
+    display: none;  /* 初始时隐藏歌单 */
+    background: linear-gradient(120deg, #000000, #434343); /* 渐变背景 */
+    color: white;
+    padding: 20px;
+    margin-top: 20px;
+    width: 80%;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+    border-radius: 5px;
+}
+
+/* 歌单列表 */
+#playlist {
+    list-style-type: none;  /* 去掉默认的列表样式 */
+    padding: 0;
+    margin: 0;
+}
+
+#playlist li {
+    padding: 10px;
+    background-color: #333;
+    margin: 5px 0;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+#playlist li:hover {
+    background-color: #444; /* 鼠标悬停时的效果 */
+}
+
+/* 音乐控制按钮容器 */
+#music-controls {
+    display: flex;  /* 使用 Flexbox 布局 */
+    justify-content: center;  /* 按钮居中对齐 */
+    gap: 20px;  /* 按钮之间的间距 */
+    margin-top: 20px;
+    font-size: 1.2em;
+    width: 100%;
+    z-index: 10;
+}
+
+/* 音乐控制按钮样式 */
+#music-controls button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    z-index: 10;
+}
+
+#music-controls button:hover {
+    background-color: #444; /* 鼠标悬停时的效果 */
+    z-index: 10;
+}
+
+#about-section h1 {
+    font-size: 2vw;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+#about-section p {
+    margin: 0;
+}
+
+#qr-code {
+    display: block;
+    margin: 20px auto;
+    width: 150px;
+    height: 150px;
+}
+
+/* 隐藏滚动条按钮的样式 */
+#toggle-scrollbar {
+    position: absolute;  /* 固定在页面右上角 */
+    top: 10px;            /* 距离顶部10px */
+    right: 10px;          /* 距离右边10px */
+    background-color: rgba(0, 0, 0, 0.7); /* 背景色 */
+    color: white;         /* 文字颜色 */
+    border: none;         /* 去掉边框 */
+    padding: 10px 20px;    /* 内边距 */
+    cursor: pointer;      /* 鼠标悬停时显示为指针 */
+    border-radius: 5px;    /* 圆角 */
+    opacity: 0;            /* 初始透明度为0 */
+    transition: opacity 2s ease-in-out;  /* 透明度渐变 */
+    z-index: 9999;         /* 确保按钮显示在最上层 */
+}
+
+/* 鼠标悬浮时按钮背景颜色变化 */
+#toggle-scrollbar:hover {
+    background-color: rgba(0, 0, 0, 0.8); /* 鼠标悬停时背景色变深 */
+}
