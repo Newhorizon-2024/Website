@@ -18,8 +18,8 @@ const playlist = [
     { path: 'media/The Tale of a Cruel World - DM DOKURO.flac', description: '分享自 Arashi' },
     { path: 'media/Stained, Brutal Calamity - DM DOKURO.mp3', description: '分享自 Arashi' },
     { path: 'media/再见深海 (微亮的瞬间) - 唐汉霄.mp3', description: '分享自 Arashi' },
-    { path: 'media/Leave Before You Love Me - Marshmello、Jonas Brothers.mp3', description: '“Cheer up.” 分享自 JACK!BENJAMIN' },
-    { path: 'media/Lose Somebody - Kygo、OneRepublic.mp3', description: '“I am by your side.” 分享自 JACK!BENJAMIN' },
+    { path: 'media/Leave Before You Love Me - Marshmello、Jonas Brothers.flac', description: '“Cheer up.” 分享自 JACK!BENJAMIN' },
+    { path: 'media/Lose Somebody - Kygo、OneRepublic.flac', description: '“I am by your side.” 分享自 JACK!BENJAMIN' },
     { path: 'media/This Years Gonna Hurt - Lost Stars、Aaron Bonus.flac', description: '“Alan.” 分享自 JACK!BENJAMIN' },
     { path: 'media/Starlight - Westlife.mp3', description: '分享自 Julio.' },
     { path: 'media/Its Time - Imagine Dragons.mp3', description: '分享自 Shirley' },
@@ -35,7 +35,9 @@ const playlist = [
     { path: 'media/记忆碎片 - 发条月亮、啊哈、伍六七.mp3', description: '分享自 Laniary' },
     { path: 'media/未竟 - 秦勇、游戏科学、8082Audio.mp3', description: '分享自 Laniary' },
     { path: 'media/Hope - 安室奈美恵.mp3', description: '分享自 Laniary' },
-    { path: 'media/Baby Blue - Badfinger.mp3', description: '分享自 Arashi' }
+    { path: 'media/Baby Blue - Badfinger.mp3', description: '分享自 Arashi' },
+    { path: 'media/Sleep Well - CG5、Kathy-chan、Cami-Cat、Chi-chi.mp3', description: '分享自 Omega' },
+    { path: 'media/Something Else - Pajaro Sunrise.flac', description: '分享自 Mortal' },
 ];
 
 let currentSongIndex = 0; // 默认播放第一首歌曲
