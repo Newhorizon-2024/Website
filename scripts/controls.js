@@ -19,7 +19,7 @@ const playlist = [
     { path: 'media/Stained, Brutal Calamity - DM DOKURO.mp3', description: '分享自 Arashi' },
     { path: 'media/再见深海 (微亮的瞬间) - 唐汉霄.mp3', description: '分享自 Arashi' },
     { path: 'media/Leave Before You Love Me - Marshmello、Jonas Brothers.flac', description: '“Cheer up.” 分享自 JACK!BENJAMIN' },
-    { path: 'media/Lose Somebody - Kygo、OneRepublic.flac', description: '“I am by your side.” 分享自 JACK!BENJAMIN' },
+    { path: 'media/Lose Somebody - Kygo、OneRepublic.mp3', description: '“I am by your side.” 分享自 JACK!BENJAMIN' },
     { path: 'media/This Years Gonna Hurt - Lost Stars、Aaron Bonus.flac', description: '“Alan.” 分享自 JACK!BENJAMIN' },
     { path: 'media/Starlight - Westlife.mp3', description: '分享自 Julio.' },
     { path: 'media/Its Time - Imagine Dragons.mp3', description: '分享自 Shirley' },
