@@ -16,10 +16,29 @@ const playlist = [
     { path: 'media/In Full Swing (游戏内录) - John Paesano.mp3', description: '分享自 Arashi' },
     { path: 'media/History Is Now - Natalie Holt.flac', description: '分享自 UNKNOWN' },
     { path: 'media/The Tale of a Cruel World - DM DOKURO.flac', description: '分享自 Arashi' },
-    { path: 'media/Stained, Brutal Calamity - DM DOKURO.mp3', description: '分享自 Arashi' }
+    { path: 'media/Stained, Brutal Calamity - DM DOKURO.mp3', description: '分享自 Arashi' },
+    { path: 'media/再见深海 (微亮的瞬间) - 唐汉霄.mp3', description: '分享自 Arashi' },
+    { path: 'media/Leave Before You Love Me - Marshmello、Jonas Brothers.flac', description: '“Cheer up.” 分享自 JACK!BENJAMIN' },
+    { path: 'media/Lose Somebody - Kygo、OneRepublic.flac', description: '“I am by your side.” 分享自 JACK!BENJAMIN' },
+    { path: 'media/This Years Gonna Hurt - Lost Stars、Aaron Bonus.flac', description: '“Alan.” 分享自 JACK!BENJAMIN' },
+    { path: 'media/Starlight - Westlife.mp3', description: '分享自 Julio.' },
+    { path: 'media/Its Time - Imagine Dragons.mp3', description: '分享自 Shirley' },
+    { path: 'media/涅槃 (Phoenix) - 英雄联盟.flac', description: '“well done buddy” 分享自 Carter' },
+    { path: 'media/Starlight - Westlife.mp3', description: '分享自 Carter' },
+    { path: 'media/Bye Bye Bye - NSYNC.mp3', description: '分享自 Carter' },
+    { path: 'media/Wish Youd Miss Me - Chase Wright.flac', description: '分享自 Omega' },
+    { path: 'media/Say Hello - Elijah Woods.mp3', description: '“Just go for it!” 分享自 Hubble0714' },
+    { path: 'media/Save Your Tears (Explicit) - The Weeknd.mp3', description: '分享自 Steve' },
+    { path: 'media/I Really Want to Stay at Your House - Samuel Kim、Lorien.mp3', description: '“I hope it can comfort you.” 分享自 Steve' },
+    { path: 'media/Our Own Heaven - Masetti.mp3', description: '分享自 Arashi' },
+    { path: 'media/Infinitely Falling - Fly By Midnight.mp3', description: '分享自 Arashi' },
+    { path: 'media/记忆碎片 - 发条月亮、啊哈、伍六七.mp3', description: '分享自 Laniary' },
+    { path: 'media/未竟 - 秦勇、游戏科学、8082Audio.mp3', description: '分享自 Laniary' },
+    { path: 'media/Hope - 安室奈美恵.mp3', description: '分享自 Laniary' },
+    { path: 'media/Baby Blue - Badfinger.mp3', description: '分享自 Arashi' }
 ];
 
-let currentSongIndex = Math.min(4, playlist.length - 1); // 如果索引超出范围，限制到最大索引
+let currentSongIndex = 0; // 默认播放第一首歌曲
 
 // 播放/暂停功能
 function togglePlayPause() {
