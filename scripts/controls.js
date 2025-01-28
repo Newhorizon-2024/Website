@@ -125,7 +125,7 @@ function loadPlaylist() {
 // 播放指定歌曲
 function playSong(index) {
     currentSongIndex = index;
-    audioElement.src = playlist[currentSongIndex];
+    audioElement.src = playlist[currentSongIndex].path;
     audioElement.play();
     playPauseButton.textContent = '暂停';  // 播放时显示暂停
 }
