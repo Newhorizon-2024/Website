@@ -142,3 +142,48 @@ document.addEventListener('keydown', (event) => {
         showScrollbarButton(); // 重新显示按钮
     }
 });
+
+// 获取所有导航栏的选项卡
+const tabs = document.querySelectorAll("#navbar .tab");
+
+// 滚动到对应的部件
+function scrollToSection(event) {
+    const targetId = event.target.getAttribute("data-target");
+    const targetSection = document.getElementById(targetId);
+
+    if (targetSection) {
+        window.scrollTo({
+            top: targetSection.offsetTop - 50, // 让滚动位置更舒适
+            behavior: "smooth" // 平滑滚动
+        });
+    }
+}
+
+// 绑定点击事件
+tabs.forEach(tab => {
+    tab.addEventListener("click", scrollToSection);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const tabs = document.querySelectorAll("#navbar .tab");
+
+    function scrollToSection(event) {
+        const targetId = event.target.getAttribute("data-target");
+        const targetSection = document.getElementById(targetId);
+
+        if (targetSection) {
+            window.scrollTo({
+                top: targetSection.offsetTop - 50, // 调整滚动位置，避免紧贴顶部
+                behavior: "smooth" // 平滑滚动
+            });
+        } else {
+            console.error(`未找到目标部件: #${targetId}`);
+        }
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", scrollToSection);
+    });
+
+    console.log("导航栏事件监听已绑定");
+});
