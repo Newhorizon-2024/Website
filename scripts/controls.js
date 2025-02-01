@@ -24,7 +24,6 @@ const playlist = [
     { path: 'media/Starlight - Westlife.mp3', description: '分享自 Julio.' },
     { path: 'media/Its Time - Imagine Dragons.mp3', description: '分享自 Shirley' },
     { path: 'media/涅槃 (Phoenix) - 英雄联盟.flac', description: '“well done buddy” 分享自 Carter' },
-    { path: 'media/Starlight - Westlife.mp3', description: '分享自 Carter' },
     { path: 'media/Bye Bye Bye - NSYNC.mp3', description: '分享自 Carter' },
     { path: 'media/Wish Youd Miss Me - Chase Wright.flac', description: '分享自 Omega' },
     { path: 'media/Say Hello - Elijah Woods.mp3', description: '“Just go for it!” 分享自 Hubble0714' },
@@ -38,6 +37,11 @@ const playlist = [
     { path: 'media/Baby Blue - Badfinger.mp3', description: '分享自 Arashi' },
     { path: 'media/Sleep Well - CG5、Kathy-chan、Cami-Cat、Chi-chi.mp3', description: '分享自 Omega' },
     { path: 'media/Something Else - Pajaro Sunrise.flac', description: '分享自 Mortal' },
+    { path: 'media/Neverland - Crywolf、Charity Lane.mp3', description: '“Will you stay for our neverland?” 分享自 Roastedfish' },
+    { path: 'media/Forest Mixtape - Christina Kuong.mp3', description: '“Camellia, see? Ive already-” 分享自 Roastedfish' },
+    { path: 'media/OCD - CG5.flac', description: '分享自 Arashi' },
+    { path: 'media/就要做挑战 - 小潮院长、杜海皇、小傲想睡觉、高斯Goh.mp3', description: '分享自 Arashi' },
+    { path: 'media/给你寄的信 - 小潮院长、杜海皇、小杨Johnson.mp3', description: '分享自 Arashi' }
 ];
 
 let currentSongIndex = 0; // 默认播放第一首歌曲
