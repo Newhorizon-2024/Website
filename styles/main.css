@@ -1,561 +1,745 @@
-/* 自定义滚动条的外观 */
+/* 全局样式 - 设置基础页面外观 */
 body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(120deg, #000000, #434343);
-    color: white;
-    overflow-y: auto;
+    margin: 0; /* 移除页面默认边距 */
+    padding: 0; /* 移除页面默认内边距 */
+    height: 100%; /* 让页面填充整个视口高度 */
+    font-family: 'Roboto', sans-serif; /* 设定全局字体样式 */
+    background: linear-gradient(120deg, #000000, #434343); /* 设置渐变背景 */
+    color: white; /* 设置默认字体颜色 */
+    overflow-y: auto; /* 允许垂直滚动 */
 }
 
-/* 1. 设置滚动条的宽度 */
+/* 滚动条美化 */
+/* 设置滚动条整体宽度 */
 ::-webkit-scrollbar {
-    width: 12px;  /* 设置滚动条的宽度 */
+    width: 12px; /* 设定滚动条宽度 */
 }
 
-/* 2. 设置滚动条轨道（背景） */
+/* 设置滚动条轨道（背景区域） */
 ::-webkit-scrollbar-track {
-    background: #434343;  /* 轨道颜色 */
-    border-radius: 10px;
+    background: #434343; /* 设置滚动条轨道的颜色 */
+    border-radius: 10px; /* 设定轨道的圆角，使滚动条更柔和 */
 }
 
-/* 3. 设置滚动条滑块（实际可拖动的部分） */
+/* 设置滚动条滑块（可拖动的部分） */
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.6);  /* 设置滑块的颜色 */
-    border-radius: 10px;  /* 圆角 */
+    background: rgba(255, 255, 255, 0.6); /* 设定滑块颜色（半透明白色） */
+    border-radius: 10px; /* 设定滑块的圆角 */
+    transition: background 0.3s ease-in-out; /* 添加渐变过渡效果 */
 }
 
-/* 4. 当鼠标悬停时，滚动条滑块的颜色改变 */
+/* 当鼠标悬停时，使滚动条滑块更明显 */
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 1);  /* 鼠标悬停时不透明 */
+    background: rgba(255, 255, 255, 1); /* 鼠标悬停时滑块颜色变白 */
 }
 
+/* 页面主体内容区域 */
 #content {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    position: relative;
-    z-index: 2;
+    position: relative; /* 设定相对定位，确保层级正确 */
+    z-index: 2; /* 设定层级，使内容在背景画布上方 */
+    min-height: 100vh; /* 设定最小高度填充整个视口 */
+    display: flex; /* 采用 Flexbox 布局 */
+    justify-content: center; /* 让内容水平居中 */
+    align-items: center; /* 让内容垂直居中 */
+    flex-direction: column; /* 让子元素垂直排列 */
 }
 
+/* 背景画布（Canvas） */
 canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    pointer-events: none; /* 禁止捕获鼠标和触摸事件 */
+    position: fixed; /* 设定固定定位，覆盖整个页面 */
+    z-index: 1; /* 设定层级，使其在最底层 */
+    top: 0; /* 贴合视口顶部 */
+    left: 0; /* 贴合视口左侧 */
+    width: 100%; /* 让 Canvas 宽度填满整个视口 */
+    height: 100%; /* 让 Canvas 高度填满整个视口 */
+    pointer-events: none; /* 禁止 Canvas 捕获鼠标和触摸事件，确保页面交互正常 */
 }
 
+/* 交互式覆盖层（Overlay） */
 #overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 3;
-    cursor: pointer;
-    transition: opacity 2s ease-in-out;
+    position: fixed; /* 设定固定定位，使其覆盖整个视口 */
+    z-index: 100; /* 设定高层级，确保其显示在所有内容上方 */
+    top: 0; /* 贴合视口顶部 */
+    left: 0; /* 贴合视口左侧 */
+    width: 100%; /* 让 Overlay 宽度填满整个视口 */
+    height: 100%; /* 让 Overlay 高度填满整个视口 */
+    background-color: rgba(0, 0, 0, 0.7); /* 半透明黑色背景，营造模糊遮罩效果 */
+    display: flex; /* 使用 Flexbox 布局，使内容居中 */
+    justify-content: center; /* 让内容水平居中 */
+    align-items: center; /* 让内容垂直居中 */
+    cursor: pointer; /* 鼠标悬停时变为可点击指针 */
+    transition: opacity 2s ease-in-out; /* 设定透明度渐变动画 */
 }
 
+/* Overlay 标题样式 */
 #overlay h2 {
-    color: white;
-    font-size: 3vw;
-    font-family: 'Roboto', sans-serif;
-    white-space: nowrap;
+    font-size: 3vw; /* 根据视口宽度动态调整字体大小 */
+    color: white; /* 设定字体颜色为白色 */
+    font-family: 'Roboto', sans-serif; /* 设定字体 */
+    white-space: nowrap; /* 防止文本换行，保持在一行内显示 */
 }
 
+/* 欢迎信息样式 */
 #welcome-message {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    font-size: 3vw;
-    transition: opacity 2.5s ease-in-out;
-    z-index: 2;
-    white-space: nowrap;  /* 防止文本换行 */
-    overflow: hidden;     /* 超出部分隐藏 */
-    text-overflow: ellipsis;  /* 超出部分显示省略号 */
-    width: 100%;  /* 宽度设置为100%，适应容器 */
-    text-align: center;  /* 居中文本 */
+    position: absolute; /* 设定绝对定位，以便正确居中 */
+    z-index: 2; /* 设定层级，确保欢迎信息不被背景遮挡 */
+    top: 50%; /* 让元素垂直居中 */
+    left: 50%; /* 让元素水平居中 */
+    transform: translate(-50%, -50%); /* 通过 transform 确保真正居中 */
+    text-align: center; /* 让文本居中对齐 */
+    font-size: 3vw; /* 根据视口宽度动态调整字体大小 */
+    opacity: 0; /* 初始状态透明度为 0，避免直接显示 */
+    transition: opacity 2.5s ease-in-out; /* 设定透明度渐变动画 */
+    white-space: nowrap; /* 防止文本自动换行 */
+    overflow: hidden; /* 超出部分隐藏，避免内容超出布局 */
+    text-overflow: ellipsis; /* 如果文本过长，显示省略号 */
+    width: 100%; /* 让欢迎信息适应容器宽度 */
 }
 
+/* 倒计时样式 */
 #countdown {
-    position: relative;
-    margin: 20px auto 0 auto;
-    text-align: center;
-    font-size: 4vw;
-    opacity: 0;
-    transition: opacity 2.5s ease-in-out;
-    z-index: 2;
+    position: relative; /* 设定相对定位，使其在父级容器内调整位置 */
+    z-index: 2; /* 设定层级，确保倒计时显示在前景层 */
+    margin: 20px auto 0 auto; /* 顶部留出间距，并水平居中 */
+    text-align: center; /* 让文本居中对齐 */
+    font-size: 4vw; /* 根据视口宽度动态调整字体大小 */
+    opacity: 0; /* 初始状态透明度为 0，避免直接显示 */
+    transition: opacity 2.5s ease-in-out; /* 透明度渐变，使其平滑出现 */
 }
 
-#about-section, #statement-section {
-    position: relative;
-    margin: 50px auto;
-    padding: 20px;
-    width: 80%;
-    background-color: rgba(40, 40, 40, 0.9);
-    backdrop-filter: blur(5px);
-    color: white;
-    text-align: center;
-    font-size: 1.5vw;
-    line-height: 1.5;
-    z-index: 2;
-    border-radius: 5px;
-}
-
-#about-section h1, #statement-section h1 {
-    font-size: 2vw;
-    margin-bottom: 20px;
-    font-weight: bold;
-}
-
-#about-section p, #statement-section p {
-    margin: 0;
-}
-
-#qr-code {
-    display: block;
-    margin: 20px auto;
-    width: 150px;
-    height: 150px;
-}
-
+/* 响应式适配 - 适配小屏幕 */
 @media (max-width: 600px) {
     #overlay h2 {
-        font-size: 6vw;
+        font-size: 6vw; /* 让 "Click to Start" 文字在小屏幕上更大 */
     }
     #welcome-message {
-        font-size: 5vw;
+        font-size: 5vw; /* 调整欢迎信息字体大小，确保可读性 */
     }
     #countdown {
-        font-size: 6vw;
+        font-size: 6vw; /* 在小屏幕上增大倒计时字体，保证视觉清晰 */
     }
-    #about-section, #statement-section {
-        font-size: 3.5vw;
-    }
-    #about-section h1, #statement-section h1 {
-        font-size: 4vw;
-    }
-}
-
-/* 赞助商部分 */
-#sponsor-section {
-    padding: 30px 0;
-    text-align: center;
-    background: linear-gradient(120deg, #000000, #434343); /* 渐变背景 */
-    color: white; /* 确保文本是白色的 */
-    margin-top: 50px;
-}
-
-#sponsor-section h1 {
-    font-size: 2em;
-    margin-bottom: 20px;
-    color: white; /* 确保标题是白色的 */
-}
-
-/* 控制图片显示 */
-.sponsor-images {
-    display: flex;
-    justify-content: center;
-    gap: 80px;  /* 增加图片之间的距离 */
-    margin-top: 40px;
-    flex-wrap: wrap;  /* 确保图片能换行 */
-}
-
-.sponsor-images img {
-    width: 300px;  /* 默认图片宽度 */
-    height: 200px;  /* 默认图片高度 */
-    object-fit: contain;  /* 保证图片按比例缩放，不会被拉伸 */
-}
-
-/* 竖屏模式下，season 图片显示在第三张 */
-@media (orientation: portrait) {
-    #season-image {
-        order: 3;  /* 将 season 图片放到第三个位置 */
-    }
-}
-
-/* 横屏模式下，season 图片显示在第二张 */
-@media (orientation: landscape) {
-    #season-image {
-        order: 0;  /* 将 season 图片在原位置 */
-    }
-}
-
-/* 调整不同屏幕尺寸下的图片大小 */
-@media (max-width: 1200px) {
-    .sponsor-images img {
-        width: 250px;  /* 中等屏幕下每个图片宽度减少 */
-    }
-
-    .sponsor-images {
-        gap: 50px;  /* 减少图片之间的距离 */
-    }
-}
-
-@media (max-width: 768px) {
-    .sponsor-images img {
-        width: 200px;  /* 小屏幕设备下每个图片宽度进一步减少 */
-    }
-
-    .sponsor-images {
-        gap: 30px;  /* 减少图片之间的距离 */
-    }
-}
-
-@media (max-width: 480px) {
-    .sponsor-images img {
-        width: 150px;  /* 超小屏幕设备下图片宽度进一步调整 */
-    }
-
-    .sponsor-images {
-        gap: 20px;  /* 最小屏幕下减少图片间距 */
-    }
-
-    #sponsor-section h1 {
-        font-size: 1.5em;  /* 小屏幕下标题文字变小 */
-    }
-
-    #sponsor-section {
-        padding: 20px 0;  /* 超小屏幕下减少部件的上下内边距 */
-    }
-}
-
-@media (orientation: landscape) {
-    /* 横屏状态下，确保图片容器的宽度足够容纳所有图片 */
-    .sponsor-images {
-        gap: 20px; /* 在横屏时调整图片间距 */
-    }
-
-    .sponsor-images img {
-        width: 220px;  /* 横屏下减小图片宽度，确保所有图片都能显示 */
-        height: 150px; /* 横屏下适当调整图片高度 */
-    }
-}
-
-/* 鼠标悬浮时改变按钮样式 */
-.toggle-scrollbar-btn:hover {
-    background-color: rgba(0, 0, 0, 0.8);
 }
 
 /* 导航栏样式 */
 #navbar {
-    display: flex;
-    justify-content: center; /* 居中对齐 */
-    background-color: #333;
-    padding: 10px 0;
-    width: 80%;  /* 与其它部件一致的宽度 */
-    max-width: 1200px; /* 最大宽度 */
-    margin: 0 auto; /* 居中 */
-    position: relative; /* 确保它不是固定的 */
-    margin-top: 50px; /* 确保导航栏与上面的部件有一定的间距 */
-    z-index: 10; /* 确保导航栏在最上层 */
-    gap: 20px;
+    position: relative; /* 设定相对定位，确保不会固定在顶部 */
+    z-index: 10; /* 设定层级，使导航栏显示在前景层 */
+    display: flex; /* 采用 Flexbox 布局，使选项均分排列 */
+    justify-content: center; /* 让导航栏内容在水平方向居中 */
+    width: 80%; /* 让导航栏宽度与其它内容区域保持一致 */
+    max-width: 1200px; /* 限制最大宽度，避免过宽 */
+    padding: 10px 0; /* 设定上下内边距，确保选项不会太拥挤 */
+    margin: 50px auto 0 auto; /* 水平居中，并与上方内容保持间距 */
+    background-color: #333; /* 设定导航栏背景颜色 */
+    gap: 20px; /* 控制选项卡之间的间距 */
 }
 
-/* 导航栏的选项卡 */
+/* 导航栏选项卡 */
 .navbar .tab {
-    padding: 10px 20px;
-    color: white;
-    cursor: pointer;
+    display: flex; /* 让文本在选项卡内自动居中 */
+    justify-content: center;
+    align-items: center;
+    flex: 1; /* 让所有选项均分导航栏宽度 */
+    padding: 10px 20px; /* 设定内边距，使选项卡不会太窄 */
+    color: white; /* 设定选项卡文本颜色 */
     text-align: center;
-    flex: 1; /* 使选项卡平均分配空间 */
-    transition: background-color 0.3s;
+    cursor: pointer; /* 鼠标悬停时变为手型，提示可点击 */
+    user-select: none; /* 禁止用户选中文本，优化交互体验 */
+    background-color: transparent; /* 默认背景透明 */
+    transition: background-color 0.3s ease-in-out; /* 让选项卡背景颜色渐变 */
 }
 
+/* 鼠标悬停时的效果 */
 .navbar .tab:hover {
-    background-color: #444; /* 鼠标悬停时的效果 */
+    background-color: #444; /* 鼠标悬停时，背景颜色变深 */
 }
 
-.navbar .tab.bold {
-    font-weight: bold; /* "悬赏令"加粗 */
-}
-
+/* 选中的选项卡样式 */
 .navbar .tab.selected {
-    background-color: #555; /* 选中的选项卡 */
+    background-color: #555; /* 选中的选项卡背景颜色更深 */
 }
 
-/* 给页面内容添加足够的内边距，避免被导航栏遮挡 */
+/* 页面主体内容区域 */
+/* 确保主要内容在正确的层级上，并避免被导航栏或其他元素遮挡 */
 #content {
-    padding-top: 0px;  /* 留出空间，让内容不被导航栏遮挡 */
-    z-index: 1; /* 确保内容的层级低于导航栏 */
+    position: relative; /* 设定相对定位，确保内容相对于文档流 */
+    z-index: 1; /* 设定较低的层级，确保不会覆盖导航栏或其他重要元素 */
+    padding-top: 0px; /* 预留顶部空间，防止内容被遮挡（当前值为 0，可根据需要调整） */
 }
 
 /* 设置部件 */
+/* 该部件用于提供网站的各项功能设置，如音乐播放控制 */
 #settings-section {
-    display: flex;
-    flex-direction: column; /* 使标题和按钮上下排列 */
-    justify-content: center; /* 居中对齐 */
-    background-color: rgba(40, 40, 40, 0.9); /* 背景颜色与关于信息部件一致 */
-    backdrop-filter: blur(5px); 
-    color: white;
-    margin-top: 5vh; /* 让顶部间距随着屏幕大小变化 */
-    padding: 5vh 0; /* 上下内边距也随着视口变化 */
-    width: 80%;
-    max-width: 1200px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 9;  /* 确保设置部件在顶部 */
+    position: relative; /* 设置相对定位，确保不会受绝对定位元素影响 */
+    z-index: 9; /* 设定层级，确保部件显示在正确的前景层 */
+    display: flex; /* 使用 Flexbox 布局，使内部内容自动排列 */
+    flex-direction: column; /* 让子元素垂直排列 */
+    justify-content: center; /* 使子元素在垂直方向上居中对齐 */
+    width: 80%; /* 让部件的宽度与其他主要内容保持一致 */
+    max-width: 1200px; /* 限制最大宽度，确保在大屏幕上不会过宽 */
+    margin: 0 auto; /* 让部件在页面中水平居中 */
+    margin-top: 5vh; /* 设置顶部外边距，使其随视口大小动态调整 */
+    padding: 5vh 0; /* 设置上下内边距，使内部内容更加美观 */
+    background-color: rgba(40, 40, 40, 0.9); /* 设置背景颜色，带有轻微透明度 */
+    backdrop-filter: blur(5px); /* 添加毛玻璃模糊效果 */
+    color: white; /* 设置文本颜色为白色 */
 }
 
 /* 设置标题 */
+/* 该标题用于标识 "设置" 部件的主要作用 */
 #settings-section h1 {
-    font-size: 2.5vw; /* 使标题的字体大小根据视口宽度动态变化 */
-    margin-bottom: 2vh; /* 设置标题与其他内容的间距，使用 vh 让间距自适应 */
-    color: white;  /* 保证标题颜色为白色 */
-    text-align: center;
+    text-align: center; /* 让标题居中对齐 */
+    margin-bottom: 2vh; /* 设置标题与其他内容的间距，使用 vh 让间距随屏幕大小变化 */
+    color: white; /* 设置标题文本颜色，确保在深色背景上可读性良好 */
+    font-size: 2.5vw; /* 让标题的字体大小根据视口宽度动态调整 */
+    font-weight: bold; /* 加粗字体，使标题更加醒目 */
 }
 
 /* 音乐控制按钮容器 */
+/* 该容器存放播放、暂停、上一首、下一首等音乐控制按钮 */
 #music-controls {
-    display: flex;  /* 使用 Flexbox 布局 */
-    justify-content: center;  /* 按钮居中对齐 */
-    gap: 3vw;  /* 按钮之间的间距，使用 vw 单位使其随屏幕大小调整 */
-    margin-top: 2vh;
-    font-size: 1.5vw; /* 按钮文字大小动态调整 */
-    width: 100%;
-    z-index: 10; /* 确保按钮位于内容层级 */
+    position: relative; /* 设定相对定位，确保不会受绝对定位元素影响 */
+    z-index: 10; /* 确保按钮位于页面前景层，避免被其他内容遮挡 */
+    display: flex; /* 启用 Flexbox，使按钮横向排列 */
+    justify-content: center; /* 按钮水平居中对齐 */
+    width: 100%; /* 让按钮容器占满可用宽度 */
+    gap: 3vw; /* 按钮之间的间距，使用 vw 以适应不同屏幕 */
+    margin-top: 2vh; /* 与上方内容保持间距，使用 vh 适配不同屏幕 */
+    font-size: 1.5vw; /* 按钮文本大小随屏幕宽度变化，保证可读性 */
 }
 
 /* 音乐控制按钮样式 */
+/* 设置播放、暂停、上一首、下一首等音乐控制按钮的外观 */
 #music-controls button {
-    padding: 2vh 4vw; /* 按钮内边距，使用 vh 和 vw 使按钮大小自适应 */
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    background-color: #333; /* 按钮默认背景颜色 */
+    color: white; /* 文字颜色 */
+    border: none; /* 移除默认边框 */
+    border-radius: 5px; /* 圆角，使按钮更加平滑 */
+    cursor: pointer; /* 鼠标悬停时显示手型，提示可点击 */
+    transition: background-color 0.3s ease; /* 平滑过渡背景颜色变化 */
+    padding: 2vh 4vw; /* 按钮内边距，使用 vh 和 vw 适配不同屏幕 */
 }
 
+/* 鼠标悬停时按钮效果 */
+/* 让按钮在悬停时颜色加深，提供交互反馈 */
 #music-controls button:hover {
-    background-color: #444; /* 鼠标悬停时的效果 */
+    background-color: #444; /* 鼠标悬停时，背景颜色变深 */
 }
 
 /* 音量按钮的样式 */
+/* 控制音量调节按钮的默认外观 */
 #volume-btn {
-    background-color: #333;
-    padding: 2vh 4vw;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    background-color: #333; /* 按钮默认背景颜色 */
+    color: white; /* 文字颜色 */
+    border: none; /* 移除默认边框 */
+    border-radius: 5px; /* 圆角，使按钮更加平滑 */
+    cursor: pointer; /* 鼠标悬停时显示手型，提示可点击 */
+    transition: background-color 0.3s ease; /* 平滑过渡背景颜色变化 */
+    padding: 2vh 4vw; /* 按钮内边距，使用 vh 和 vw 适配不同屏幕 */
 }
 
+/* 鼠标悬停时的效果 */
+/* 让按钮在悬停时颜色加深，提供交互反馈 */
 #volume-btn:hover {
-    background-color: #444;
+    background-color: #444; /* 鼠标悬停时，背景颜色变深 */
 }
 
-/* 音量控制条的样式 */
+/* 音量控制条的容器 */
+/* 用于包裹音量滑块，使其可以正确显示 */
 #volume-slider-container {
-    margin-top: 2vh;
-    display: block;
-    text-align: center;
+    display: block; /* 让容器可见 */
+    text-align: center; /* 让滑块居中对齐 */
+    margin-top: 2vh; /* 与上方元素保持间距，适配不同屏幕 */
 }
 
+/* 音量滑块的样式 */
+/* 负责控制音量大小 */
 #volume-slider {
-    width: 25%;
-    margin: 10px 0;
+    width: 25%; /* 设定滑块宽度，使其不会占满整个容器 */
+    margin: 10px 0; /* 增加滑块上下间距，使布局更舒适 */
 }
 
 /* 音乐进度条部分 */
+/* 负责显示音乐播放进度，包括已播放时间、进度条、剩余时间 */
 #progress-bar-container {
-    display: flex;  /* 使用 Flexbox 布局 */
-    justify-content: space-between; /* 使已播放时间和剩余时间两端对齐 */
-    align-items: center; /* 垂直居中对齐 */
-    margin-top: 2vh; /* 设置顶部间距 */
-    width: 100%;
+    display: flex; /* 使用 Flexbox 布局 */
+    justify-content: space-between; /* 让已播放时间和剩余时间分别对齐两端 */
+    align-items: center; /* 确保所有元素垂直居中 */
+    width: 100%; /* 让容器充满父级宽度 */
+    margin-top: 2vh; /* 让进度条与上方元素保持间距 */
 }
 
+/* 已播放时间文本 */
+/* 负责显示当前音乐播放时间 */
 #current-time {
-    font-size: 1.5vw; /* 使字体大小根据视口宽度变化 */
-    left: 0;  /* 将已播放时间定位到进度条的左端 */
-    padding-left: 125px;  /* 给左边加一些间距 */
+    font-size: 1.5vw; /* 让字体大小根据视口宽度调整 */
+    left: 0; /* 将文本靠左对齐 */
+    padding-left: 125px; /* 增加左侧间距，防止过于贴近进度条 */
 }
 
+/* 剩余时间文本 */
+/* 负责显示音乐剩余时间 */
 #remaining-time {
-    font-size: 1.5vw; /* 使字体大小根据视口宽度变化 */
-    right: 0;  /* 将剩余时间定位到进度条的右端 */
-    padding-right: 125px;  /* 给右边加一些间距 */
+    font-size: 1.5vw; /* 让字体大小根据视口宽度调整 */
+    right: 0; /* 将文本靠右对齐 */
+    padding-right: 125px; /* 增加右侧间距，防止过于贴近进度条 */
 }
 
+/* 进度条 */
+/* 负责展示音乐播放进度，并允许用户拖动调节进度 */
 #progress-bar {
-    width: 70%;  /* 使进度条占据大部分宽度 */
+    width: 70%; /* 让进度条占据大部分宽度 */
 }
 
 /* 歌单部件样式 */
+/* 控制歌单的整体外观和隐藏/显示效果 */
 #playlist-container {
-    display: none;  /* 初始时隐藏歌单 */
-    background: linear-gradient(120deg, #000000, #434343); /* 渐变背景 */
-    color: white;
-    padding: 20px;
-    margin-top: 20px;
-    width: 80%;
-    max-width: 1200px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 10;
-    border-radius: 5px;
+    position: relative; /* 确保不会被绝对定位的元素影响 */
+    z-index: 10; /* 设定较高的层级，防止被其他内容遮挡 */
+    display: none; /* 初始时隐藏歌单，点击按钮后显示 */
+    background: linear-gradient(120deg, #000000, #434343); /* 设置渐变背景 */
+    color: white; /* 文字颜色 */
+    width: 80%; /* 让歌单区域保持与其它部件一致的宽度 */
+    max-width: 1200px; /* 限制最大宽度，避免过宽 */
+    padding: 20px; /* 适当填充内边距，使内容不贴边 */
+    margin: 20px auto 0 auto; /* 上方保持 20px 间距，水平居中 */
+    border-radius: 5px; /* 让边角稍微圆润，增加美观度 */
 }
 
-/* 歌单列表 */
+/* 歌单列表样式 */
+/* 控制整个歌单列表的基础样式 */
 #playlist {
-    list-style-type: none;  /* 去掉默认的列表样式 */
-    padding: 0;
-    margin: 0;
+    list-style-type: none; /* 去掉默认的项目符号 */
+    padding: 0; /* 移除默认内边距 */
+    margin: 0; /* 移除默认外边距 */
 }
 
+/* 歌单列表项 */
+/* 控制每个歌曲列表项的外观 */
 #playlist li {
-    padding: 10px;
-    background-color: #333;
-    margin: 5px 0;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
+    background-color: #333; /* 默认背景色 */
+    color: white; /* 文字颜色 */
+    padding: 10px; /* 内边距，保持适当的可读性 */
+    margin: 5px 0; /* 每个列表项之间留出 5px 的间距 */
+    cursor: pointer; /* 鼠标悬停时变为可点击状态 */
+    border-radius: 5px; /* 让列表项边角圆润 */
+    transition: background-color 0.3s ease-in-out; /* 平滑的颜色变化效果 */
 }
 
+/* 鼠标悬停时的列表项样式 */
+/* 当用户将鼠标悬停在歌曲上时提供视觉反馈 */
 #playlist li:hover {
-    background-color: #444; /* 鼠标悬停时的效果 */
+    background-color: #444; /* 悬停时背景颜色加深 */
 }
 
 /* 音乐控制按钮容器 */
+/* 负责排列所有音乐播放控制按钮 */
 #music-controls {
-    display: flex;  /* 使用 Flexbox 布局 */
-    justify-content: center;  /* 按钮居中对齐 */
-    gap: 20px;  /* 按钮之间的间距 */
-    margin-top: 20px;
-    font-size: 1.2em;
-    width: 100%;
-    z-index: 10;
+    display: flex; /* 使用 Flexbox 使按钮均匀排列 */
+    justify-content: center; /* 让所有按钮居中对齐 */
+    width: 100%; /* 让按钮容器占满整个可用宽度 */
+    margin-top: 20px; /* 与上方内容留出适当间距 */
+    gap: 20px; /* 设定按钮之间的间距 */
+    font-size: 1.2em; /* 让按钮文本大小适中，增强可读性 */
 }
 
 /* 音乐控制按钮样式 */
+/* 控制所有音乐播放按钮的外观 */
 #music-controls button {
-    padding: 10px 10px;
-    background-color: #333;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    z-index: 10;
+    background-color: #333; /* 默认背景色 */
+    color: white; /* 按钮文字颜色 */
+    padding: 10px 15px; /* 适当的内边距，保证按钮可点击区域足够 */
+    border-radius: 5px; /* 让按钮边角圆润 */
+    border: none; /* 移除默认边框 */
+    cursor: pointer; /* 鼠标悬停时变为可点击状态 */
+    transition: background-color 0.3s ease-in-out; /* 颜色渐变，增强交互体验 */
 }
 
+/* 鼠标悬停时按钮的效果 */
+/* 让按钮在鼠标悬停时提供视觉反馈 */
 #music-controls button:hover {
-    background-color: #444; /* 鼠标悬停时的效果 */
+    background-color: #444; /* 悬停时背景颜色加深 */
+}
+
+/* 适配中等屏幕设备（最大宽度 768px） */
+@media (max-width: 768px) {
+    /* 进度条容器 */
+    #progress-bar-container {
+        max-width: 90%; /* 允许进度条填充更大范围 */
+        padding: 0 6%; /* 减少左右内边距，适配窄屏 */
+    }
+
+    /* 调整时间文本大小 */
+    #current-time, #remaining-time {
+        font-size: 0.9em; /* 让时间文本在小屏幕上缩小，避免占用过多空间 */
+    }
+
+    /* 进度条高度优化 */
+    #progress-bar {
+        height: 6px; /* 降低进度条高度，使其在小屏幕上不显得突兀 */
+    }
+}
+
+/* 适配小屏幕设备（最大宽度 480px） */
+@media (max-width: 480px) {
+    /* 进度条调整 */
+    #progress-bar-container {
+        flex-direction: column; /* 在小屏幕上将进度条和时间文本改为垂直排列 */
+        align-items: stretch; /* 让进度条填满可用宽度 */
+        gap: 1vh; /* 增加时间文本和进度条之间的垂直间距 */
+    }
+
+    /* 让时间文本居中 */
+    #current-time, #remaining-time {
+        font-size: 0.8em; /* 再次缩小时间文本，适配小屏幕 */
+        text-align: center; /* 居中对齐，增强可读性 */
+    }
+
+    /* 进度条适配 */
+    #progress-bar {
+        width: 90%; /* 让进度条更窄，以适应小屏幕 */
+        margin: 0 auto; /* 让进度条在容器中居中 */
+    }
+}
+
+/* 设置部件适配 */
+@media (max-width: 480px) {
+    #settings-section {
+        padding: 4vh 0%; /* 调整内边距，使内容不过度紧凑 */
+    }
+
+    /* 音乐控制按钮优化 */
+    #music-controls button {
+        font-size: 0.7em; /* 缩小按钮文字，适配小屏幕 */
+        padding: 6px 12px; /* 调整按钮大小，避免过大 */
+    }
+
+    /* 调整音量滑块宽度 */
+    #volume-slider {
+        width: 80%; /* 缩小音量滑块宽度，使其适应小屏幕 */
+    }
+
+    /* 歌单容器优化 */
+    #playlist-container {
+        padding: 2vh 3%; /* 调整歌单部件的内边距，避免内容过于拥挤 */
+    }
+
+    /* 设置标题优化 */
+    #settings-section h1 {
+        font-size: 1.5em; /* 让标题在小屏幕上保持合适的比例 */
+    }
+}
+
+/* 新闻部件样式 */
+/* 用于展示 New Horizon 的最新动态 */
+#news-section {
+    position: relative; /* 让 z-index 生效，确保层级控制 */
+    z-index: 10; /* 设定较高的层级，使其不会被背景方块遮挡 */
+    width: 80%; /* 让新闻部件宽度与其他内容保持一致 */
+    max-width: 1200px; /* 限制最大宽度，避免过宽 */
+    padding: 20px; /* 设置内边距，确保内容不会紧贴边界 */
+    margin: 50px auto; /* 让新闻部件在页面中居中，并与上方内容保持间距 */
+    background-color: rgba(40, 40, 40, 0.9); /* 半透明深灰色背景，与其他部件一致 */
+    backdrop-filter: blur(5px); /* 添加毛玻璃效果，提高层次感 */
+    border-radius: 5px; /* 轻微圆角，使边缘更加柔和 */
+    color: white; /* 设定文本颜色为白色 */
+    text-align: center; /* 让内容居中对齐 */
+}
+
+/* 新闻文本样式 */
+/* 让新闻描述段落美观 */
+#news-section p {
+    margin: 0; /* 移除默认边距，使排版更加紧凑 */
+}
+
+/* 新闻图片样式 */
+/* 适配新闻配图 */
+#news {
+    width: 100%; /* 让图片填充整个可用宽度 */
+    max-width: 800px; /* 限制图片最大宽度，避免超出布局 */
+    height: auto; /* 让图片高度按比例缩放，避免变形 */
+    margin-top: 10px; /* 让图片与文本之间保持间距 */
+    border-radius: 0px; /* 圆角，使边缘更加柔和 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* 添加阴影，增加层次感 */
+}
+
+/* 作品部件样式 */
+/* 用于展示 New Horizon 创作的内容 */
+#works-section {
+    position: relative; /* 让 z-index 生效，确保层级控制 */
+    z-index: 10; /* 设定较高的层级，使其不会被背景方块遮挡 */
+    width: 80%; /* 让作品部件宽度与其他内容保持一致 */
+    max-width: 1200px; /* 限制最大宽度，避免超出页面布局 */
+    padding: 20px; /* 设置内边距，确保内容不会紧贴边界 */
+    margin: 50px auto; /* 让作品部件在页面中居中，并与上方内容保持间距 */
+    background-color: rgba(40, 40, 40, 0.9); /* 半透明深灰色背景，与其他部件一致 */
+    backdrop-filter: blur(5px); /* 添加毛玻璃效果，提高层次感 */
+    border-radius: 5px; /* 轻微圆角，使边缘更加柔和 */
+    color: white; /* 设定文本颜色为白色 */
+    text-align: center; /* 让内容居中对齐 */
+}
+
+/* 作品描述文本 */
+/* 控制段落文本的大小和间距 */
+#works-section p {
+    font-size: 1.5vw; /* 根据视口宽度动态调整字体大小，保证可读性 */
+    line-height: 1.5; /* 增加行间距，提高文本可读性 */
+}
+
+/* 作品展示区 */
+/* 设定作品展示布局，确保灵活排布 */
+.works-gallery {
+    display: flex; /* 使用 Flexbox 布局，使作品图片横向排列 */
+    justify-content: center; /* 让作品图片在水平方向居中 */
+    flex-wrap: wrap; /* 允许换行，确保在小屏幕上不会溢出 */
+    gap: 15px; /* 设置图片间距，避免过于紧凑 */
+    margin-top: 20px; /* 让作品展示区域与上方内容保持间距 */
+}
+
+/* 碎碎念部件 */
+/* 用于展示用户的随笔、短语或随意记录 */
+#jabber-section {
+    position: relative; /* 让 z-index 生效，确保层级控制 */
+    z-index: 10; /* 设定较高的层级，避免被背景方块遮挡 */
+    width: 80%; /* 让碎碎念部件宽度与其他内容保持一致 */
+    max-width: 1200px; /* 限制最大宽度，确保布局不会过宽 */
+    padding: 20px; /* 适当的内边距，确保内容不会紧贴边界 */
+    margin: 50px auto; /* 让碎碎念部件在页面中居中，并与上下内容保持间距 */
+    background-color: rgba(40, 40, 40, 0.9); /* 半透明深灰色背景，匹配整体风格 */
+    backdrop-filter: blur(5px); /* 添加毛玻璃效果，增加层次感 */
+    border-radius: 5px; /* 圆角边缘，使视觉更柔和 */
+    color: white; /* 设定文本颜色为白色 */
+    text-align: center; /* 让所有文本居中对齐 */
+}
+
+/* 悬赏令部件 */
+/* 该部件用于展示悬赏任务、公告或挑战 */
+#bounty-board-section {
+    position: relative; /* 让 z-index 生效，确保层级控制 */
+    z-index: 10; /* 设定较高的层级，避免被背景方块遮挡 */
+    width: 80%; /* 让悬赏令部件宽度与其他内容保持一致 */
+    max-width: 1200px; /* 限制最大宽度，确保布局不会过宽 */
+    padding: 20px; /* 适当的内边距，确保内容不会紧贴边界 */
+    margin: 50px auto; /* 让悬赏令部件在页面中居中，并与上下内容保持间距 */
+    background-color: rgba(40, 40, 40, 0.0); /* 半透明深灰色背景，匹配整体风格 */
+    backdrop-filter: blur(0px); /* 添加毛玻璃效果，增加层次感 */
+    border-radius: 5px; /* 圆角边缘，使视觉更柔和 */
+    color: white; /* 设定文本颜色为白色 */
+    text-align: center; /* 让所有文本居中对齐 */
+}
+
+/* 悬赏令部件样式 */
+#wanted-section {
+    background-color: rgba(40, 40, 40, 0.9); /* 统一背景 */
+    backdrop-filter: blur(5px); /* 毛玻璃效果 */
+    color: white;
+    width: 80%;
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+    position: relative;
     z-index: 10;
 }
 
-/* 响应式适配 */
+/* 悬赏令图片容器 */
+.wanted-gallery {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* 允许换行 */
+    gap: 20px; /* 图片间距 */
+    margin-top: 20px;
+}
+
+#bounty-board-section p {
+    font-size: 3em; /* 文字大小调整 */
+    font-weight: bold; /* 加粗君主的文本 */
+    text-align: center; /* 文字居中 */
+    margin: 100px 0; /* 上下间距 10px */
+}
+
+/* 悬赏令图片容器 */
+.bounty-container {
+    display: flex; /* 让图片保持一行两列 */
+    justify-content: center; /* 居中排列 */
+    align-items: center; /* 纵向居中 */
+    gap: 30px; /* 设定图片之间的间距 */
+    flex-wrap: nowrap; /* 确保不会换行 */
+}
+
+/* 悬赏令图片样式 */
+.wanted-poster {
+    width: 300px;  /* 默认宽度 */
+    height: auto;  /* 保持原始比例 */
+    border-radius: 0px; /* 轻微圆角 */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    margin: 0 20px; /* 左右间距 20px */
+}
+
+/* 鼠标悬停时放大效果 */
+.wanted-poster:hover {
+    transform: scale(1.1); /* 放大 1.1 倍 */
+    box-shadow: 0 10px 20px rgba(255, 255, 255, 0.3); /* 添加阴影 */
+}
+
+/* 鼠标悬停时放大 */
+.wanted-poster:hover {
+    transform: scale(1.1);
+}
+
+/* 适配移动设备，确保始终是两列 */
 @media (max-width: 768px) {
-    #progress-bar-container {
-        max-width: 90%; /* 取消最大宽度限制 */
-        padding: 0 6%; /* 减少左右内边距 */
+    .bounty-container {
+        flex-wrap: wrap; /* 小屏幕下自动换行 */
+        gap: 20px;
     }
 
-    #current-time, #remaining-time {
-        font-size: 0.9em; /* 缩小时间文本 */
-    }
-
-    #progress-bar {
-        height: 6px; /* 缩小进度条高度 */
+    .wanted-poster {
+        width: 250px; /* 小屏幕时图片缩小 */
     }
 }
 
 @media (max-width: 480px) {
-    #progress-bar-container {
-        flex-direction: column; /* 小屏幕上垂直排列 */
-        align-items: stretch; /* 水平填充宽度 */
-        gap: 1vh; /* 时间与进度条之间增加垂直间距 */
-    }
-
-    #current-time, #remaining-time {
-        font-size: 0.8em; /* 再次缩小时间文本 */
-        text-align: center; /* 居中对齐 */
-    }
-
-    #progress-bar {
-        width: 90%; /* 缩小进度条宽度 */
-        margin: 0 auto; /* 居中 */
+    .wanted-poster {
+        width: 200px; /* 超小屏幕下进一步缩小 */
     }
 }
 
-    #settings-section {
-        padding: 4vh 0%; /* 缩小内边距 */
-    }
-
-    #music-controls button {
-        font-size: 0.7em; /* 缩小按钮文字 */
-        padding: 6px 12px; /* 调整按钮大小 */
-    }
-
-    #volume-slider {
-        width: 80%; /* 缩小音量滑块宽度 */
-    }
-
-    #playlist-container {
-        padding: 2vh 3%; /* 缩小歌单部件的内边距 */
-    }
-
-@media (max-width: 480px) {
-    #settings-section h1 {
-        font-size: 1.5em; /* 再次缩小标题字体 */
-    }
+/* 关于信息部件 */
+/* 该部件用于展示 New Horizon 的介绍和相关信息 */
+#about-section {
+    position: relative; /* 让 z-index 生效，确保不会被背景方块遮挡 */
+    z-index: 10; /* 设定较高的层级，确保部件处于前景层 */
+    width: 80%; /* 让部件宽度与其他内容保持一致 */
+    max-width: 1200px; /* 限制最大宽度，确保布局不会过宽 */
+    padding: 20px; /* 适当的内边距，确保内容不会紧贴边界 */
+    margin: 50px auto; /* 让部件在页面中居中，并与上下内容保持间距 */
+    background-color: rgba(40, 40, 40, 0.9); /* 半透明深灰色背景，匹配整体风格 */
+    backdrop-filter: blur(5px); /* 添加毛玻璃效果，增加层次感 */
+    border-radius: 5px; /* 圆角边缘，使视觉更柔和 */
+    color: white; /* 设定文本颜色为白色 */
+    text-align: center; /* 让所有文本居中对齐 */
 }
 
-#about-section h1 {
-    font-size: 6vw; /* 默认字体大小 */
-    margin-bottom: 20px;
-    font-weight: bold;
-}
-
-/* 横屏状态下保持固定字体大小 */
-@media (orientation: landscape) {
-    #about-section h1 {
-        font-size: 2em; /* 在横屏状态下固定字体大小 */
-    }
-}
-
-#about-section p {
-    margin: 0;
-}
-
+/* 二维码样式 */
+/* 控制二维码的大小和对齐方式 */
 #qr-code {
-    display: block;
-    margin: 20px auto;
-    width: 150px;
-    height: 150px;
+    display: block; /* 让二维码独占一行，确保其不会受到文本影响 */
+    margin: 20px auto; /* 让二维码水平居中，并与其他内容保持间距 */
+    width: 150px; /* 设定二维码的固定宽度 */
+    height: 150px; /* 设定二维码的固定高度 */
 }
 
-/* 隐藏滚动条按钮的样式 */
+/* 赞助商部分 */
+/* 该部件用于展示 New Horizon 的合作伙伴或支持者 */
+#sponsor-section {
+    padding: 30px 0; /* 适当的内边距，保证内容不会紧贴边界 */
+    margin-top: 50px; /* 与上方内容保持间距 */
+    background: linear-gradient(120deg, #000000, #434343); /* 渐变背景 */
+    color: white; /* 确保文本颜色为白色 */
+    text-align: center; /* 让内容居中对齐 */
+}
+
+/* 赞助商标题 */
+#sponsor-section h1 {
+    font-size: 2em; /* 设定标题字体大小 */
+    margin-bottom: 20px; /* 让标题与内容保持适当间距 */
+    color: white; /* 确保标题颜色为白色 */
+}
+
+/* 赞助商图片容器 */
+.sponsor-images {
+    display: flex; /* 让图片水平排列 */
+    justify-content: center; /* 图片居中对齐 */
+    flex-wrap: wrap; /* 允许换行，确保小屏幕适配 */
+    gap: 80px; /* 设置图片之间的间距 */
+    margin-top: 40px; /* 让图片与标题保持间距 */
+}
+
+/* 赞助商图片样式 */
+.sponsor-images img {
+    width: 300px; /* 默认图片宽度 */
+    height: 200px; /* 默认图片高度 */
+    object-fit: contain; /* 使图片按比例缩放，防止拉伸 */
+}
+
+/* 适配竖屏模式 - 让 season 图片显示在第三张 */
+@media (orientation: portrait) {
+    #season-image {
+        order: 3; /* 调整 season 图片的显示顺序 */
+    }
+}
+
+/* 适配横屏模式 - 让 season 图片显示在第二张 */
+@media (orientation: landscape) {
+    #season-image {
+        order: 0; /* 恢复默认顺序 */
+    }
+}
+
+/* 适配不同屏幕尺寸，调整图片大小 */
+@media (max-width: 1200px) {
+    .sponsor-images img {
+        width: 250px; /* 中等屏幕减少图片大小 */
+    }
+    .sponsor-images {
+        gap: 50px; /* 减少图片间距 */
+    }
+}
+
+@media (max-width: 768px) {
+    .sponsor-images img {
+        width: 200px; /* 小屏幕进一步缩小图片 */
+    }
+    .sponsor-images {
+        gap: 30px; /* 进一步减少图片间距 */
+    }
+}
+
+@media (max-width: 480px) {
+    .sponsor-images img {
+        width: 150px; /* 超小屏幕缩小图片尺寸 */
+    }
+    .sponsor-images {
+        gap: 20px; /* 适配最小屏幕 */
+    }
+    #sponsor-section h1 {
+        font-size: 1.5em; /* 缩小标题字体，适配小屏幕 */
+    }
+    #sponsor-section {
+        padding: 20px 0; /* 适配小屏幕，减少上下内边距 */
+    }
+}
+
+/* 横屏模式下，确保所有图片都能显示 */
+@media (orientation: landscape) {
+    .sponsor-images {
+        gap: 20px; /* 横屏时调整图片间距 */
+    }
+    .sponsor-images img {
+        width: 220px; /* 适当缩小横屏下的图片宽度 */
+        height: 150px; /* 调整高度，避免占据过多空间 */
+    }
+}
+
+/* 隐藏滚动条按钮样式 */
 #toggle-scrollbar {
-    position: absolute;  /* 固定在页面右上角 */
-    top: 10px;            /* 距离顶部10px */
-    right: 10px;          /* 距离右边10px */
-    background-color: rgba(0, 0, 0, 0.7); /* 背景色 */
-    color: white;         /* 文字颜色 */
-    border: none;         /* 去掉边框 */
-    padding: 10px 20px;    /* 内边距 */
-    cursor: pointer;      /* 鼠标悬停时显示为指针 */
-    border-radius: 5px;    /* 圆角 */
-    opacity: 0;            /* 初始透明度为0 */
-    transition: opacity 2s ease-in-out;  /* 透明度渐变 */
-    z-index: 9999;         /* 确保按钮显示在最上层 */
+    position: absolute; /* 让按钮固定在页面右上角 */
+    z-index: 100; /* 确保按钮始终可见 */
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7); /* 半透明背景 */
+    color: white; /* 文字颜色 */
+    border: none; /* 移除边框 */
+    padding: 10px 20px; /* 按钮大小 */
+    border-radius: 5px; /* 设定圆角 */
+    cursor: pointer; /* 让鼠标悬停时变为手型 */
+    opacity: 0; /* 初始状态隐藏 */
+    transition: opacity 2s ease-in-out; /* 透明度渐变 */
 }
 
-/* 鼠标悬浮时按钮背景颜色变化 */
-#toggle-scrollbar:hover {
-    background-color: rgba(0, 0, 0, 0.8); /* 鼠标悬停时背景色变深 */
+/* 鼠标悬浮时按钮的样式 */
+.toggle-scrollbar:hover {
+    background-color: rgba(0, 0, 0, 0.8); /* 鼠标悬停时背景加深 */
 }
