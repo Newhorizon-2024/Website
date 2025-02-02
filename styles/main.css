@@ -574,7 +574,7 @@ canvas {
     height: auto;  /* 保持原始比例 */
     border-radius: 0px; /* 轻微圆角 */
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    margin: 0 20px; /* 左右间距 20px */
+    margin: 20px 20px; /* 左右间距 20px */
 }
 
 /* 鼠标悬停时放大效果 */
