@@ -41,8 +41,8 @@ const playlist = [
     { path: 'media/Forest Mixtape - Christina Kuong.mp3', description: '“Camellia, see? Ive already-” 分享自 Roastedfish' },
     { path: 'media/From The Ground Up - Laura Shigihara.flac', description: '分享自 Roastedfish' },
     { path: 'media/OCD - CG5.flac', description: '分享自 Arashi' },
-    { path: 'media/就要做挑战 - 小潮院长、杜海皇、小傲想睡觉、高斯Goh.mp3', description: '分享自 Arashi' },
-    { path: 'media/给你寄的信 - 小潮院长、杜海皇、小杨Johnson.mp3', description: '分享自 Arashi' }
+    { path: 'media/就要做挑战 - 小潮院长、杜海皇、小傲想睡觉、高斯Goh.mp3', description: '分享自 小潮tEam' },
+    { path: 'media/给你寄的信 - 小潮院长、杜海皇、小杨Johnson.mp3', description: '分享自 小潮tEam' }
 ];
 
 let currentSongIndex = 0; // 默认播放第一首歌曲
