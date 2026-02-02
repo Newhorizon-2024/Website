@@ -296,6 +296,15 @@ function loadPlaylist() {
         // 点击播放
         listItem.addEventListener('click', () => playSong(index));
         playlistList.appendChild(listItem);
+
+        // ⭐ 手机端：点击歌曲项时切换按钮显示 
+        listItem.addEventListener('touchstart', () => { 
+            if (loginBtn.style.display === "none" || loginBtn.style.display === "") { 
+                loginBtn.style.display = "inline-block"; 
+            } else { 
+                loginBtn.style.display = "none"; 
+            } 
+        });
     });
 
 }
