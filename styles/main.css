@@ -98,9 +98,10 @@ canvas {
 
 /* 倒计时样式 */
 #countdown {
-    position: absolute; /* 让倒计时在 `#content` 内绝对定位 */
-    top: 43%; /* 让它始终在 `#content` 垂直居中 */
-    left: 39%; /* 让它始终在 `#content` 水平居中 */
+    position: absolute; /* 让它脱离普通文档流 */ 
+    top: 50%; /* 垂直居中 */ 
+    left: 50%; /* 水平居中 */
+    transform: translate(-50%, -50%); /* 修正偏移 */
     z-index: 2; /* 设定层级，确保倒计时显示在前景层 */
     margin: 20px auto 0 auto; /* 顶部留出间距，并水平居中 */
     text-align: center; /* 让文本居中对齐 */
@@ -796,3 +797,4 @@ canvas {
 #back-to-home:hover {
     background-color: #444; /* 鼠标悬停时的颜色 */
 }
+
