@@ -1,6 +1,10 @@
 function startExperience() {
     const audio = document.getElementById('background-music');
-    audio.play();
+
+    // 用户点击后才播放
+    audio.play().catch(err => {
+        console.log("浏览器阻止了自动播放，需要用户交互:", err);
+    });
 
     const overlayElement = document.getElementById('overlay');
     overlayElement.style.opacity = 0;
@@ -19,8 +23,8 @@ function showWelcomeMessage() {
             setTimeout(() => {
                 showCountdown();
             }, 2500);
-        }, 1000); // Pause for 1 second before fading out
-    }, 2500); // Fade in duration
+        }, 1000);
+    }, 2500);
 }
 
 function showCountdown() {
@@ -33,3 +37,9 @@ function showCountdown() {
 
 // 挂载到 window 对象上
 window.startExperience = startExperience;
+
+// 关键：让 overlay 点击时触发 startExperience
+document.addEventListener("DOMContentLoaded", () => {
+    const overlayElement = document.getElementById('overlay');
+    overlayElement.addEventListener("click", startExperience);
+});
