@@ -13,7 +13,7 @@
 
     <div id="content">
         <audio id="background-music" loop>
-            <source src="media/In Full Swing (游戏内录) - John Paesano.mp3" type="audio/flac">
+            <source src="media/History Is Now - Iván Cairo.mp3" type="audio/mp3">
         </audio>
 
         <!-- 覆盖层，点击后开始体验 -->
@@ -33,11 +33,10 @@
 
 <!-- 导航栏 -->
 <div id="navbar">
-    <div class="tab" data-target="settings-section">设置</div>
-    <div class="tab" data-target="news-section">新闻</div>
-    <div class="tab" data-target="works-section">作品</div>
     <div class="tab" data-target="jabber-section">碎碎念</div>
     <div class="tab bold" data-target="bounty-board-section">悬赏令</div>
+    <div class="tab" data-target="works-section">作品</div>
+
 </div>
 
 <!-- 设置部件 -->
@@ -74,6 +73,66 @@
     <div class="subtitle" id="break-time-subtitle" style="display: none;">It's break time.</div>
     </div>
 
+    <!--作品部件-->
+    <div id="works-section" class="section">
+        <h1>作品</h1>
+        <h2 id="works-subtitle">探索 New Horizon 创作的内容</h2> <!-- 副标题 -->
+        <p>这里展示 New Horizon 社区发布的作品，包括艺术、动画和更多创意内容。</p>
+    <div class="works-gallery">
+        <p>敬请期待。</p>
+    </div>    
+</div>
+
+    <!-- 碎碎念部件 -->
+    <div id="jabber-section" class="section">
+        <h1>碎碎念</h1>
+        <p>不定期更新，随缘碎碎念。</p>
+        <p>这里是随手记录的想法、灵感和一些小情绪。</p>
+        <p>可向社区群聊/邮箱提交碎碎念进行发布。</p>
+        <p>有特殊要求者，可以匿名发布。</p>
+    </div>
+
+    <!-- 悬赏令部件 -->
+    <div id="bounty-board-section" class="section">
+        <h1>悬赏令</h1>
+
+        <p class="bounty-rank">魔君</p>
+        <div class="bounty-container">
+            <img src="images/wanted/？-wanted.png" alt="?" class="wanted-poster">
+        </div>
+
+        <p class="bounty-rank">君主</p>
+        <div class="bounty-container">
+            <img src="images/wanted/jack!benjamin-wanted.png" alt="JACK!BENJAMIN" class="wanted-poster">
+            <img src="images/wanted/astro-wanted-2025112.png" alt="Astro" class="wanted-poster">
+            <img src="images/wanted/arashi-wanted-2025921.png" alt="Arashi" class="wanted-poster">
+        </div>
+
+        <p class="bounty-rank">Grayash</p>
+            <img src="images/wanted/carter-wanted.png" alt="Carter" class="wanted-poster">
+            <img src="images/wanted/crimson-wanted-2026110.png" alt="Crimson" class="wanted-poster">
+            <img src="images/wanted/darkmater-wanted-20251026.png" alt="DarkMater" class="wanted-poster">
+            <img src="images/wanted/diamond_block-wanted-20251116.png" alt="Diamond_Block" class="wanted-poster">
+            <img src="images/wanted/enkhrud-wanted.png" alt="Enkhrud" class="wanted-poster">
+            <img src="images/wanted/frank-wanted.png" alt="Frank" class="wanted-poster">
+            <img src="images/wanted/hubble0714-wanted.png" alt="Hubble0714" class="wanted-poster">
+            <img src="images/wanted/julio-wanted.png" alt="Julio" class="wanted-poster">
+            <img src="images/wanted/laniary-wanted-202614.png" alt="Laniary" class="wanted-poster">
+            <img src="images/wanted/li_mi-wanted-2025918.png" alt="Li_Mi" class="wanted-poster">
+            <img src="images/wanted/lightpunk-wanted.png" alt="LightPunk" class="wanted-poster">
+            <img src="images/wanted/roastedfish-wanted.png" alt="Roastedfish" class="wanted-poster">
+            <img src="images/wanted/seren-s-evans-wanted.png" alt="Seren S Evans" class="wanted-poster">
+            <img src="images/wanted/shirley-wanted.png" alt="Shirley" class="wanted-poster">
+            <img src="images/wanted/steve-wanted.png" alt="Steve" class="wanted-poster">
+            <img src="images/wanted/mgal_lay-wanted-20251016.png" alt="MgAl_Lay" class="wanted-poster">
+            <img src="images/wanted/mortal-wanted-2025914.png" alt="Mortal" class="wanted-poster">
+            <img src="images/wanted/omega-g-wanted.png" alt="Omega" class="wanted-poster">
+            <img src="images/wanted/kret-alpha-g-wanted.png" alt="Alpha" class="wanted-poster">
+        <p class="bounty-rank">···</p>
+    </div>
+
+    <button id="back-to-home">返回主页</button>
+
     <!-- 新增新闻部件 -->
     <div id="news-section">
         <h1>新闻</h1>
@@ -81,64 +140,6 @@
         <img id="news" src="images/news/20250206-news.png" alt="新闻">
         <p>敬请期待。</p>
     </div>
-
-    <!-- 新增作品部件 -->
-    <div id="works-section">
-        <h1>作品</h1>
-        <h2 id="works-subtitle">探索 New Horizon 创作的内容</h2> <!-- 副标题 -->
-        <p>这里展示 New Horizon 社区发布的作品，包括艺术、动画和更多创意内容。</p>
-    <div class="works-gallery">
-        <p>敬请期待。</p>
-    </div>
-</div>
-
-<!-- 碎碎念部件 -->
-<div id="jabber-section">
-    <h1>碎碎念</h1>
-    <p>不定期更新，随缘碎碎念。</p>
-    <p>这里是随手记录的想法、灵感和一些小情绪。</p>
-    <p>可向社区群聊/邮箱提交碎碎念进行发布。</p>
-    <p>有特殊要求者，可以匿名发布。</p>
-</div>
-
-<!-- 悬赏令部件 -->
-<div id="bounty-board-section">
-    <h1>悬赏令</h1>
-
-    <p class="bounty-rank">魔君</p>
-    <div class="bounty-container">
-        <img src="images/wanted/？-wanted.png" alt="?" class="wanted-poster">
-    </div>
-
-    <p class="bounty-rank">君主</p>
-    <div class="bounty-container">
-        <img src="images/wanted/jack!benjamin-wanted.png" alt="JACK!BENJAMIN" class="wanted-poster">
-        <img src="images/wanted/astro-wanted.png" alt="Astro" class="wanted-poster">
-        <img src="images/wanted/arashi-wanted.png" alt="Arashi" class="wanted-poster">
-    </div>
-
-    <p class="bounty-rank">君烬</p>
-        <img src="images/wanted/carter-wanted.png" alt="Carter" class="wanted-poster">
-        <img src="images/wanted/crimson-wanted.png" alt="Crimson" class="wanted-poster">
-        <img src="images/wanted/enkhrud-wanted.png" alt="Enkhrud" class="wanted-poster">
-        <img src="images/wanted/frank-wanted.png" alt="Frank" class="wanted-poster">
-        <img src="images/wanted/hubble0714-wanted.png" alt="Hubble0714" class="wanted-poster">
-        <img src="images/wanted/julio-wanted.png" alt="Julio" class="wanted-poster">
-        <img src="images/wanted/laniary-wanted.png" alt="Laniary" class="wanted-poster">
-        <img src="images/wanted/lightpunk-wanted.png" alt="LightPunk" class="wanted-poster">
-        <img src="images/wanted/roastedfish-wanted.png" alt="Roastedfish" class="wanted-poster">
-        <img src="images/wanted/seren-s-evans-wanted.png" alt="Seren S Evans" class="wanted-poster">
-        <img src="images/wanted/shirley-wanted.png" alt="Shirley" class="wanted-poster">
-        <img src="images/wanted/steve-wanted.png" alt="Steve" class="wanted-poster">
-    <p class="bounty-rank">···</p>
-    <p class="bounty-rank">灰烬</p>
-        <img src="images/wanted/mortal-wanted.png" alt="Mortal" class="wanted-poster">
-        <img src="images/wanted/omega-g-wanted.png" alt="Omega" class="wanted-poster">
-        <img src="images/wanted/kret-alpha-g-wanted.png" alt="Alpha" class="wanted-poster">
-    <p class="bounty-rank">···</p>
-    <p class="bounty-rank">余烬</p>
-    <p class="bounty-rank">···</p>
-</div>
 
     <!-- 关于 New Horizon 部件 -->
     <div id="about-section">
