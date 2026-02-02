@@ -98,16 +98,12 @@ canvas {
 
 /* 倒计时样式 */
 #countdown {
-    position: absolute; /* 让它脱离普通文档流 */ 
-    top: 50%; /* 垂直居中 */ 
-    left: 50%; /* 水平居中 */
-    transform: translate(-50%, -50%); /* 修正偏移 */
-    z-index: 2; /* 设定层级，确保倒计时显示在前景层 */
-    margin: 20px auto 0 auto; /* 顶部留出间距，并水平居中 */
-    text-align: center; /* 让文本居中对齐 */
-    font-size: 4vw; /* 根据视口宽度动态调整字体大小 */
-    opacity: 0; /* 初始状态透明度为 0，避免直接显示 */
-    transition: opacity 2.5s ease-in-out; /* 透明度渐变，使其平滑出现 */
+    position: relative;           /* 不用 absolute */
+    margin-top: 20px;             /* 和欢迎信息保持间距 */
+    text-align: center;
+    font-size: 4vw;
+    opacity: 0;
+    transition: opacity 2.5s ease-in-out;
 }
 
 /* 响应式适配 - 适配小屏幕 */
@@ -797,4 +793,5 @@ canvas {
 #back-to-home:hover {
     background-color: #444; /* 鼠标悬停时的颜色 */
 }
+
 
