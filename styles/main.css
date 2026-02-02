@@ -98,7 +98,9 @@ canvas {
 
 /* 倒计时样式 */
 #countdown {
-    position: relative; /* 设定相对定位，使其在父级容器内调整位置 */
+    position: absolute; /* 让倒计时在 `#content` 内绝对定位 */
+    top: 43%; /* 让它始终在 `#content` 垂直居中 */
+    left: 39%; /* 让它始终在 `#content` 水平居中 */
     z-index: 2; /* 设定层级，确保倒计时显示在前景层 */
     margin: 20px auto 0 auto; /* 顶部留出间距，并水平居中 */
     text-align: center; /* 让文本居中对齐 */
@@ -361,6 +363,40 @@ canvas {
     background-color: #444; /* 悬停时背景颜色加深 */
 }
 
+#playlist li {
+    display: flex;
+    justify-content: space-between; /* 左右分散对齐 */
+    align-items: center;            /* 垂直居中 */
+}
+
+.login-song-btn {
+    display: none;                 /* 默认隐藏 */
+    background: #3a3a3a;           /* 深灰色 */
+    color: white;                  /* 白字 */
+    border: none;
+    border-radius: 6px;            /* 小圆角 */
+    padding: 3px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+#playlist li:hover .login-song-btn {
+    display: inline-block;         /* 悬停歌曲时出现 */
+}
+
+.login-song-btn:hover {
+    background: #505050;           /* 悬停更亮一点 */
+    transform: translateY(-1px);   /* 微微上浮 */
+}
+
+/* 分隔线不使用 flex 布局 */
+.playlist-separator {
+    display: block !important;
+    text-align: center;
+}
+
+
 /* 适配中等屏幕设备（最大宽度 768px） */
 @media (max-width: 768px) {
     /* 进度条容器 */
@@ -466,6 +502,7 @@ canvas {
 /* 作品部件样式 */
 /* 用于展示 New Horizon 创作的内容 */
 #works-section {
+    display: none;
     position: relative; /* 让 z-index 生效，确保层级控制 */
     z-index: 10; /* 设定较高的层级，使其不会被背景方块遮挡 */
     width: 80%; /* 让作品部件宽度与其他内容保持一致 */
@@ -499,6 +536,7 @@ canvas {
 /* 碎碎念部件 */
 /* 用于展示用户的随笔、短语或随意记录 */
 #jabber-section {
+    display: none;
     position: relative; /* 让 z-index 生效，确保层级控制 */
     z-index: 10; /* 设定较高的层级，避免被背景方块遮挡 */
     width: 80%; /* 让碎碎念部件宽度与其他内容保持一致 */
@@ -515,6 +553,7 @@ canvas {
 /* 悬赏令部件 */
 /* 该部件用于展示悬赏任务、公告或挑战 */
 #bounty-board-section {
+    display: none;
     position: relative; /* 让 z-index 生效，确保层级控制 */
     z-index: 10; /* 设定较高的层级，避免被背景方块遮挡 */
     width: 80%; /* 让悬赏令部件宽度与其他内容保持一致 */
@@ -581,11 +620,6 @@ canvas {
 .wanted-poster:hover {
     transform: scale(1.1); /* 放大 1.1 倍 */
     box-shadow: 0 10px 20px rgba(255, 255, 255, 0.3); /* 添加阴影 */
-}
-
-/* 鼠标悬停时放大 */
-.wanted-poster:hover {
-    transform: scale(1.1);
 }
 
 /* 适配移动设备，确保始终是两列 */
@@ -742,4 +776,23 @@ canvas {
 /* 鼠标悬浮时按钮的样式 */
 .toggle-scrollbar:hover {
     background-color: rgba(0, 0, 0, 0.8); /* 鼠标悬停时背景加深 */
+}
+
+/* 返回按钮样式 */
+#back-to-home {
+    display: block; /* 让按钮独占一行 */
+    margin: 40px auto; /* 上下 20px 间距，水平居中 */
+    padding: 10px 20px; /* 设置内边距，使按钮更大 */
+    background-color: #333; /* 按钮背景色 */
+    color: white; /* 按钮文字颜色 */
+    border: none; /* 去除默认边框 */
+    border-radius: 5px; /* 圆角 */
+    font-size: 1.2em; /* 设置字体大小 */
+    cursor: pointer; /* 鼠标悬停时变成手型 */
+    transition: background-color 0.3s ease; /* 颜色渐变 */
+}
+
+/* 鼠标悬停时的样式 */
+#back-to-home:hover {
+    background-color: #444; /* 鼠标悬停时的颜色 */
 }
