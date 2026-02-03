@@ -96,7 +96,6 @@ canvas {
     width: 100%; /* 让欢迎信息适应容器宽度 */
 }
 
-/* 倒计时样式 */
 #countdown {
     position: absolute;
     top: 50%;               /* 稍微比欢迎信息低一点 */
@@ -384,17 +383,28 @@ canvas {
     display: inline-block;         /* 悬停歌曲时出现 */
 }
 
-.login-song-btn:hover {
-    background: #505050;           /* 悬停更亮一点 */
-    transform: translateY(-1px);   /* 微微上浮 */
-}
-
 /* 分隔线不使用 flex 布局 */
 .playlist-separator {
     display: block !important;
     text-align: center;
 }
 
+.login-song-btn:hover {
+    background: #505050;           /* 悬停更亮一点 */
+    transform: translateY(-1px);   /* 微微上浮 */
+}
+
+.login-song-btn {
+    opacity: 0;                /* 初始透明 */
+    transform: scale(0.8);     /* 初始缩小一点 */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* 渐变效果 */
+    margin-left: 10px;
+}
+
+li:hover .login-song-btn {
+    opacity: 1;                /* 悬停时完全显示 */
+    transform: scale(1);       /* 悬停时恢复正常大小 */
+}
 
 /* 适配中等屏幕设备（最大宽度 768px） */
 @media (max-width: 768px) {
@@ -795,6 +805,3 @@ canvas {
 #back-to-home:hover {
     background-color: #444; /* 鼠标悬停时的颜色 */
 }
-
-
-
