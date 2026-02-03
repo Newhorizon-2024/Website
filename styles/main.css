@@ -450,6 +450,11 @@ li:hover .login-song-btn {
         padding: 4vh 0%; /* 调整内边距，使内容不过度紧凑 */
     }
 
+    #music-controls { 
+        transform: scale(0.9); /* 缩小到 90% */ 
+        transform-origin: center; /* 缩放基点在顶部居中 */
+    }
+
     /* 音乐控制按钮优化 */
     #music-controls button {
         font-size: 0.7em; /* 缩小按钮文字，适配小屏幕 */
@@ -802,4 +807,3 @@ li:hover .login-song-btn {
 #back-to-home:hover {
     background-color: #444; /* 鼠标悬停时的颜色 */
 }
-
