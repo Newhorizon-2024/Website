@@ -14,9 +14,6 @@ const remainingTimeDisplay = document.getElementById('remaining-time');
 // 音乐播放列表（可以根据需要添加更多歌曲）
 const playlist = [
     { separator: true, label: "— 推荐的登录曲 —" },
-
-    // 空白歌名置底
-    { path: 'media/ ', description: `暂无` },
     
     { separator: true, label: "— BOSSRUSH —" },
 
@@ -343,3 +340,4 @@ window.addEventListener("load", () => {
         audioElement.play();
     }
 });
+
