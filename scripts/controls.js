@@ -316,10 +316,10 @@ function loadPlaylist() {
 function playSong(index) {
     currentSongIndex = index;
     audioElement.src = playlist[currentSongIndex].path;
-    audioElement.play();
-    playPauseButton.textContent = '暂停';  // 播放时显示暂停
-
-    //  根据歌曲设置背景速度倍率（Boss Rush 加速）
+    audioElement.play().catch(err => {
+        console.log("自动播放失败，需要用户点击播放按钮:", err);
+    });
+    playPauseButton.textContent = '暂停';
     globalSpeedMultiplier = playlist[currentSongIndex].speedMultiplier || 1;
 }
 
@@ -333,11 +333,8 @@ window.addEventListener("load", () => {
     const saved = localStorage.getItem("defaultLoginSong");
 
     if (saved !== null) {
-        // 用户设置过登录曲 → 播放用户的
-        playSong(parseInt(saved));
-    } else {
-        // 用户没有设置 → 播放官方默认歌曲（HTML 中的 source）
-        audioElement.play();
+        currentSongIndex = parseInt(saved);
+        audioElement.src = playlist[currentSongIndex].path;
+        // 等用户点击播放按钮时才开始
     }
 });
-
