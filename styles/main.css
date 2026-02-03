@@ -367,18 +367,6 @@ canvas {
     align-items: center;            /* 垂直居中 */
 }
 
-.login-song-btn {
-    display: none;                 /* 默认隐藏 */
-    background: #3a3a3a;           /* 深灰色 */
-    color: white;                  /* 白字 */
-    border: none;
-    border-radius: 6px;            /* 小圆角 */
-    padding: 3px 8px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
-}
-
 #playlist li:hover .login-song-btn {
     display: inline-block;         /* 悬停歌曲时出现 */
 }
@@ -389,21 +377,30 @@ canvas {
     text-align: center;
 }
 
-.login-song-btn:hover {
-    background: #505050;           /* 悬停更亮一点 */
-    transform: translateY(-1px);   /* 微微上浮 */
-}
-
 .login-song-btn {
-    opacity: 0;                /* 初始透明 */
-    transform: scale(0.8);     /* 初始缩小一点 */
+    opacity: 0;                  /* 默认透明 */
+    pointer-events: none;        /* 默认不可点击 */
     transition: opacity 0.3s ease, transform 0.3s ease; /* 渐变效果 */
+    background: #3a3a3a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    cursor: pointer;
     margin-left: 10px;
 }
 
+.login-song-btn:hover {
+    background: #505050;         /* 悬停更亮一点 */
+    transform: translateY(-1px); /* 微微上浮 */
+}
+
+/* 悬停歌曲项时渐变出现 */
 li:hover .login-song-btn {
-    opacity: 1;                /* 悬停时完全显示 */
-    transform: scale(1);       /* 悬停时恢复正常大小 */
+    opacity: 1;
+    pointer-events: auto;        /* 可以点击 */
+    transform: scale(1);
 }
 
 /* 适配中等屏幕设备（最大宽度 768px） */
