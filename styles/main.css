@@ -787,7 +787,15 @@ li:hover .login-song-btn {
     border-radius: 5px; /* 设定圆角 */
     cursor: pointer; /* 让鼠标悬停时变为手型 */
     opacity: 0; /* 初始状态隐藏 */
-    transition: opacity 2s ease-in-out; /* 透明度渐变 */
+    animation: fadeInOut 7s ease-in-out forwards; /* 总时长 7 秒：淡入 + 停留 + 淡出 */
+}
+
+/* 关键帧动画：先淡入，保持 5 秒，再淡出 */
+@keyframes fadeInOut {
+    0% { opacity: 0; }       /* 初始透明 */
+    10% { opacity: 1; }      /* 0.7 秒淡入 */
+    80% { opacity: 1; }      /* 保持约 5 秒 */
+    100% { opacity: 0; }     /* 最后淡出 */
 }
 
 /* 鼠标悬浮时按钮的样式 */
