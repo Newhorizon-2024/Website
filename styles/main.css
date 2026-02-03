@@ -403,6 +403,12 @@ li:hover .login-song-btn {
     transform: scale(1);
 }
 
+@media (hover: none) and (pointer: coarse) {
+    .login-song-btn {
+        display: none !important;
+    }
+}
+
 /* 适配中等屏幕设备（最大宽度 768px） */
 @media (max-width: 768px) {
     /* 进度条容器 */
