@@ -307,12 +307,9 @@ function loadPlaylist() {
         // 手机端长按显示/隐藏按钮，避免误触播放
         let pressTimer;
         listItem.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // 避免长按时触发点击播放
             pressTimer = setTimeout(() => {
-                loginBtn.style.display = 
-                    (loginBtn.style.display === "none" || loginBtn.style.display === "") 
-                    ? "inline-block" 
-                    : "none";
+                e.preventDefault(); // 避免长按时触发点击播放
+                loginBtn.classList.toggle("show"); // 切换 show 类
             }, 500); // 长按 0.5 秒后切换显示/隐藏
         });
 
