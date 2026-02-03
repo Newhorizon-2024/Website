@@ -98,8 +98,10 @@ canvas {
 
 /* 倒计时样式 */
 #countdown {
-    position: relative;           /* 不用 absolute */
-    margin-top: 20px;             /* 和欢迎信息保持间距 */
+    position: absolute;
+    top: 50%;               /* 稍微比欢迎信息低一点 */
+    left: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
     font-size: 4vw;
     opacity: 0;
@@ -793,5 +795,6 @@ canvas {
 #back-to-home:hover {
     background-color: #444; /* 鼠标悬停时的颜色 */
 }
+
 
 
