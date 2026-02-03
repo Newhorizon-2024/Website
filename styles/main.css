@@ -396,6 +396,13 @@ canvas {
     transform: translateY(-1px); /* 微微上浮 */
 }
 
+/* 手机端长按时渐变出现 */ 
+.login-song-btn.show { 
+    opacity: 1; 
+    pointer-events: auto; 
+    transform: scale(1); 
+}
+
 /* 悬停歌曲项时渐变出现 */
 li:hover .login-song-btn {
     opacity: 1;
