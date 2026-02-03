@@ -303,20 +303,6 @@ function loadPlaylist() {
             if (e.target === loginBtn) return; 
             playSong(index); 
         });
-
-        // 手机端长按显示/隐藏按钮，避免误触播放
-        let pressTimer;
-        listItem.addEventListener('touchstart', (e) => {
-            pressTimer = setTimeout(() => {
-                e.preventDefault(); // 避免长按时触发点击播放
-                loginBtn.classList.toggle("show"); // 切换 show 类
-            }, 500); // 长按 0.5 秒后切换显示/隐藏
-        });
-
-        listItem.addEventListener('touchend', () => {
-            clearTimeout(pressTimer);
-        });
-
         playlistList.appendChild(listItem);
     });
 }
@@ -347,3 +333,4 @@ window.addEventListener("load", () => {
         // 等用户点击播放按钮时才开始
     }
 });
+
