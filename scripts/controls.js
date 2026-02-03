@@ -253,16 +253,15 @@ function loadPlaylist() {
 
             // ⭐ 点击切换折叠状态
             listItem.addEventListener('click', () => {
-            const collapsed = listItem.dataset.collapsed === "true";
-            listItem.dataset.collapsed = collapsed ? "false" : "true";
+                const collapsed = listItem.dataset.collapsed === "true";
+                listItem.dataset.collapsed = collapsed ? "false" : "true";
 
-            let next = listItem.nextSibling;
-            while (next && !next.classList.contains("playlist-separator")) {
-                next.style.display = collapsed ? "flex" : "none";
-                next = next.nextSibling;
-            }
-        });
-
+                let next = listItem.nextElementSibling;
+                while (next && !next.classList.contains("playlist-separator")) {
+                    next.style.display = collapsed ? "flex" : "none";
+                    next = next.nextElementSibling;
+                }
+            });
 
             playlistList.appendChild(listItem);
             lastSeparator = listItem;
@@ -277,6 +276,9 @@ function loadPlaylist() {
         // 默认折叠：如果上一个分割线是折叠状态，则隐藏本歌曲
         if (lastSeparator && lastSeparator.dataset.collapsed === "true") {
             listItem.style.display = "none";
+        } else {
+            listItem.style.display = "flex";
+            listItem.style.alignItems = "center";
         }
 
         // “登录曲”按钮
@@ -292,24 +294,34 @@ function loadPlaylist() {
             alert(`已将「${songName}」设为登录曲`);
         });
 
-        // 组合
-        listItem.appendChild(nameSpan);
+        listItem.appendChild(nameSpan); 
         listItem.appendChild(loginBtn);
 
-        // 点击播放
-        listItem.addEventListener('click', () => playSong(index));
-        playlistList.appendChild(listItem);
-
-        // ⭐ 手机端：点击歌曲项时切换按钮显示 
-        listItem.addEventListener('touchstart', () => { 
-            if (loginBtn.style.display === "none" || loginBtn.style.display === "") { 
-                loginBtn.style.display = "inline-block"; 
-            } else { 
-                loginBtn.style.display = "none"; 
-            } 
+        // 点击播放（只在点击歌曲项时触发，不影响按钮） 
+        listItem.addEventListener('click', (e) => { 
+            // 如果点击的是按钮，就不播放 
+            if (e.target === loginBtn) return; 
+            playSong(index); 
         });
-    });
 
+        // 手机端长按显示/隐藏按钮，避免误触播放
+        let pressTimer;
+        listItem.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // 避免长按时触发点击播放
+            pressTimer = setTimeout(() => {
+                loginBtn.style.display = 
+                    (loginBtn.style.display === "none" || loginBtn.style.display === "") 
+                    ? "inline-block" 
+                    : "none";
+            }, 500); // 长按 0.5 秒后切换显示/隐藏
+        });
+
+        listItem.addEventListener('touchend', () => {
+            clearTimeout(pressTimer);
+        });
+
+        playlistList.appendChild(listItem);
+    });
 }
 
 // 播放指定歌曲
