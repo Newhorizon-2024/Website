@@ -618,10 +618,10 @@ li:hover .login-song-btn {
 /* 悬赏令图片容器 */
 .bounty-container {
     display: flex; /* 让图片保持一行两列 */
+    flex-wrap: wrap; /* 自动换行 */
     justify-content: center; /* 居中排列 */
     align-items: center; /* 纵向居中 */
     gap: 30px; /* 设定图片之间的间距 */
-    flex-wrap: nowrap; /* 确保不会换行 */
 }
 
 /* 悬赏令图片样式 */
