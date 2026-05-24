@@ -65,7 +65,6 @@ const playlist = [
     { separator: true, label: "— 游戏曲 —" },
 
     { path: 'media/Alpha - C418.mp3', description: `游戏《我的世界》"Minecraft"` },
-    { path: 'media/Arknights Endfield Login Theme (游戏内录) - Hypergryph.mp3', description: `游戏《明日方舟：终末地》"Arknights:Endfield"` },
     { path: 'media/Avarice - David Fenn.mp3', description: `游戏《死亡之门》"Death's Door"` },
     { path: 'media/Battle of the Demon King - Fontainebleau.mp3', description: `游戏《不/存在的你，和我》` },
     { path: 'media/Comforting Memories - Minecraft、谷岡久美.mp3', description: `游戏《我的世界》"Minecraft"` },
@@ -81,9 +80,10 @@ const playlist = [
     { path: 'media/The Devourer of Gods (Nonstop Mix) - DM DOKURO.mp3', description: `游戏《泰拉瑞亚》"Terraria" Calamity Mod` },
     { path: 'media/The Tale of a Cruel World - DM DOKURO.mp3', description: `游戏《泰拉瑞亚》"Terraria" Calamity Mod` },
     { path: 'media/The Titan - Paradox Interactive.mp3', description: `游戏《群星》"Stellaris"` },
+    { path: 'media/不由己 - 陈彼得、游戏科学、8082Audio.mp3', description: `游戏《黑神话：悟空》"Black Myth:Goku"` },
     { path: 'media/罗德行进曲 - BaoUner.mp3', description: `游戏《明日方舟》"Arknights"` },
     { path: 'media/她 - 郎朗.mp3', description: `游戏《第五人格》"Identity_V"` },
-    { path: 'media/不由己 - 陈彼得、游戏科学、8082Audio.mp3', description: `游戏《黑神话：悟空》"Black Myth:Goku"` },
+    { path: 'media/协议流 (游戏内录) - 铁痕电台-MSR、Mike Truman、Lottie Truman.mp3', description: `游戏《明日方舟：终末地》"Arknights:Endfield"` },
 
     { separator: true, label: "— 分享曲 —" },
 
