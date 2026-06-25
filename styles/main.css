@@ -639,21 +639,35 @@ li:hover .login-song-btn {
     box-shadow: 0 10px 20px rgba(255, 255, 255, 0.3); /* 添加阴影 */
 }
 
-/* 适配移动设备，确保始终是两列 */
-@media (max-width: 768px) {
+/* 横屏时启用固定网格布局 */
+@media (orientation: landscape) {
     .bounty-container {
-        flex-wrap: wrap; /* 小屏幕下自动换行 */
-        gap: 20px;
-    }
-
-    .wanted-poster {
-        width: 250px; /* 小屏幕时图片缩小 */
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 100px;
+        justify-items: center;
     }
 }
 
+/* 适配移动设备（竖屏或小屏），自动换行 */
+@media (max-width: 768px) {
+    .bounty-container {
+        display: flex;       /* 必须加上，否则 flex-wrap 不生效 */
+        flex-wrap: wrap;     /* 小屏幕下自动换行 */
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .wanted-poster {
+        width: 250px;        /* 小屏幕时图片缩小 */
+        height: auto;
+    }
+}
+
+/* 超小屏幕进一步缩小 */
 @media (max-width: 480px) {
     .wanted-poster {
-        width: 200px; /* 超小屏幕下进一步缩小 */
+        width: 200px;
     }
 }
 
