@@ -257,8 +257,23 @@ canvas {
 /* 音量滑块的样式 */
 /* 负责控制音量大小 */
 #volume-slider {
+    appearance: none;
+    -webkit-appearance: none;
+    background: #888888; /* 滑块轨道颜色 */
+    border-radius: 3px; /* 让滑块轨道边角圆润 */
     width: 25%; /* 设定滑块宽度，使其不会占满整个容器 */
     margin: 10px 0; /* 增加滑块上下间距，使布局更舒适 */
+}
+
+/* 音量滑块颜色（小圆点） */
+#volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #eeeeee; /* 滑块颜色 */
+    border-radius: 50%; /* 让滑块呈现圆形 */
+    cursor: pointer; /* 鼠标悬停时显示手型，提示可拖动 */
+    box-shadow: 0 0 10px #888888; /* 添加阴影，使滑块更明显 */
 }
 
 /* 音乐进度条部分 */
@@ -290,7 +305,22 @@ canvas {
 /* 进度条 */
 /* 负责展示音乐播放进度，并允许用户拖动调节进度 */
 #progress-bar {
+    appearance: none;
+    -webkit-appearance: none;
+    background: #888888; /* 轨道颜色 */
+    border-radius: 3px; /* 让进度条边角圆润 */
     width: 70%; /* 让进度条占据大部分宽度 */
+}
+
+/* 进度条滑块颜色（小圆点） */
+#progress-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: #eeeeee; /* 滑块颜色 */
+    border-radius: 50%; /* 让滑块呈现圆形 */
+    cursor: pointer; /* 鼠标悬停时显示手型，提示可拖动 */
+    box-shadow: 0 0 10px #888888; /* 添加阴影，使滑块更明显 */
 }
 
 /* 歌单部件样式 */
@@ -366,11 +396,11 @@ canvas {
 #playlist li {
     display: flex;
     justify-content: space-between; /* 左右分散对齐 */
-    align-items: center;            /* 垂直居中 */
+    align-items: center; /* 垂直居中 */
 }
 
 #playlist li:hover .login-song-btn {
-    display: inline-block;         /* 悬停歌曲时出现 */
+    display: inline-block; /* 悬停歌曲时出现 */
 }
 
 /* 分隔线不使用 flex 布局 */
@@ -380,34 +410,34 @@ canvas {
 }
 
 .login-song-btn {
-    opacity: 0;                  /* 默认透明 */
-    pointer-events: none;        /* 默认不可点击 */
+    opacity: 0; /* 默认透明 */
+    pointer-events: none; /* 默认不可点击 */
     transition: opacity 0.3s ease, transform 0.3s ease; /* 渐变效果 */
-    background: #3a3a3a;
-    color: white;
+    background: #3a3a3a; /* 按钮背景颜色 */
+    color: white; /* 按钮文字颜色 */
     border: none;
     border-radius: 6px;
     padding: 3px 8px;
     font-size: 12px;
     cursor: pointer;
-    margin-left: 10px;
+    margin-left: 10px; /* 与歌曲名保持间距 */
 }
 
 .login-song-btn:hover {
-    background: #505050;         /* 悬停更亮一点 */
+    background: #505050; /* 悬停更亮一点 */
     transform: translateY(-1px); /* 微微上浮 */
 }
 
 /* 悬停歌曲项时渐变出现 */
 li:hover .login-song-btn {
-    opacity: 1;
-    pointer-events: auto;        /* 可以点击 */
+    opacity: 1; /* 渐变出现 */
+    pointer-events: auto; /* 可以点击 */
     transform: scale(1);
 }
 
 @media (hover: none) and (pointer: coarse) {
     .login-song-btn {
-        display: none !important;
+        display: none !important; /* 在触摸设备上隐藏按钮 */
     }
 }
 
