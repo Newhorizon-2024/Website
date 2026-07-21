@@ -7,12 +7,14 @@ body, html {
     background: linear-gradient(120deg, #000000, #434343); /* 设置渐变背景 */
     color: white; /* 设置默认字体颜色 */
     overflow-y: auto; /* 允许垂直滚动 */
+    scrollbar-width: none; /* Firefox 隐藏滚动条 */
 }
 
 /* 滚动条美化 */
 /* 设置滚动条整体宽度 */
 ::-webkit-scrollbar {
     width: 12px; /* 设定滚动条宽度 */
+    display: none; /* Chrome 隐藏滚动条 */
 }
 
 /* 设置滚动条轨道（背景区域） */
