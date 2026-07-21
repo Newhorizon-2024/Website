@@ -153,12 +153,12 @@ canvas {
 
 /* 鼠标悬停时的效果 */
 .navbar .tab:hover {
-    background-color: #444; /* 鼠标悬停时，背景颜色变深 */
+    background-color: #444444; /* 鼠标悬停时，背景颜色变深 */
 }
 
 /* 选中的选项卡样式 */
 .navbar .tab.selected {
-    background-color: #555; /* 选中的选项卡背景颜色更深 */
+    background-color: #555555; /* 选中的选项卡背景颜色更深 */
 }
 
 /* 页面主体内容区域 */
@@ -225,7 +225,7 @@ canvas {
 /* 鼠标悬停时按钮效果 */
 /* 让按钮在悬停时颜色加深，提供交互反馈 */
 #music-controls button:hover {
-    background-color: #444; /* 鼠标悬停时，背景颜色变深 */
+    background-color: #444444; /* 鼠标悬停时，背景颜色变深 */
 }
 
 /* 音量按钮的样式 */
@@ -243,7 +243,7 @@ canvas {
 /* 鼠标悬停时的效果 */
 /* 让按钮在悬停时颜色加深，提供交互反馈 */
 #volume-btn:hover {
-    background-color: #444; /* 鼠标悬停时，背景颜色变深 */
+    background-color: #444444; /* 鼠标悬停时，背景颜色变深 */
 }
 
 /* 音量控制条的容器 */
@@ -259,10 +259,14 @@ canvas {
 #volume-slider {
     appearance: none;
     -webkit-appearance: none;
-    background: #888888; /* 滑块轨道颜色 */
     border-radius: 3px; /* 让滑块轨道边角圆润 */
     width: 25%; /* 设定滑块宽度，使其不会占满整个容器 */
     margin: 10px 0; /* 增加滑块上下间距，使布局更舒适 */
+    background: linear-gradient(
+        to right,
+        #888888 var(--volume, 0%), /* 已拖动部分颜色 */
+        #444444 var(--volume, 0%) /* 未拖动部分颜色 */
+    );
 }
 
 /* 音量滑块颜色（小圆点） */
@@ -271,7 +275,7 @@ canvas {
     width: 14px;
     height: 14px;
     background: #eeeeee; /* 滑块颜色 */
-    border-radius: 50%; /* 让滑块呈现圆形 */
+    border-radius: 3px; /* 让滑块边角圆润 */
     cursor: pointer; /* 鼠标悬停时显示手型，提示可拖动 */
     box-shadow: 0 0 10px #888888; /* 添加阴影，使滑块更明显 */
 }
@@ -307,9 +311,13 @@ canvas {
 #progress-bar {
     appearance: none;
     -webkit-appearance: none;
-    background: #888888; /* 轨道颜色 */
     border-radius: 3px; /* 让进度条边角圆润 */
     width: 70%; /* 让进度条占据大部分宽度 */
+    background: linear-gradient(
+        to right,
+        #888888 var(--progress, 0%), /* 已播放部分颜色 */
+        #444444 var(--progress, 0%) /* 未播放部分颜色 */
+    );
 }
 
 /* 进度条滑块颜色（小圆点） */
@@ -318,7 +326,7 @@ canvas {
     width: 14px;
     height: 14px;
     background: #eeeeee; /* 滑块颜色 */
-    border-radius: 50%; /* 让滑块呈现圆形 */
+    border-radius: 3px; /* 让滑块边角圆润 */
     cursor: pointer; /* 鼠标悬停时显示手型，提示可拖动 */
     box-shadow: 0 0 10px #888888; /* 添加阴影，使滑块更明显 */
 }
@@ -361,7 +369,7 @@ canvas {
 /* 鼠标悬停时的列表项样式 */
 /* 当用户将鼠标悬停在歌曲上时提供视觉反馈 */
 #playlist li:hover {
-    background-color: #444; /* 悬停时背景颜色加深 */
+    background-color: #444444; /* 悬停时背景颜色加深 */
 }
 
 /* 音乐控制按钮容器 */
@@ -390,7 +398,7 @@ canvas {
 /* 鼠标悬停时按钮的效果 */
 /* 让按钮在鼠标悬停时提供视觉反馈 */
 #music-controls button:hover {
-    background-color: #444; /* 悬停时背景颜色加深 */
+    background-color: #444444; /* 悬停时背景颜色加深 */
 }
 
 #playlist li {
@@ -849,5 +857,5 @@ li:hover .login-song-btn {
 
 /* 鼠标悬停时的样式 */
 #back-to-home:hover {
-    background-color: #444; /* 鼠标悬停时的颜色 */
+    background-color: #444444; /* 鼠标悬停时的颜色 */
 }
