@@ -6,10 +6,15 @@
 📁 项目结构
 
 /icons/ — 图标
+
 /images/ — 图片、图标、音频等素材
+
 /media/ — 音乐文件与歌单配置
+
 /scripts/ — JavaScript 功能逻辑
+
 /styles/ — CSS 样式文件
+
 /index.html — 网站主页面
 
 
