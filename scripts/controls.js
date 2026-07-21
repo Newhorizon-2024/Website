@@ -13,8 +13,6 @@ const remainingTimeDisplay = document.getElementById('remaining-time');
 
 // 音乐播放列表（可以根据需要添加更多歌曲）
 const playlist = [
-    { separator: true, label: "— 推荐的登录曲 —" },
-    
     { separator: true, label: "— BOSSRUSH —" },
 
     { path: 'media/Ensemble Of Fools - CDMusic.mp3',
