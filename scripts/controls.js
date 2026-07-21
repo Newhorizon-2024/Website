@@ -182,15 +182,37 @@ prevSongButton.addEventListener('click', playPreviousSong);
 playPauseButton.addEventListener('click', togglePlayPause);
 nextSongButton.addEventListener('click', playNextSong);
 
+// 音量条颜色更新函数
+function updateVolumeBarColor() {
+    const value = volumeSlider.value;
+    const max = volumeSlider.max;
+    const percent = (value / max) * 100;
+
+    volumeSlider.style.setProperty("--volume", percent + "%");
+}
+
 // 音量控制
 volumeSlider.addEventListener('input', (e) => {
     audioElement.volume = e.target.value; // 设置音量
+    updateVolumeBarColor(); // 更新音量条颜色
 });
+
+// 默认音量条位置（视觉 50%）
+volumeSlider.value = 0.5;
+
+// 默认实际音量（听觉 50%）
+audioElement.volume = Math.pow(0.5, 2);
+
+// 初始化音量条颜色
+updateVolumeBarColor();
 
 // 进度条控制
 audioElement.addEventListener('timeupdate', () => {
     const progress = (audioElement.currentTime / audioElement.duration) * 100;
     progressBar.value = progress; // 更新进度条
+
+    // 自动更新颜色区分
+    progressBar.style.setProperty("--progress", progress + "%");
 
     // 更新已播放时间
     const currentMinutes = Math.floor(audioElement.currentTime / 60);
@@ -249,10 +271,10 @@ function loadPlaylist() {
             listItem.style.opacity = "0.7";
             listItem.classList.add("playlist-separator");
 
-            // ⭐ 默认折叠
+            // 默认折叠
             listItem.dataset.collapsed = "true";
 
-            // ⭐ 点击切换折叠状态
+            // 点击切换折叠状态
             listItem.addEventListener('click', () => {
                 const collapsed = listItem.dataset.collapsed === "true";
                 listItem.dataset.collapsed = collapsed ? "false" : "true";
@@ -319,12 +341,6 @@ function playSong(index) {
     globalSpeedMultiplier = playlist[currentSongIndex].speedMultiplier || 1;
 }
 
-// 默认音量条位置（视觉 50%）
-volumeSlider.value = 0.5;
-
-// 默认实际音量（听觉 50%）
-audioElement.volume = Math.pow(0.5, 2);
-
 window.addEventListener("load", () => {
     const saved = localStorage.getItem("defaultLoginSong");
 
@@ -333,4 +349,22 @@ window.addEventListener("load", () => {
         audioElement.src = playlist[currentSongIndex].path;
         // 等用户点击播放按钮时才开始
     }
+});
+
+// 进度条样式更新
+progressBar.addEventListener("input", () => {
+    const value = progressBar.value;
+    const max = progressBar.max;
+    const percent = (value / max) * 100;
+
+    progressBar.style.setProperty("--progress", percent + "%");
+});
+
+// 音量条样式更新
+volumeSlider.addEventListener("input", () => {
+    const value = volumeSlider.value;
+    const max = volumeSlider.max;
+    const percent = (value / max) * 100;
+
+    volumeSlider.style.setProperty("--volume", percent + "%");
 });
