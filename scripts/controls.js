@@ -11,25 +11,65 @@ const audioElement = document.getElementById('background-music');
 const currentTimeDisplay = document.getElementById('current-time');
 const remainingTimeDisplay = document.getElementById('remaining-time');
 
+// 导航栏动画追踪
+const tabs = document.querySelectorAll("#navbar .tab");
+const indicator = document.getElementById("nav-indicator");
+
+function moveIndicator(tab) {
+    const rect = tab.getBoundingClientRect();
+    const navRect = tab.parentElement.getBoundingClientRect();
+
+    indicator.style.left = `${rect.left - navRect.left}px`;
+    indicator.style.width = `${rect.width}px`;
+}
+
+// 初始定位到第一个 tab
+let currentActive = tabs[0];
+moveIndicator(currentActive);
+
+// 鼠标悬停跟踪
+tabs.forEach(tab => {
+    tab.addEventListener("mouseenter", () => {
+        moveIndicator(tab);
+    });
+
+    tab.addEventListener("click", () => {
+        currentActive = tab;
+        moveIndicator(tab);
+
+        const targetId = tab.getAttribute("data-target");
+        const target = document.getElementById(targetId);
+
+        if (target) {
+            target.scrollIntoView({ behavior: "smooth" });
+        }
+    });
+});
+
+// 鼠标移出后回到当前激活按钮
+document.getElementById("navbar").addEventListener("mouseleave", () => {
+    moveIndicator(currentActive);
+});
+
 // 音乐播放列表（可以根据需要添加更多歌曲）
 const playlist = [
     { separator: true, label: "— BOSSRUSH —" },
 
     { path: 'media/Ensemble Of Fools - CDMusic.mp3',
         description: `游戏《泰拉瑞亚》"Terraria" Calamity Mod Boss Rush Tier 1`,
-        speedMultiplier: 1 },
+        speedMultiplier: 2 },
 
     { path: 'media/Onslaught Of Beasts - CDMusic.mp3',
         description: `游戏《泰拉瑞亚》"Terraria" Calamity Mod Boss Rush Tier 2`,
-        speedMultiplier: 2 },
+        speedMultiplier: 4 },
 
     { path: 'media/Reign Of Lords - CDMusic.mp3',
         description: `游戏《泰拉瑞亚》"Terraria" Calamity Mod Boss Rush Tier 3`,
-        speedMultiplier: 3 },
+        speedMultiplier: 6 },
 
     { path: 'media/Trial of the Insane - CDMusic.mp3',
         description: `游戏《泰拉瑞亚》"Terraria" Calamity Mod Boss Rush Tier 4`,
-        speedMultiplier: 4 },
+        speedMultiplier: 8 },
 
     { separator: true, label: "— 影视曲 —" },
 
@@ -57,6 +97,7 @@ const playlist = [
     { path: 'media/开启新征程2 - 阿鲲.mp3', description: `电影《流浪地球2》` },
     { path: 'media/裏切り者のレクイエム (Diavolo Ver) - 長谷川大祐.mp3', description: `动漫《JOJO的奇妙冒险：黄金之风》"ジョジョの奇妙な冒険 黄金の風"` },
     { path: 'media/平凡之路 - 朴树.mp3', description: `电影《后会无期》` },
+    { path: 'media/胸がドキドキ - THE HIGH-LOWS.mp3', description: `动漫《名侦探柯南》"名探偵コナン"` },
     { path: 'media/嘘 (流行版) - 艾索.mp3', description: `动画《罗小黑战记》` },
     { path: 'media/再见深海 (微亮的瞬间) - 唐汉霄.mp3', description: `电影《深海》` },
 
@@ -83,6 +124,7 @@ const playlist = [
     { path: 'media/罗德行进曲 - BaoUner.mp3', description: `游戏《明日方舟》"Arknights"` },
     { path: 'media/她 - 郎朗.mp3', description: `游戏《第五人格》"Identity_V"` },
     { path: 'media/协议流 (游戏内录) - 铁痕电台-MSR、Mike Truman、Lottie Truman.mp3', description: `游戏《明日方舟：终末地》"Arknights:Endfield"` },
+    { path: 'media/众怒 - 塞壬唱片-MSR、Angry5JaR、EUROPA木卫二.mp3', description: `游戏《明日方舟》"Arknights"` },
 
     { separator: true, label: "— 分享曲 —" },
 
@@ -337,6 +379,89 @@ function playSong(index) {
     });
     playPauseButton.textContent = '暂停';
     globalSpeedMultiplier = playlist[currentSongIndex].speedMultiplier || 1;
+
+    const song = playlist[currentSongIndex];
+    const root = document.documentElement;
+
+    // ★ 根据不同 Bossrush 歌曲设置不同大小
+    switch (song.speedMultiplier) {
+            case 2:
+                root.style.setProperty("--eyes-size", "clamp(100px, 35vw, 200px)");
+                root.style.setProperty("--eyes-bg-size", "clamp(150px, 35vw, 300px)");
+                fadeCubeColor(material.color.getHexString(), "#888888");
+                break;
+
+            case 4:
+                root.style.setProperty("--eyes-size", "clamp(200px, 45vw, 400px)");
+                root.style.setProperty("--eyes-bg-size", "clamp(200px, 45vw, 400px)");
+                fadeCubeColor(material.color.getHexString(), "#666666");
+                break;
+
+            case 6:
+                root.style.setProperty("--eyes-size", "clamp(300px, 55vw, 600px)");
+                root.style.setProperty("--eyes-bg-size", "clamp(300px, 55vw, 600px)");
+                fadeCubeColor(material.color.getHexString(), "#444444");
+                break;
+
+            case 8:
+                root.style.setProperty("--eyes-size", "clamp(400px, 65vw, 800px)");
+                root.style.setProperty("--eyes-bg-size", "clamp(400px, 65vw, 800px)");
+                fadeCubeColor(material.color.getHexString(), "#222222");
+                break;
+
+            default:
+                fadeOutBossrush();
+                material.color.set("#888888");
+                return;
+        }
+
+        // ★ 显示三层
+        document.getElementById("bossrush-eyes").style.display = "block";
+        document.getElementById("bossrush-eyes-bg").style.display = "block";
+        document.getElementById("bossrush-filter").style.display = "block";
+}
+
+function fadeOutBossrush() {
+    const eyes = document.getElementById("bossrush-eyes");
+    const eyesBg = document.getElementById("bossrush-eyes-bg");
+    const filter = document.getElementById("bossrush-filter");
+
+    eyes.style.animation = "bossrushFadeOut 1s ease-out forwards";
+    eyesBg.style.animation = "bossrushFadeOut 1s ease-out forwards";
+    filter.style.animation = "bossrushFadeOut 1s ease-out forwards";
+
+    setTimeout(() => {
+        eyes.style.display = "none";
+        eyesBg.style.display = "none";
+        filter.style.display = "none";
+
+        eyes.style.animation = "";
+        eyesBg.style.animation = "";
+        filter.style.animation = "";
+    }, 600);
+}
+
+function fadeCubeColor(fromColor, toColor, duration = 600) {
+    const start = new THREE.Color(fromColor);
+    const end = new THREE.Color(toColor);
+
+    let startTime = performance.now();
+
+    function animateColor(time) {
+        let t = (time - startTime) / duration;
+        if (t > 1) t = 1;
+
+        // 插值颜色
+        const r = start.r + (end.r - start.r) * t;
+        const g = start.g + (end.g - start.g) * t;
+        const b = start.b + (end.b - start.b) * t;
+
+        material.color.setRGB(r, g, b);
+
+        if (t < 1) requestAnimationFrame(animateColor);
+    }
+
+    requestAnimationFrame(animateColor);
 }
 
 window.addEventListener("load", () => {
