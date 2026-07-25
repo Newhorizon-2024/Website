@@ -2104,7 +2104,7 @@ body.creator-lightbox-open {
 /* 君主信息部件 */
 #the-monarch-info-section {
     animation: fadeIn 0.4s ease;                 /* 淡入动画 */
-    background-image: url("/images/nhn/worldview/the-monarch/the-monarch-people.PNG"); /* 背景图 */
+    background-image: url("/images/nhn/worldview/the-monarch/the-monarch-people.png"); /* 背景图 */
     background-position: center 75%;             /* 居中偏下 */
     background-repeat: no-repeat;                /* 不重复 */
     background-size: 50%;                        /* 缩放比例 */
