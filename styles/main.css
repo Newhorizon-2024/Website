@@ -592,7 +592,13 @@ li:hover .login-song-btn {
 /* 创作者们的部件 */
 #creators-section {
     backdrop-filter: blur(8px);                  /* 毛玻璃效果 */
-    background-color: rgba(30, 30, 30, 0.82);   /* 半透明深灰背景 */
+    background: linear-gradient(
+        to bottom,
+        rgba(40, 40, 40, 0.75) 0%,
+        rgba(40, 40, 40, 0.50) 30%,
+        rgba(40, 40, 40, 0.25) 50%,
+        rgba(40, 40, 40, 0) 100%
+    );
     border: 1px solid rgba(255, 255, 255, 0.08); /* 设置低对比度边框 */
     border-radius: 8px;                          /* 设置容器圆角 */
     box-sizing: border-box;                      /* 将边框包含在尺寸中 */
@@ -655,7 +661,6 @@ li:hover .login-song-btn {
     max-width: 620px;
     opacity: 0.72;
 }
-
 
 /* ===========================
    创作者栏目列表
@@ -742,7 +747,6 @@ li:hover .login-song-btn {
     box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
 }
 
-
 /* ===========================
    创作者身份区域
    =========================== */
@@ -815,7 +819,6 @@ li:hover .login-song-btn {
     opacity: 0.6;
 }
 
-
 /* ===========================
    创作者内容区域
    =========================== */
@@ -839,7 +842,6 @@ li:hover .login-song-btn {
     grid-column: 1;
     grid-row: 1;
 }
-
 
 /* ===========================
    创作者作品图
