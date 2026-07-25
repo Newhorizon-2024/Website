@@ -34,7 +34,8 @@
     <meta name="msapplication-TileImage" content="icons/mstile-144x144.png"> 
     <meta name="msapplication-TileColor" content="#2d89ef">
 </head>
-<body>
+
+<body class="locked">
     <canvas id="background-3d"></canvas>
 
     <div id="content">
@@ -54,46 +55,45 @@
         <div id="countdown"></div>
     </div>
 
-<!-- 导航栏 -->
-<div id="navbar">
-    <div class="tab" data-target="jabber-section">碎碎念</div>
-    <div class="tab bold" data-target="bounty-board-section">悬赏令</div>
-    <div class="tab" data-target="works-section">作品</div>
+    <!-- 导航栏 -->
+    <div id="navbar">
+        <div class="tab" data-target="back-to-home">主页</div>
+        <div class="tab" data-target="bounty-board-section">悬赏令</div>
+        <div class="tab" data-target="creators-section">创作者们</div>
+        <div class="tab" data-target="nhn-section">情报署</div>
+        <div class="tab" data-target="works-section">作品</div>
 
-</div>
-
-<!-- 设置部件 -->
-<div id="settings-section">
-    <h1>设置</h1>
-
-    <!-- 音乐进度条 -->
-    <div id="progress-bar-container">
-        <span id="current-time">00:00</span> <!-- 显示已播放时间 -->
-        <input type="range" id="progress-bar" value="0" max="100" step="1">
-        <span id="remaining-time">00:00</span> <!-- 显示剩余时间 -->
+        <div id="nav-indicator"></div>
     </div>
 
-    <!-- 音乐控制部分 -->
-    <div id="music-controls">
-        <button id="playlist-btn">歌单</button>
-        <button id="prev-song-btn">上一首</button>
-        <button id="play-pause-btn">暂停</button>
-        <button id="next-song-btn">下一首</button>
-        <button id="volume-btn">音量</button>
-    </div>
+    <!-- 设置部件 -->
+    <div id="settings-section">
+        <!-- 音乐进度条 -->
+        <div id="progress-bar-container">
+            <span id="current-time">00:00</span> <!-- 显示已播放时间 -->
+            <input type="range" id="progress-bar" value="0" max="100" step="1">
+            <span id="remaining-time">00:00</span> <!-- 显示剩余时间 -->
+        </div>
 
-    <!-- 音量控制条 -->
-    <div id="volume-slider-container" style="display: none;">
-        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-    </div>
+        <!-- 音乐控制部分 -->
+        <div id="music-controls">
+            <button id="playlist-btn">歌单</button>
+            <button id="prev-song-btn">上一首</button>
+            <button id="play-pause-btn">暂停</button>
+            <button id="next-song-btn">下一首</button>
+            <button id="volume-btn">音量</button>
+        </div>
 
-    <!-- 歌单部件，初始时隐藏 -->
-    <div id="playlist-container" style="display: none;">
-        <h2>歌单</h2>
-        <ul id="playlist"></ul> <!-- 歌单列表 -->
-    </div>
+        <!-- 音量控制条 -->
+        <div id="volume-slider-container" style="display: none;">
+            <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+        </div>
 
-    <div class="subtitle" id="break-time-subtitle" style="display: none;">It's break time.</div>
+        <!-- 歌单部件，初始时隐藏 -->
+        <div id="playlist-container" style="display: none;">
+            <h2>歌单</h2>
+            <ul id="playlist"></ul> <!-- 歌单列表 -->
+        </div>
     </div>
 
     <!--作品部件-->
@@ -101,36 +101,239 @@
         <h1>作品</h1>
         <h2 id="works-subtitle">探索 New Horizon 创作的内容</h2> <!-- 副标题 -->
         <p>这里展示 New Horizon 社区发布的作品，包括艺术、动画和更多创意内容。</p>
-    <div class="works-gallery">
-        <p>敬请期待。</p>
-    </div>    
-</div>
 
-    <!-- 碎碎念部件 -->
-    <div id="jabber-section" class="section">
-        <h1>碎碎念</h1>
-        <p>不定期更新，随缘碎碎念。</p>
-        <p>这里是随手记录的想法、灵感和一些小情绪。</p>
-        <p>可向社区群聊/邮箱提交碎碎念进行发布。</p>
-        <p>有特殊要求者，可以匿名发布。</p>
+            <div class="works-gallery">
+            <p>敬请期待。</p>
+        </div>
+    </div>
+
+    <!-- 创作者们部件 -->
+    <div id="creators-section" class="section">
+        <header class="creators-header">
+            <p class="creators-eyebrow">GRAYASH COMMUNITY</p>
+            <h1>社区的优秀创作者</h1>
+            <p class="creators-lead">
+                截止于2026年7月25日
+            </p>
+        </header>
+
+        <div class="creators-list">
+            <!-- 创作者栏目 1 -->
+            <article class="creator-card">
+                <div class="creator-identity">
+                    <img
+                        class="creator-avatar"
+                        src="/images/creaters/profile-pictures/adm-6322-profile-picture.png"
+                        alt="ADM_6322 的头像"
+                    >
+
+                    <div class="creator-name">
+                        <span class="creator-index">CREATOR 01</span>
+                        <h2>艾德米 ADM_6322</h2>
+                        <p>动画创作者</p>
+                    </div>
+                </div>
+
+                <div class="creator-content">
+                    <div class="creator-gallery" aria-label="Arashi 的作品">
+                        <button
+                            class="creator-work"
+                            type="button"
+                            data-full="images/creaters/creaters-pictures/adm_6322-picture1.JPG"
+                            data-caption="There I am! There I am again meme"
+                            data-link="https://www.bilibili.com/video/BV1fiAcztEnF"
+                        >
+                            <img
+                                src="/images/creaters/creaters-pictures/adm_6322-picture1.JPG"
+                                alt="There I am! There I am again meme"
+                            >
+                        </button>
+
+                        <button
+                            class="creator-work"
+                            type="button"
+                            data-full="images/creaters/creaters-pictures/adm_6322-picture2.JPG"
+                            data-caption="ASTRAL JUMP"
+                            data-link="https://www.bilibili.com/video/BV1nCSFBZEAZ"
+                        >
+                            <img
+                                src="/images/creaters/creaters-pictures/adm_6322-picture2.JPG"
+                                alt="ASTRAL JUMP"
+                            >
+                        </button>
+                    </div>
+
+                    <div class="creator-description">
+                        <p>
+                            一名喜爱艺术，热爱自我的创作者，为自己的内心深耕了一块美好的土地。
+                        </p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 创作者栏目 2 -->
+            <article class="creator-card">
+                <div class="creator-identity">
+                    <img
+                        class="creator-avatar"
+                        src="/images/creaters/profile-pictures/ast3r-profile-picture.JPG"
+                        alt="AsT3R 的头像"
+                    >
+
+                    <div class="creator-name">
+                        <span class="creator-index">CREATOR 02</span>
+                        <h2>星羽 AsT3R</h2>
+                        <p>插图制作人</p>
+                    </div>
+                </div>
+
+                <div class="creator-content">
+                    <div class="creator-gallery" aria-label="Example 的作品">
+                        <button
+                            class="creator-work"
+                            type="button"
+                            data-full="images/creaters/creaters-pictures/ast3r-picture1.png"
+                            data-caption="‘豚鼠’ MINE-IMATOR 标准渲染录像带"
+                            data-link="https://www.bilibili.com/opus/1219712206046756871?spm_id_from=333.1387.0.0"
+                        >
+                            <img
+                                src="/images/creaters/creaters-pictures/ast3r-picture1.png"
+                                alt="‘豚鼠’ MINE-IMATOR 标准渲染录像带"
+                            >
+                        </button>
+
+                        <button
+                            class="creator-work"
+                            type="button"
+                            data-full="images/creaters/creaters-pictures/ast3r-picture2.png"
+                            data-caption="「骑士爱」MINE-IMATOR 标准渲染带"
+                            data-link="https://www.bilibili.com/opus/1214832612082712576?spm_id_from=333.1387.0.0"
+                        >
+                            <img
+                                src="/images/creaters/creaters-pictures/ast3r-picture2.png"
+                                alt="「骑士爱」MINE-IMATOR 标准渲染带"
+                            >
+                        </button>
+                    </div>
+
+                    <div class="creator-description">
+                        <p>
+                            爱好艺术，热衷将嘻哈文化聚焦于个人作品的创作者。
+                        </p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 创作者栏目 3 -->
+            <article class="creator-card">
+                <div class="creator-identity">
+                    <img
+                        class="creator-avatar"
+                        src="/images/creaters/profile-pictures/mgal_lay-profile-picture.JPG"
+                        alt="MgAl_Lay 的头像"
+                    >
+
+                    <div class="creator-name">
+                        <span class="creator-index">CREATOR 03</span>
+                        <h2>泪花 MgAl_Lay</h2>
+                        <p>音游Mad、美术创作者</p>
+                    </div>
+                </div>
+
+                <div class="creator-content">
+                    <div class="creator-gallery" aria-label="Creator 的作品">
+                        <button
+                            class="creator-work"
+                            type="button"
+                            data-full="images/creaters/creaters-pictures/mgal_lay-picture1.png"
+                            data-caption="献给2026的第一张画…"
+                            data-link="https://www.bilibili.com/opus/1152960670445076514?spm_id_from=333.1387.0.0"
+                        >
+                            <img
+                                src="/images/creaters/creaters-pictures/mgal_lay-picture1.png"
+                                alt="献给2026的第一张画…"
+                            >
+                        </button>
+                    </div>
+
+                    <div class="creator-description">
+                        <p>
+                            一名不止于眼前的，热爱生活的旅人。
+                        </p>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <!-- 创作者作品大图预览 -->
+    <div
+        id="creator-lightbox"
+        aria-hidden="true"
+        aria-modal="true"
+        role="dialog"
+    >
+        <button
+            class="creator-lightbox-close"
+            type="button"
+            aria-label="关闭作品预览"
+        >
+            ×
+        </button>
+
+        <button
+            class="creator-lightbox-control creator-lightbox-prev"
+            type="button"
+            aria-label="查看上一张作品"
+        >
+            ‹
+        </button>
+
+        <figure class="creator-lightbox-figure">
+            <img
+                id="creator-lightbox-image"
+                src=""
+                alt=""
+            >
+
+            <figcaption class="creator-lightbox-information">
+                <p id="creator-lightbox-caption"></p>
+
+                <a
+                    id="creator-lightbox-link"
+                    href="#"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    访问作品网站
+                </a>
+            </figcaption>
+        </figure>
+
+        <button
+            class="creator-lightbox-control creator-lightbox-next"
+            type="button"
+            aria-label="查看下一张作品"
+        >
+            ›
+        </button>
     </div>
 
     <!-- 悬赏令部件 -->
     <div id="bounty-board-section" class="section">
-        <h1>悬赏令</h1>
+        <h1 class="tab" data-target="wanted-info-section">悬赏令</h1>
 
-        <p class="bounty-rank">魔君</p>
+        <p class="tab" data-target="the-ruler-info-section">魔君</p>
         <div class="bounty-container">
             <img src="images/wanted/？-wanted.png" alt="?" class="wanted-poster">
         </div>
 
-        <p class="bounty-rank">君主</p>
+        <p class="tab" data-target="the-monarch-info-section">君主</p>
         <div class="bounty-container">
             <img src="images/wanted/astro-wanted-2025112.png" alt="Astro" class="wanted-poster">
             <img src="images/wanted/chrislight-wanted.png" alt="ChrisLight" class="wanted-poster">
             <img src="images/wanted/arashi-wanted-2025921.png" alt="Arashi" class="wanted-poster">
             <img src="images/wanted/ender_moring-wanted.png" alt="Ender_Moring" class="wanted-poster">
-
         </div>
 
         <p class="bounty-rank">Grayash</p>
@@ -166,13 +369,181 @@
         </div>
     </div>
 
+    <!-- 情报署 -->
+    <div id="nhn-section" class="section">
+        <img class="nhn-logo" src="/images/nhn/new-horizon-news-logo-white.png" alt="New Horizon News">
+        <h1>欢迎来到 新视界·情报署</h1>
+        <h1>New Horizon News!</h1>
+        <p>&nbsp;</p>
+        <p>“在下是神秘的社长...我在这里记下了联动该网站的另一个宇宙《里世界》有关的信息，请按需寻找你想看到的东西吧！:P”</p>
+        <p>&nbsp;</p>
+        
+        <div class="accordion-menu">
+            <button class="accordion-menu-option" type="button">
+                <img src="/images/nhn/characters.png" alt="">
+                <p class="text">尚未开放</p>
+            </button>
+
+            <button class="accordion-menu-option" type="button">
+                <img src="/images/nhn/worldview.png" alt="">
+                <p class="text">尚未开放</p>
+            </button>
+
+            <button class="accordion-menu-option" type="button" data-target="timeline-section">
+                <img src="/images/nhn/chapter.png" alt="">
+                <p class="text">历史上所发生的故事</p>
+            </button>
+        </div>
+    </div>
+
+    <div id="timeline-section" class="section">
+        <div class="timeline-scroll">
+            <div class="timeline-track">
+                <div class="timeline-line"></div>
+                <div class="timeline-item" data-target="event-detail-1">
+                    <div class="timeline-dot"></div>
+                    <p class="timeline-text">去月球</p>
+                </div>
+
+                <div class="timeline-item" data-target="event-detail-2">
+                    <div class="timeline-dot"></div>
+                    <p class="timeline-text">世蛛网大爆发</p>
+                </div>
+
+                <div class="timeline-item" data-target="event-detail-3">
+                    <div class="timeline-dot"></div>
+                    <p class="timeline-text">灾疫</p>
+                </div>
+
+                <div class="timeline-item" data-target="event-detail-4">
+                    <div class="timeline-dot"></div>
+                    <p class="timeline-text">第一次魔君登录</p>
+                </div>
+
+                <div class="timeline-item" data-target="event-detail-5">
+                    <div class="timeline-dot"></div>
+                    <p class="timeline-text">魔君残党开始规模肆虐</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline-details">
+            <article id="event-detail-1" class="timeline-detail">
+                <h1>去月球</h1>
+                <h2>1969年</h2>
+                <p>意识首次接触里世界之外的世界——月球，视察到里世界可能投影自另一个宇宙的行星 地球 。</p>
+                <p>确认了除里世界以外可能存在更多世界的宇宙空间。</p>
+            </article>
+
+            <article id="event-detail-2" class="timeline-detail">
+                <h1>世蛛网大爆发</h1>
+                <h2>2007年</h2>
+                <p>世界蛛网 开始将整个里世界各地的人与自然连接起来。</p>
+                <p>一大程度上完结了人文意识对外界的认知缺陷和接触能力，同时也将彻底抛向深渊。</p>
+            </article>
+
+            <article id="event-detail-3" class="timeline-detail">
+                <h1>灾疫</h1>
+                <h2>2019年12月</h2>
+                <p>一种尚未彻底溯源的传染病，造成了里世界最严重的突发性意识危机之一。</p>
+                <p>这种疫病的出现，导致当时的意识们所处生存形势恶劣，加剧了环境压力，损害了数千万生命的健康。</p>
+                <p>其渊源未能确认是否和魔君有所关系。</p>
+            </article>
+
+            <article id="event-detail-4" class="timeline-detail">
+                <h1>第一次魔君登录</h1>
+                <h2>2025年2月</h2>
+                <p>？？？</p>
+            </article>
+
+            <article id="event-detail-5" class="timeline-detail">
+                <h1>魔君残党开始规模肆虐</h1>
+                <h2>2025年7月</h2>
+                <p>从魔君第一次登录起，确认了存在一众受魔君影响的麾下。</p>
+                <p>且在过去以来一直以不同的形式影响现世的生命。</p>
+            </article>
+        </div>
+
+        <button class="tab back-to-nhn" type="button" data-target="nhn-section">
+            返回情报署
+        </button>
+    </div>
+
+    <!-- 悬赏令信息部件 -->
+    <div id="wanted-info-section" class="section">
+        <h1>悬赏令</h1>
+        <p>这里所展示的悬赏令来自《里世界》的世界观设定。</p>
+        <p>最初的设计目的，是一种叙事角色手法之一。</p>
+        <p>&nbsp;</p>
+        <p>它的原始功能是：标记悬赏令中该角色在里世界中的重要性级别，同时体现角色在剧情中的关键作用。</p>
+        <p>其通缉方试图通过以 <span class="tab go-to-the-ruler" type="button" data-target="the-ruler-info-section">魔君</span> 视角来拟定该角色的悬赏金数额，单位为世界观特有的交易货币 <span class="bold-text">Mineash</span> 。</p>
+        <p>换句话说，悬赏令最初不是为了“通缉”，而是为了强调角色在世界中的存在感与影响力。</p>
+        <p>&nbsp;</p>
+        <p>同时在实际制作中，悬赏令演变成一种艺术加工后的角色海报，随着普及，它逐渐成为了社区内创作者们展示自己原创角色的一种方式。</p>
+        <p>并以“悬赏令”形式包装其角色形象，赏金数额可能取自它们创作者相关平台的账号ID，化为了一种“角色 × 创作者”的联动符号</p>
+        <p>&nbsp;</p>
+        <p>因此，悬赏令同时具有叙事意义与创作意义：</p>
+        <p>它既是世界观中的角色档案，也是现实中的角色海报。</p>
+        <p>这两者共同构成了悬赏令的完整概念。</p>
+        <p>&nbsp;</p>
+
+        <button class="tab back-to-bounty" type="button" data-target="bounty-board-section">
+            返回悬赏令
+        </button>
+    </div>
+
+        <!-- 魔君信息部件 -->
+    <div id="the-ruler-info-section" class="section">
+        <h1 data-text="魔君">魔君</h1>
+        <p>&nbsp;</p>
+        <p>严格来说，这个概念并不为《里世界》所做，实质上兴许是对哲学模型的一种假想。</p>
+        <p>它难以被直接具体为某一名角色或生命形态，也许是 拉普拉斯妖 的一种延伸。</p>
+        <p>&nbsp;</p>
+        <p>在《里世界》中，现实因世界观投射为了一个人格化的存在，其名曰 魔君 。</p>
+        <p>由于魔君是现实的化身，它可能以任何一种体态、性别或语言的形式干涉外界，这极大地影响了里世界的运行规律和人文精神。</p>
+        <p>譬如受它所影响的事物和人，会被刻下某种与之共鸣的，强烈的思想印记，这会导致生命朝向难以，甚至不可逆转的不归路。</p>
+        <p class="ruler-bg">&nbsp;</p>
+        <p>受魔君影响的个体，通常都被赋予了强大的能力。但它们无一例外地，受到魔君意志的影响尝试改变这个世界的运转，成为它万中的麾下之一—— <span class="bold-text">魔君残党</span> 。</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <h2><small><i>“它给予人善意，也给予人苦难。</i></small></h2>
+        <h2><small><i>它甚至被描述得冷酷、温柔、威严或诡异——</i></small></h2>
+        <h2><small><i>他可以是一句话，一个词语，一个符号</i></small></h2>
+        <h2><small><i>她可以是任何一个人，陌生人、朋友、还有亲人。</i></small></h2>
+        <h2><small><i>亦或者是身边那些最不起眼的存在，又抑或着，它是另一个你自己。</i></small></h2>
+        <h2><small><i>所言其表也只是一个容器，或许直至宇宙灭亡，也不会有人见过它长什么样。”</i></small></h2>
+        <p>&nbsp;</p>
+
+        <button class="tab back-to-bounty" type="button" data-target="bounty-board-section">
+            返回悬赏令
+        </button>
+    </div>
+
+        <!-- 君主信息部件 -->
+    <div id="the-monarch-info-section" class="section">
+        <h1 data-text="君主">君主</h1>
+        <p>&nbsp;</p>
+        <p>这里所述的君主，意指《里世界》中强烈对立于魔君的强大存在。</p>
+        <p>君主这一概念，最初是作为对“魔君”体系的一种回应而诞生的。</p>
+        <p>在《里世界》中，当一名角色深陷囹圄，决意置身投入对抗魔君的压制和解构时，便会获得前所未有的，乃至于能够在魔君面前守护他人的强大力量。</p>
+        <p>目前尚所未能找到这份力量从何而来，也许这与他们与生俱来的一切有所联系，还是说——这也是受魔君带来的影响之一？</p>
+        <p>&nbsp;</p>
+        <p>我们把拥有这种力量的意识称作了 “君主” 这一身份标识。</p>
+        <p>一旦识得创作者的角色拥有能承担其重的特质，便可能成为君主......</p>
+        <p>&nbsp;</p>
+
+        <button class="tab back-to-bounty" type="button" data-target="bounty-board-section">
+            返回悬赏令
+        </button>
+    </div>
+
     <button id="back-to-home">返回主页</button>
 
     <!-- 新增新闻部件 -->
     <div id="news-section">
         <h1>新闻</h1>
         <p>这里是最新的新闻动态，关注 New Horizon 的发展和更新。</p>
-        <img id="news" src="images/news/20250206-news.png" alt="新闻">
+        <img id="news" src="/images/nhn/news/20250206-news.png" alt="新闻">
         <p>敬请期待。</p>
     </div>
 
@@ -196,8 +567,21 @@
         </div>
     </div>
 
+    <div id="bossrush-eyes">
+        <img src="/images/bossrush/bossrush.png" alt="">
+    </div>
+
+    <div id="bossrush-eyes-bg">
+        <img src="/images/bossrush/bossrush.png" alt="">
+    </div>
+
+    <div id="bossrush-filter">
+        <img src="/images/bossrush/black-picture.png" alt="">
+    </div>
+
     <!-- 引入脚本 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.8/dist/lenis.min.js"></script>
     <script type="module" src="scripts/main.js"></script>
     <script type="module" src="scripts/overlay.js"></script>
     <script type="module" src="scripts/controls.js"></script>
