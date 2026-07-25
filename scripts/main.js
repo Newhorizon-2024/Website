@@ -1,5 +1,6 @@
 window.globalSpeedMultiplier = 1;
 
+// 初始化 Three.js 场景
 let cubes = [];
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -8,7 +9,7 @@ const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('back
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 
-const light = new THREE.DirectionalLight(0xffffff, 1);
+const light = new THREE.DirectionalLight(0xEEEEEE, 1);
 light.position.set(5, 5, 5).normalize();
 light.castShadow = true;
 scene.add(light);
@@ -17,7 +18,7 @@ const ambientLight = new THREE.AmbientLight(0x404040);
 scene.add(ambientLight);
 
 const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshStandardMaterial({ color: '#808080', transparent: true, opacity: 1 });
+window.material = new THREE.MeshStandardMaterial({ color: '#888888', transparent: true, opacity: 1 });
 
 // 创建方块
 function createCube() {
@@ -63,6 +64,28 @@ function animate() {
 
     renderer.render(scene, camera);
 }
+
+// 鼠标交互逻辑
+const raycaster = new THREE.Raycaster();
+const mousePos = new THREE.Vector2();
+
+window.addEventListener("mousedown", (e) => {
+    mousePos.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mousePos.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mousePos, camera);
+    const intersects = raycaster.intersectObjects(cubes, false);
+
+    if (intersects.length > 0) {
+        const cube = intersects[0].object;
+
+        cube.userData.speedX = (Math.random() - 0.5) * 0.6;
+        cube.userData.speedY = (Math.random() - 0.5) * 0.6;
+
+        cube.userData.draggable = true;
+        cube.userData.isDragging = true;
+    }
+});
 
 // 启动动画
 animate();
