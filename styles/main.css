@@ -2034,7 +2034,7 @@ body.creator-lightbox-open {
 /* 魔君信息部件 */
 #the-ruler-info-section {
     animation: fadeIn 0.4s ease;                 /* 淡入动画 */
-    background-image: url("/images/nhn/worldview/the-ruler/the-ruler-from-newhorizon.png"); /* 背景图 */
+    background-image: url("../images/nhn/worldview/the-ruler/the-ruler-from-newhorizon.png"); /* 背景图 */
     background-position: center;                 /* 居中显示 */
     background-repeat: no-repeat;                /* 不重复 */
     background-size: cover;                      /* 覆盖整个容器 */
@@ -2067,7 +2067,7 @@ body.creator-lightbox-open {
 
 /* 魔君标题背后的图片 */
 #the-ruler-info-section h1::after {
-    background-image: url("/images/nhn/worldview/the-ruler/the-ruler-logo-white.png"); /* 背景图 */
+    background-image: url("../images/nhn/worldview/the-ruler/the-ruler-logo-white.png"); /* 背景图 */
     background-repeat: no-repeat; /* 不重复 */
     background-size: contain;     /* 保持比例 */
     content: "";                  /* 空内容，仅用于显示图片 */
@@ -2104,7 +2104,7 @@ body.creator-lightbox-open {
 /* 君主信息部件 */
 #the-monarch-info-section {
     animation: fadeIn 0.4s ease;                 /* 淡入动画 */
-    background-image: url("/images/nhn/worldview/the-monarch/the-monarch-people.png"); /* 背景图 */
+    background-image: url("../images/nhn/worldview/the-monarch/the-monarch-people.png"); /* 背景图 */
     background-position: center 75%;             /* 居中偏下 */
     background-repeat: no-repeat;                /* 不重复 */
     background-size: 50%;                        /* 缩放比例 */
