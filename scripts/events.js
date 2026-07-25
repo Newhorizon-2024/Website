@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ===========================
         3. 创作者栏目滚动与作品预览
        =========================== */
-
+       
     const creatorCards = document.querySelectorAll(".creator-card");
     const creatorWorks = Array.from(
         document.querySelectorAll(".creator-work")
@@ -153,6 +153,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const creatorLightboxImage = document.getElementById(
         "creator-lightbox-image"
     );
+    const creatorLightboxLink = document.getElementById(
+        "creator-lightbox-link"
+    );
     const creatorLightboxNext = document.querySelector(
         ".creator-lightbox-next"
     );
@@ -163,13 +166,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeCreatorWorkIndex = 0;
 
 
-    /* 生成指定范围内的随机角度 */
+    /* 生成指定范围内的随机倾斜角度 */
     function createRandomRotation(min, max) {
         return `${(Math.random() * (max - min) + min).toFixed(2)}deg`;
     }
 
 
-    /* 为头像与作品生成轻微随机倾斜 */
+    /* 为头像和作品图生成随机倾斜 */
     creatorCards.forEach(card => {
         card.style.setProperty(
             "--avatar-rotation",
@@ -192,13 +195,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 const card = entry.target;
 
                 if (!entry.isIntersecting) {
-                    card.classList.remove("is-entering", "is-settled");
+                    card.classList.remove(
+                        "is-entering",
+                        "is-settled"
+                    );
+
                     return;
                 }
 
                 if (entry.intersectionRatio >= 0.58) {
                     card.classList.add("is-settled");
                     card.classList.remove("is-entering");
+
                     return;
                 }
 
@@ -218,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    /* 更新大图内容 */
+    /* 更新大图、标题和网站链接 */
     function updateCreatorLightbox(index) {
         const work = creatorWorks[index];
 
@@ -227,15 +235,60 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const image = work.querySelector("img");
-        const fullImage = work.dataset.full || image?.src || "";
-        const caption = work.dataset.caption || image?.alt || "";
+
+        const caption =
+            work.dataset.caption
+            || image?.alt
+            || "";
+
+        const fullImage =
+            work.dataset.full
+            || image?.src
+            || "";
+
+        const websiteLink =
+            work.dataset.link?.trim()
+            || "";
 
         activeCreatorWorkIndex = index;
+
         creatorLightboxImage.src = fullImage;
         creatorLightboxImage.alt = caption;
 
         if (creatorLightboxCaption) {
             creatorLightboxCaption.textContent = caption;
+        }
+
+        if (!creatorLightboxLink) {
+            return;
+        }
+
+        if (websiteLink) {
+            creatorLightboxLink.setAttribute(
+                "href",
+                websiteLink
+            );
+
+            creatorLightboxLink.hidden = false;
+            creatorLightboxLink.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+            creatorLightboxLink.setAttribute(
+                "tabindex",
+                "0"
+            );
+        } else {
+            creatorLightboxLink.removeAttribute("href");
+            creatorLightboxLink.hidden = true;
+            creatorLightboxLink.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+            creatorLightboxLink.setAttribute(
+                "tabindex",
+                "-1"
+            );
         }
     }
 
@@ -249,8 +302,14 @@ document.addEventListener("DOMContentLoaded", () => {
         updateCreatorLightbox(index);
 
         creatorLightbox.classList.add("active");
-        creatorLightbox.setAttribute("aria-hidden", "false");
-        document.body.classList.add("creator-lightbox-open");
+        creatorLightbox.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.classList.add(
+            "creator-lightbox-open"
+        );
 
         creatorLightboxClose?.focus();
     }
@@ -263,14 +322,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         creatorLightbox.classList.remove("active");
-        creatorLightbox.setAttribute("aria-hidden", "true");
-        document.body.classList.remove("creator-lightbox-open");
+        creatorLightbox.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        document.body.classList.remove(
+            "creator-lightbox-open"
+        );
 
         creatorWorks[activeCreatorWorkIndex]?.focus();
     }
 
 
-    /* 切换作品大图 */
+    /* 切换上一张或下一张作品 */
     function changeCreatorLightbox(direction) {
         if (creatorWorks.length === 0) {
             return;
@@ -287,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* 绑定作品点击事件 */
+    /* 点击作品打开大图 */
     creatorWorks.forEach((work, index) => {
         work.addEventListener("click", () => {
             openCreatorLightbox(index);
@@ -295,29 +360,59 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-    /* 绑定大图控制按钮 */
-    creatorLightboxClose?.addEventListener("click", closeCreatorLightbox);
-
-    creatorLightboxNext?.addEventListener("click", () => {
-        changeCreatorLightbox(1);
-    });
-
-    creatorLightboxPrev?.addEventListener("click", () => {
-        changeCreatorLightbox(-1);
-    });
+    /* 关闭按钮 */
+    creatorLightboxClose?.addEventListener(
+        "click",
+        closeCreatorLightbox
+    );
 
 
-    /* 点击背景关闭预览 */
-    creatorLightbox?.addEventListener("click", event => {
-        if (event.target === creatorLightbox) {
-            closeCreatorLightbox();
+    /* 下一张按钮 */
+    creatorLightboxNext?.addEventListener(
+        "click",
+        () => {
+            changeCreatorLightbox(1);
         }
-    });
+    );
 
 
-    /* 大图键盘控制 */
+    /* 上一张按钮 */
+    creatorLightboxPrev?.addEventListener(
+        "click",
+        () => {
+            changeCreatorLightbox(-1);
+        }
+    );
+
+
+    /* 点击大图背景关闭 */
+    creatorLightbox?.addEventListener(
+        "click",
+        event => {
+            if (event.target === creatorLightbox) {
+                closeCreatorLightbox();
+            }
+        }
+    );
+
+
+    /* 阻止点击内容区域时关闭大图 */
+    document
+        .querySelector(".creator-lightbox-figure")
+        ?.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+            }
+        );
+
+
+    /* 键盘控制 */
     document.addEventListener("keydown", event => {
-        if (!creatorLightbox?.classList.contains("active")) {
+        if (
+            !creatorLightbox
+            || !creatorLightbox.classList.contains("active")
+        ) {
             return;
         }
 
