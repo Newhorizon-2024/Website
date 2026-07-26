@@ -1,308 +1,790 @@
-document.addEventListener("DOMContentLoaded", () => {
+/* ===========================
+   1. 页面初始化
+=========================== */
 
-    /* ===========================
-       1. 倒计时 Tooltip
-       =========================== */
-    const countdownText = document.getElementById("countdown");
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        initializePanelPointerEffects();
+        initializeCountdownTooltip();
+        initializeNavigation();
+        initializeCreatorGallery();
+        initializeNhnLogoMagnet();
+        initializeNhnTimeline();
+        initializeNhnAccordion();
+        initializeWorkFeed();
+        initializeWorkPostStats();
+    },
+    { once: true }
+);
 
-    if (countdownText) {
-        function showAgeTooltip(event) {
-            const style = getComputedStyle(countdownText);
-            if (style.opacity === "0" || style.display === "none") return;
 
-            const tooltip = document.createElement("div");
-            tooltip.id = "age-tooltip";
-            tooltip.textContent = "New Horizon 的年龄";
-            tooltip.style.position = "absolute";
-            tooltip.style.background = "rgba(0, 0, 0, 0.8)";
-            tooltip.style.color = "#EEEEEE";
-            tooltip.style.padding = "5px 10px";
-            tooltip.style.borderRadius = "5px";
-            tooltip.style.fontSize = "0.9em";
-            tooltip.style.whiteSpace = "nowrap";
-            tooltip.style.pointerEvents = "none";
-            tooltip.style.zIndex = "1000";
-            tooltip.style.left = `${event.pageX + 10}px`;
-            tooltip.style.top = `${event.pageY + 10}px`;
+/* ===========================
+   2. 全局面板光幕与倾斜
+=========================== */
 
-            document.body.appendChild(tooltip);
+function initializePanelPointerEffects() {
+    const sitePanels =
+        document.querySelectorAll(
+            ".site-panel"
+        );
 
-            function updateTooltipPosition(e) {
-                tooltip.style.left = `${e.pageX + 10}px`;
-                tooltip.style.top = `${e.pageY + 10}px`;
-            }
+    const supportsPointerEffects =
+        window.matchMedia(
+            "(hover: hover) and (pointer: fine)"
+        ).matches;
 
-            countdownText.addEventListener("mousemove", updateTooltipPosition);
-
-            function removeTooltip() {
-                tooltip.remove();
-                countdownText.removeEventListener("mousemove", updateTooltipPosition);
-                countdownText.removeEventListener("mouseleave", removeTooltip);
-                countdownText.removeEventListener("click", removeTooltip);
-            }
-
-            countdownText.addEventListener("mouseleave", removeTooltip);
-            countdownText.addEventListener("click", removeTooltip);
-        }
-
-        countdownText.addEventListener("mouseenter", showAgeTooltip);
-        countdownText.addEventListener("click", showAgeTooltip);
+    if (
+        !supportsPointerEffects ||
+        sitePanels.length === 0
+    ) {
+        return;
     }
 
-    /* ===========================
-       2. 导航栏切换逻辑
-       =========================== */
-    const tabs = document.querySelectorAll(".tab");
-    const sections = document.querySelectorAll(".section");
-    const mainContent = document.getElementById("content");
-    const backButton = document.getElementById("back-to-home");
-    const newsSection = document.getElementById("news-section");
+    function resetPanelPointerEffect(panel) {
+        panel.classList.remove(
+            "is-pointer-active"
+        );
 
-    function showSection(sectionId) {
-        /* 先隐藏所有可切换页面 */
-        sections.forEach(section => {
-            if (section) {
-                section.style.display = "none";
-            }
-        });
+        panel.style.setProperty(
+            "--panel-light-angle",
+            "215deg"
+        );
 
-        /*
-        * #content 保持显示：
-        * 这样其中的倒计时不会随栏目切换消失
-        */
-        if (mainContent) {
-            mainContent.style.display = "block";
-        }
+        panel.style.setProperty(
+            "--panel-light-shift-x",
+            "0px"
+        );
 
-        if (sectionId === "content") {
-            /* 返回主页 */
-            if (newsSection) {
-                newsSection.style.display = "block";
-            }
+        panel.style.setProperty(
+            "--panel-light-shift-y",
+            "0px"
+        );
 
-            if (backButton) {
-                backButton.style.display = "none";
-            }
-        } else {
-            /* 进入其他栏目，只隐藏主页内容 */
-            if (newsSection) {
-                newsSection.style.display = "none";
-            }
+        panel.style.setProperty(
+            "--panel-rotate-x",
+            "0deg"
+        );
 
-            const target = document.getElementById(sectionId);
-
-            if (target) {
-                target.style.display = "block";
-            } else {
-                console.error(`未找到目标部件: #${sectionId}`);
-            }
-
-            if (backButton) {
-                backButton.style.display = "block";
-            }
-        }
+        panel.style.setProperty(
+            "--panel-rotate-y",
+            "0deg"
+        );
     }
 
-    let homeUnlocked = false; // 初始锁定主页按钮
+    sitePanels.forEach(panel => {
+        panel.addEventListener(
+            "mouseenter",
+            () => {
+                panel.classList.add(
+                    "is-pointer-active"
+                );
+            }
+        );
 
-    tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-            const target = tab.getAttribute("data-target");
+        panel.addEventListener(
+            "mousemove",
+            event => {
+                const panelRect =
+                    panel.getBoundingClientRect();
 
-            // ★ 如果点击的是主页按钮
-            if (target === "back-to-home") {
-                if (!homeUnlocked) return; // 未解锁 → 不生效
-                showSection("content");    // 解锁后 → 返回主页
+                if (
+                    panelRect.width === 0 ||
+                    panelRect.height === 0
+                ) {
+                    return;
+                }
+
+                const horizontalRatio =
+                    (
+                        event.clientX -
+                        panelRect.left
+                    ) /
+                    panelRect.width;
+
+                const verticalRatio =
+                    (
+                        event.clientY -
+                        panelRect.top
+                    ) /
+                    panelRect.height;
+
+                /*
+                 * 光幕角度：
+                 * 以 215deg 为中心，
+                 * 左右最大变化约 10deg。
+                 */
+                const angleOffset =
+                    (
+                        horizontalRatio -
+                        0.5
+                    ) *
+                    20;
+
+                /*
+                 * 光幕位置：
+                 * 仅产生少量偏移。
+                 */
+                const lightShiftX =
+                    (
+                        horizontalRatio -
+                        0.5
+                    ) *
+                    8;
+
+                const lightShiftY =
+                    (
+                        verticalRatio -
+                        0.5
+                    ) *
+                    5;
+
+                /*
+                 * 面板倾斜：
+                 * 鼠标向上时，上方向外抬起；
+                 * 鼠标向右时，右侧向外抬起。
+                 */
+                const rotateX =
+                    (
+                        0.5 -
+                        verticalRatio
+                    ) *
+                    3;
+
+                const rotateY =
+                    (
+                        horizontalRatio -
+                        0.5
+                    ) *
+                    3;
+
+                panel.style.setProperty(
+                    "--panel-light-angle",
+                    `${
+                        215 +
+                        angleOffset
+                    }deg`
+                );
+
+                panel.style.setProperty(
+                    "--panel-light-shift-x",
+                    `${lightShiftX.toFixed(
+                        2
+                    )}px`
+                );
+
+                panel.style.setProperty(
+                    "--panel-light-shift-y",
+                    `${lightShiftY.toFixed(
+                        2
+                    )}px`
+                );
+
+                panel.style.setProperty(
+                    "--panel-rotate-x",
+                    `${rotateX.toFixed(
+                        2
+                    )}deg`
+                );
+
+                panel.style.setProperty(
+                    "--panel-rotate-y",
+                    `${rotateY.toFixed(
+                        2
+                    )}deg`
+                );
+            }
+        );
+
+        panel.addEventListener(
+            "mouseleave",
+            () => {
+                resetPanelPointerEffect(
+                    panel
+                );
+            }
+        );
+    });
+}
+
+
+/* ===========================
+   3. 倒计时 Tooltip
+=========================== */
+
+function initializeCountdownTooltip() {
+    const countdownElement =
+        document.getElementById(
+            "countdown"
+        );
+
+    if (!countdownElement) {
+        return;
+    }
+
+    const tooltip =
+        document.createElement("div");
+
+    tooltip.id =
+        "age-tooltip";
+
+    tooltip.textContent =
+        "New Horizon 的年龄";
+
+    tooltip.style.position =
+        "absolute";
+
+    tooltip.style.background =
+        "rgba(0, 0, 0, 0.8)";
+
+    tooltip.style.borderRadius =
+        "5px";
+
+    tooltip.style.color =
+        "#EEEEEE";
+
+    tooltip.style.display =
+        "none";
+
+    tooltip.style.fontSize =
+        "0.9em";
+
+    tooltip.style.padding =
+        "5px 10px";
+
+    tooltip.style.pointerEvents =
+        "none";
+
+    tooltip.style.whiteSpace =
+        "nowrap";
+
+    tooltip.style.zIndex =
+        "1000";
+
+    document.body.appendChild(
+        tooltip
+    );
+
+    function isCountdownVisible() {
+        const countdownStyle =
+            window.getComputedStyle(
+                countdownElement
+            );
+
+        return (
+            countdownStyle.opacity !==
+                "0" &&
+            countdownStyle.display !==
+                "none" &&
+            countdownStyle.visibility !==
+                "hidden"
+        );
+    }
+
+    function updateTooltipPosition(event) {
+        tooltip.style.left =
+            `${event.pageX + 10}px`;
+
+        tooltip.style.top =
+            `${event.pageY + 10}px`;
+    }
+
+    function showTooltip(event) {
+        if (!isCountdownVisible()) {
+            return;
+        }
+
+        updateTooltipPosition(event);
+
+        tooltip.style.display =
+            "block";
+    }
+
+    function hideTooltip() {
+        tooltip.style.display =
+            "none";
+    }
+
+    countdownElement.addEventListener(
+        "mouseenter",
+        showTooltip
+    );
+
+    countdownElement.addEventListener(
+        "mousemove",
+        event => {
+            if (
+                tooltip.style.display ===
+                "none"
+            ) {
                 return;
             }
 
-            // 点击其它内容 → 解锁主页按钮
-            homeUnlocked = true;
-
-            // 显示对应内容
-            showSection(target);
-        });
-    });
-
-    backButton.addEventListener("click", () => {
-        showSection("content");
-    });
-
-    sections.forEach(section => {
-        if (section) section.style.display = "none";
-    });
-
-    backButton.style.display = "none";
-
-    /* ===========================
-        3. 创作者栏目滚动与作品预览
-       =========================== */
-       
-    const creatorCards = document.querySelectorAll(".creator-card");
-    const creatorWorks = Array.from(
-        document.querySelectorAll(".creator-work")
+            updateTooltipPosition(event);
+        }
     );
 
-    const creatorLightbox = document.getElementById("creator-lightbox");
-    const creatorLightboxCaption = document.getElementById(
-        "creator-lightbox-caption"
-    );
-    const creatorLightboxClose = document.querySelector(
-        ".creator-lightbox-close"
-    );
-    const creatorLightboxImage = document.getElementById(
-        "creator-lightbox-image"
-    );
-    const creatorLightboxLink = document.getElementById(
-        "creator-lightbox-link"
-    );
-    const creatorLightboxNext = document.querySelector(
-        ".creator-lightbox-next"
-    );
-    const creatorLightboxPrev = document.querySelector(
-        ".creator-lightbox-prev"
+    countdownElement.addEventListener(
+        "mouseleave",
+        hideTooltip
     );
 
-    let activeCreatorWorkIndex = 0;
+    countdownElement.addEventListener(
+        "click",
+        event => {
+            if (
+                tooltip.style.display ===
+                "block"
+            ) {
+                hideTooltip();
+                return;
+            }
+
+            showTooltip(event);
+        }
+    );
+}
 
 
-    /* 生成指定范围内的随机倾斜角度 */
-    function createRandomRotation(min, max) {
-        return `${(Math.random() * (max - min) + min).toFixed(2)}deg`;
-    }
+/* ===========================
+   4. 导航栏切换
+=========================== */
 
-
-    /* 为头像和作品图生成随机倾斜 */
-    creatorCards.forEach(card => {
-        card.style.setProperty(
-            "--avatar-rotation",
-            createRandomRotation(-5, 5)
+function initializeNavigation() {
+    const navigationTabs =
+        document.querySelectorAll(
+            ".tab"
         );
 
-        for (let index = 1; index <= 4; index += 1) {
-            card.style.setProperty(
-                `--work-rotation-${index}`,
-                createRandomRotation(-5, 5)
+    const sections =
+        document.querySelectorAll(
+            ".section"
+        );
+
+    const mainContent =
+        document.getElementById(
+            "content"
+        );
+
+    const backToHomeButton =
+        document.getElementById(
+            "back-to-home"
+        );
+
+    const newsSection =
+        document.getElementById(
+            "news-section"
+        );
+
+    let homeUnlocked = false;
+
+    function hideAllSections() {
+        sections.forEach(section => {
+            section.style.display =
+                "none";
+        });
+    }
+
+    function showSection(sectionId) {
+        if (!sectionId) {
+            console.error(
+                "导航按钮缺少 data-target。"
             );
+
+            return;
         }
-    });
 
+        hideAllSections();
 
-    /* 根据栏目进入视口的程度切换位置状态 */
-    const creatorCardObserver = new IntersectionObserver(
-        entries => {
-            entries.forEach(entry => {
-                const card = entry.target;
+        /*
+         * #content 保持显示，
+         * 避免其中的倒计时随栏目切换消失。
+         */
+        if (mainContent) {
+            mainContent.style.display =
+                "block";
+        }
 
-                if (!entry.isIntersecting) {
-                    card.classList.remove(
-                        "is-entering",
-                        "is-settled"
+        if (sectionId === "content") {
+            if (newsSection) {
+                newsSection.style.display =
+                    "block";
+            }
+
+            if (backToHomeButton) {
+                backToHomeButton.style.display =
+                    "none";
+            }
+
+            return;
+        }
+
+        /*
+         * 进入其他栏目时，
+         * 只隐藏主页新闻内容。
+         */
+        if (newsSection) {
+            newsSection.style.display =
+                "none";
+        }
+
+        const targetSection =
+            document.getElementById(
+                sectionId
+            );
+
+        if (!targetSection) {
+            console.error(
+                `未找到目标部件: #${sectionId}`
+            );
+
+            return;
+        }
+
+        targetSection.style.display =
+            "block";
+
+        if (backToHomeButton) {
+            backToHomeButton.style.display =
+                "block";
+        }
+    }
+
+    navigationTabs.forEach(tab => {
+        tab.addEventListener(
+            "click",
+            () => {
+                const targetId =
+                    tab.getAttribute(
+                        "data-target"
+                    );
+
+                /*
+                 * 导航栏中的主页按钮。
+                 */
+                if (
+                    targetId ===
+                    "back-to-home"
+                ) {
+                    if (!homeUnlocked) {
+                        return;
+                    }
+
+                    showSection(
+                        "content"
                     );
 
                     return;
                 }
 
-                if (entry.intersectionRatio >= 0.58) {
-                    card.classList.add("is-settled");
-                    card.classList.remove("is-entering");
+                if (!targetId) {
+                    console.error(
+                        "导航按钮缺少 data-target。"
+                    );
 
                     return;
                 }
 
-                card.classList.add("is-entering");
-                card.classList.remove("is-settled");
-            });
-        },
-        {
-            root: null,
-            rootMargin: "0px 0px -8% 0px",
-            threshold: [0.08, 0.58]
+                /*
+                 * 进入任意其他栏目后，
+                 * 解锁主页按钮。
+                 */
+                homeUnlocked = true;
+
+                showSection(targetId);
+            }
+        );
+    });
+
+    backToHomeButton?.addEventListener(
+        "click",
+        () => {
+            showSection("content");
         }
     );
 
-    creatorCards.forEach(card => {
-        creatorCardObserver.observe(card);
-    });
+    /*
+     * 初始化时隐藏所有栏目页面。
+     * 主页新闻内容由原始页面状态控制。
+     */
+    hideAllSections();
+
+    if (backToHomeButton) {
+        backToHomeButton.style.display =
+            "none";
+    }
+}
 
 
-    /* 更新大图、标题和网站链接 */
-    function updateCreatorLightbox(index) {
-        const work = creatorWorks[index];
+/* ===========================
+   5. 创作者作品预览
+=========================== */
 
-        if (!work || !creatorLightboxImage) {
+function initializeCreatorGallery() {
+    const creatorCards =
+        document.querySelectorAll(
+            ".creator-card"
+        );
+
+    const creatorWorks =
+        Array.from(
+            document.querySelectorAll(
+                ".creator-work"
+            )
+        );
+
+    const lightbox =
+        document.getElementById(
+            "creator-lightbox"
+        );
+
+    const lightboxCaption =
+        document.getElementById(
+            "creator-lightbox-caption"
+        );
+
+    const lightboxCloseButton =
+        document.querySelector(
+            ".creator-lightbox-close"
+        );
+
+    const lightboxImage =
+        document.getElementById(
+            "creator-lightbox-image"
+        );
+
+    const lightboxLink =
+        document.getElementById(
+            "creator-lightbox-link"
+        );
+
+    const lightboxNextButton =
+        document.querySelector(
+            ".creator-lightbox-next"
+        );
+
+    const lightboxPreviousButton =
+        document.querySelector(
+            ".creator-lightbox-prev"
+        );
+
+    const lightboxFigure =
+        document.querySelector(
+            ".creator-lightbox-figure"
+        );
+
+    let activeWorkIndex = 0;
+
+    function createRandomRotation(
+        minimum,
+        maximum
+    ) {
+        const rotation =
+            Math.random() *
+            (
+                maximum -
+                minimum
+            ) +
+            minimum;
+
+        return `${rotation.toFixed(
+            2
+        )}deg`;
+    }
+
+    function initializeCardRotations() {
+        creatorCards.forEach(card => {
+            card.style.setProperty(
+                "--avatar-rotation",
+                createRandomRotation(
+                    -5,
+                    5
+                )
+            );
+
+            for (
+                let index = 1;
+                index <= 4;
+                index += 1
+            ) {
+                card.style.setProperty(
+                    `--work-rotation-${index}`,
+                    createRandomRotation(
+                        -5,
+                        5
+                    )
+                );
+            }
+        });
+    }
+
+    function initializeCardObserver() {
+        if (
+            creatorCards.length === 0 ||
+            !(
+                "IntersectionObserver"
+                in window
+            )
+        ) {
             return;
         }
 
-        const image = work.querySelector("img");
+        const observer =
+            new IntersectionObserver(
+                entries => {
+                    entries.forEach(entry => {
+                        const card =
+                            entry.target;
 
-        const caption =
-            work.dataset.caption
-            || image?.alt
-            || "";
+                        if (
+                            !entry.isIntersecting
+                        ) {
+                            card.classList.remove(
+                                "is-entering",
+                                "is-settled"
+                            );
 
-        const fullImage =
-            work.dataset.full
-            || image?.src
-            || "";
+                            return;
+                        }
 
-        const websiteLink =
-            work.dataset.link?.trim()
-            || "";
+                        if (
+                            entry.intersectionRatio >=
+                            0.58
+                        ) {
+                            card.classList.add(
+                                "is-settled"
+                            );
 
-        activeCreatorWorkIndex = index;
+                            card.classList.remove(
+                                "is-entering"
+                            );
 
-        creatorLightboxImage.src = fullImage;
-        creatorLightboxImage.alt = caption;
+                            return;
+                        }
 
-        if (creatorLightboxCaption) {
-            creatorLightboxCaption.textContent = caption;
+                        card.classList.add(
+                            "is-entering"
+                        );
+
+                        card.classList.remove(
+                            "is-settled"
+                        );
+                    });
+                },
+                {
+                    root: null,
+                    rootMargin:
+                        "0px 0px -8% 0px",
+                    threshold:
+                        [0.08, 0.58]
+                }
+            );
+
+        creatorCards.forEach(card => {
+            observer.observe(card);
+        });
+    }
+
+    function updateLightbox(index) {
+        const work =
+            creatorWorks[index];
+
+        if (
+            !work ||
+            !lightboxImage
+        ) {
+            return;
         }
 
-        if (!creatorLightboxLink) {
+        const image =
+            work.querySelector("img");
+
+        const caption =
+            work.dataset.caption ||
+            image?.alt ||
+            "";
+
+        const fullImage =
+            work.dataset.full ||
+            image?.src ||
+            "";
+
+        const websiteLink =
+            work.dataset.link?.trim() ||
+            "";
+
+        activeWorkIndex = index;
+
+        lightboxImage.src =
+            fullImage;
+
+        lightboxImage.alt =
+            caption;
+
+        if (lightboxCaption) {
+            lightboxCaption.textContent =
+                caption;
+        }
+
+        if (!lightboxLink) {
             return;
         }
 
         if (websiteLink) {
-            creatorLightboxLink.setAttribute(
+            lightboxLink.setAttribute(
                 "href",
                 websiteLink
             );
 
-            creatorLightboxLink.hidden = false;
-            creatorLightboxLink.setAttribute(
+            lightboxLink.hidden =
+                false;
+
+            lightboxLink.setAttribute(
                 "aria-hidden",
                 "false"
             );
-            creatorLightboxLink.setAttribute(
+
+            lightboxLink.setAttribute(
                 "tabindex",
                 "0"
             );
-        } else {
-            creatorLightboxLink.removeAttribute("href");
-            creatorLightboxLink.hidden = true;
-            creatorLightboxLink.setAttribute(
-                "aria-hidden",
-                "true"
-            );
-            creatorLightboxLink.setAttribute(
-                "tabindex",
-                "-1"
-            );
-        }
-    }
 
-
-    /* 打开作品大图 */
-    function openCreatorLightbox(index) {
-        if (!creatorLightbox) {
             return;
         }
 
-        updateCreatorLightbox(index);
+        lightboxLink.removeAttribute(
+            "href"
+        );
 
-        creatorLightbox.classList.add("active");
-        creatorLightbox.setAttribute(
+        lightboxLink.hidden =
+            true;
+
+        lightboxLink.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        lightboxLink.setAttribute(
+            "tabindex",
+            "-1"
+        );
+    }
+
+    function openLightbox(index) {
+        if (
+            !lightbox ||
+            creatorWorks.length === 0
+        ) {
+            return;
+        }
+
+        updateLightbox(index);
+
+        lightbox.classList.add(
+            "active"
+        );
+
+        lightbox.setAttribute(
             "aria-hidden",
             "false"
         );
@@ -311,18 +793,19 @@ document.addEventListener("DOMContentLoaded", () => {
             "creator-lightbox-open"
         );
 
-        creatorLightboxClose?.focus();
+        lightboxCloseButton?.focus();
     }
 
-
-    /* 关闭作品大图 */
-    function closeCreatorLightbox() {
-        if (!creatorLightbox) {
+    function closeLightbox() {
+        if (!lightbox) {
             return;
         }
 
-        creatorLightbox.classList.remove("active");
-        creatorLightbox.setAttribute(
+        lightbox.classList.remove(
+            "active"
+        );
+
+        lightbox.setAttribute(
             "aria-hidden",
             "true"
         );
@@ -331,473 +814,1167 @@ document.addEventListener("DOMContentLoaded", () => {
             "creator-lightbox-open"
         );
 
-        creatorWorks[activeCreatorWorkIndex]?.focus();
+        creatorWorks[
+            activeWorkIndex
+        ]?.focus();
     }
 
-
-    /* 切换上一张或下一张作品 */
-    function changeCreatorLightbox(direction) {
-        if (creatorWorks.length === 0) {
-            return;
-        }
-
-        activeCreatorWorkIndex =
-            (
-                activeCreatorWorkIndex
-                + direction
-                + creatorWorks.length
-            ) % creatorWorks.length;
-
-        updateCreatorLightbox(activeCreatorWorkIndex);
-    }
-
-
-    /* 点击作品打开大图 */
-    creatorWorks.forEach((work, index) => {
-        work.addEventListener("click", () => {
-            openCreatorLightbox(index);
-        });
-    });
-
-
-    /* 关闭按钮 */
-    creatorLightboxClose?.addEventListener(
-        "click",
-        closeCreatorLightbox
-    );
-
-
-    /* 下一张按钮 */
-    creatorLightboxNext?.addEventListener(
-        "click",
-        () => {
-            changeCreatorLightbox(1);
-        }
-    );
-
-
-    /* 上一张按钮 */
-    creatorLightboxPrev?.addEventListener(
-        "click",
-        () => {
-            changeCreatorLightbox(-1);
-        }
-    );
-
-
-    /* 点击大图背景关闭 */
-    creatorLightbox?.addEventListener(
-        "click",
-        event => {
-            if (event.target === creatorLightbox) {
-                closeCreatorLightbox();
-            }
-        }
-    );
-
-
-    /* 阻止点击内容区域时关闭大图 */
-    document
-        .querySelector(".creator-lightbox-figure")
-        ?.addEventListener(
-            "click",
-            event => {
-                event.stopPropagation();
-            }
-        );
-
-
-    /* 键盘控制 */
-    document.addEventListener("keydown", event => {
+    function changeLightbox(direction) {
         if (
-            !creatorLightbox
-            || !creatorLightbox.classList.contains("active")
+            creatorWorks.length === 0
         ) {
             return;
         }
 
-        if (event.key === "Escape") {
-            closeCreatorLightbox();
-        }
+        activeWorkIndex =
+            (
+                activeWorkIndex +
+                direction +
+                creatorWorks.length
+            ) %
+            creatorWorks.length;
 
-        if (event.key === "ArrowLeft") {
-            changeCreatorLightbox(-1);
-        }
-
-        if (event.key === "ArrowRight") {
-            changeCreatorLightbox(1);
-        }
-    });
-
-    /* ===========================
-       4.情报署标志磁吸效果
-       =========================== */
-
-    /* 获取情报署标志图片 */
-    const nhnLogo = document.querySelector(".nhn-logo");
-
-    /* 鼠标磁吸最大作用距离（像素） */
-    const logoMagnetDistance = 360;
-
-    /* 图片最大位移距离（像素） */
-    const logoMagnetOffset = 16;
-
-    /* 图片位移缓动系数 */
-    const logoLerp = 0.12;
-
-    let logoCurrentX = 0;
-    let logoCurrentY = 0;
-
-    let logoTargetX = 0;
-    let logoTargetY = 0;
-
-
-    /* 更新鼠标目标位置 */
-    document.addEventListener("mousemove", event => {
-
-        if (!nhnLogo) {
-            return;
-        }
-
-        const rect = nhnLogo.getBoundingClientRect();
-
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        const deltaX = event.clientX - centerX;
-        const deltaY = event.clientY - centerY;
-
-        const distance = Math.hypot(deltaX, deltaY);
-
-        if (distance < logoMagnetDistance) {
-
-            const strength = 1 - distance / logoMagnetDistance;
-
-            logoTargetX =
-                deltaX *
-                (logoMagnetOffset / logoMagnetDistance) *
-                strength;
-
-            logoTargetY =
-                deltaY *
-                (logoMagnetOffset / logoMagnetDistance) *
-                strength;
-
-            nhnLogo.style.opacity = "1";
-
-        } else {
-
-            logoTargetX = 0;
-            logoTargetY = 0;
-
-            nhnLogo.style.opacity = "0.9";
-
-        }
-
-    });
-
-    /* 鼠标离开页面后恢复原位 */
-    document.addEventListener("mouseleave", () => {
-
-        logoTargetX = 0;
-        logoTargetY = 0;
-
-        if (nhnLogo) {
-            nhnLogo.style.opacity = "0.9";
-        }
-
-    });
-
-    /* 图片磁吸动画 */
-    function animateNhnLogo() {
-
-        if (nhnLogo) {
-
-            logoCurrentX += (logoTargetX - logoCurrentX) * logoLerp;
-            logoCurrentY += (logoTargetY - logoCurrentY) * logoLerp;
-
-            nhnLogo.style.transform =
-                `translate3d(${logoCurrentX}px, ${logoCurrentY}px, 0)`;
-
-        }
-
-        requestAnimationFrame(animateNhnLogo);
-
+        updateLightbox(
+            activeWorkIndex
+        );
     }
 
-    /* 启动磁吸动画 */
-    animateNhnLogo();
+    initializeCardRotations();
+    initializeCardObserver();
 
-    /* ===========================
-       4. 情报署手风琴与时间轴
-       =========================== */
-
-    const accordionOptions = document.querySelectorAll(
-        ".accordion-menu-option"
+    creatorWorks.forEach(
+        (work, index) => {
+            work.addEventListener(
+                "click",
+                () => {
+                    openLightbox(index);
+                }
+            );
+        }
     );
 
-    const nhnSection = document.getElementById("nhn-section");
-    const timelineSection = document.getElementById("timeline-section");
-    const timelineItems = document.querySelectorAll(".timeline-item");
-    const timelineDetails = document.querySelectorAll(".timeline-detail");
+    lightboxCloseButton?.addEventListener(
+        "click",
+        closeLightbox
+    );
 
-    /* ===========================
-       5. 时间轴事件详情
-       =========================== */
+    lightboxNextButton?.addEventListener(
+        "click",
+        () => {
+            changeLightbox(1);
+        }
+    );
 
-    /**
-     * 隐藏所有时间轴事件详情，
-     * 同时移除所有节点的选中状态。
-     */
-    function hideTimelineDetails() {
-        timelineDetails.forEach(detail => {
-            detail.classList.remove("active");
-            detail.setAttribute("aria-hidden", "true");
-        });
+    lightboxPreviousButton?.addEventListener(
+        "click",
+        () => {
+            changeLightbox(-1);
+        }
+    );
 
-        timelineItems.forEach(item => {
-            item.classList.remove("active");
-            item.setAttribute("aria-expanded", "false");
-        });
+    lightbox?.addEventListener(
+        "click",
+        event => {
+            if (
+                event.target ===
+                lightbox
+            ) {
+                closeLightbox();
+            }
+        }
+    );
+
+    lightboxFigure?.addEventListener(
+        "click",
+        event => {
+            event.stopPropagation();
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        event => {
+            if (
+                !lightbox ||
+                !lightbox.classList.contains(
+                    "active"
+                )
+            ) {
+                return;
+            }
+
+            switch (event.key) {
+                case "Escape":
+                    closeLightbox();
+                    break;
+
+                case "ArrowLeft":
+                    changeLightbox(-1);
+                    break;
+
+                case "ArrowRight":
+                    changeLightbox(1);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    );
+}
+
+
+/* ===========================
+   6. 情报署标志磁吸
+=========================== */
+
+function initializeNhnLogoMagnet() {
+    const nhnLogo =
+        document.querySelector(
+            ".nhn-logo"
+        );
+
+    if (!nhnLogo) {
+        return;
     }
 
+    const supportsPointerEffects =
+        window.matchMedia(
+            "(hover: hover) and (pointer: fine)"
+        ).matches;
 
-    /**
-     * 显示指定的时间轴事件详情。
-     *
-     * @param {HTMLElement} item
-     * @param {HTMLElement} detail
+    if (!supportsPointerEffects) {
+        return;
+    }
+
+    /*
+     * 鼠标磁吸最大作用距离。
+     * 增大该值可扩大鼠标感应范围。
      */
-    function showTimelineDetail(item, detail) {
+    const magnetDistance = 360;
+
+    /*
+     * 图片最大位移距离。
+     */
+    const magnetOffset = 16;
+
+    /*
+     * 图片位移缓动系数。
+     * 数值越大，跟随速度越快。
+     */
+    const interpolationFactor = 0.12;
+
+    let currentX = 0;
+    let currentY = 0;
+
+    let targetX = 0;
+    let targetY = 0;
+
+    let animationFrame = null;
+
+    function hasActiveMovement() {
+        const distanceToTarget =
+            Math.hypot(
+                targetX - currentX,
+                targetY - currentY
+            );
+
+        return distanceToTarget > 0.01;
+    }
+
+    function animateLogo() {
+        currentX +=
+            (
+                targetX -
+                currentX
+            ) *
+            interpolationFactor;
+
+        currentY +=
+            (
+                targetY -
+                currentY
+            ) *
+            interpolationFactor;
+
+        nhnLogo.style.transform =
+            `translate3d(` +
+            `${currentX}px, ` +
+            `${currentY}px, 0)`;
+
+        if (hasActiveMovement()) {
+            animationFrame =
+                window.requestAnimationFrame(
+                    animateLogo
+                );
+
+            return;
+        }
+
+        currentX = targetX;
+        currentY = targetY;
+
+        nhnLogo.style.transform =
+            `translate3d(` +
+            `${currentX}px, ` +
+            `${currentY}px, 0)`;
+
+        animationFrame = null;
+    }
+
+    function startLogoAnimation() {
+        if (animationFrame !== null) {
+            return;
+        }
+
+        animationFrame =
+            window.requestAnimationFrame(
+                animateLogo
+            );
+    }
+
+    function resetLogoPosition() {
+        targetX = 0;
+        targetY = 0;
+
+        nhnLogo.style.opacity =
+            "0.9";
+
+        startLogoAnimation();
+    }
+
+    document.addEventListener(
+        "mousemove",
+        event => {
+            const logoRect =
+                nhnLogo.getBoundingClientRect();
+
+            const centerX =
+                logoRect.left +
+                logoRect.width / 2;
+
+            const centerY =
+                logoRect.top +
+                logoRect.height / 2;
+
+            const deltaX =
+                event.clientX -
+                centerX;
+
+            const deltaY =
+                event.clientY -
+                centerY;
+
+            const distance =
+                Math.hypot(
+                    deltaX,
+                    deltaY
+                );
+
+            if (
+                distance <
+                magnetDistance
+            ) {
+                const strength =
+                    1 -
+                    distance /
+                    magnetDistance;
+
+                targetX =
+                    deltaX *
+                    (
+                        magnetOffset /
+                        magnetDistance
+                    ) *
+                    strength;
+
+                targetY =
+                    deltaY *
+                    (
+                        magnetOffset /
+                        magnetDistance
+                    ) *
+                    strength;
+
+                nhnLogo.style.opacity =
+                    "1";
+            } else {
+                targetX = 0;
+                targetY = 0;
+
+                nhnLogo.style.opacity =
+                    "0.9";
+            }
+
+            startLogoAnimation();
+        }
+    );
+
+    document.addEventListener(
+        "mouseleave",
+        resetLogoPosition
+    );
+}
+
+
+/* ===========================
+   7. 情报署时间轴
+=========================== */
+
+function initializeNhnTimeline() {
+    const timelineItems =
+        document.querySelectorAll(
+            ".timeline-item"
+        );
+
+    const timelineDetails =
+        document.querySelectorAll(
+            ".timeline-detail"
+        );
+
+    if (
+        timelineItems.length === 0 &&
+        timelineDetails.length === 0
+    ) {
+        return;
+    }
+
+    function hideTimelineDetails() {
+        timelineDetails.forEach(
+            detail => {
+                detail.classList.remove(
+                    "active"
+                );
+
+                detail.setAttribute(
+                    "aria-hidden",
+                    "true"
+                );
+            }
+        );
+
+        timelineItems.forEach(
+            item => {
+                item.classList.remove(
+                    "active"
+                );
+
+                item.setAttribute(
+                    "aria-expanded",
+                    "false"
+                );
+            }
+        );
+    }
+
+    function showTimelineDetail(
+        item,
+        detail
+    ) {
         hideTimelineDetails();
 
-        item.classList.add("active");
-        item.setAttribute("aria-expanded", "true");
+        item.classList.add(
+            "active"
+        );
 
-        detail.classList.add("active");
-        detail.setAttribute("aria-hidden", "false");
+        item.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+
+        detail.classList.add(
+            "active"
+        );
+
+        detail.setAttribute(
+            "aria-hidden",
+            "false"
+        );
     }
 
-
-    /* 初始化时间轴节点和详情的辅助属性 */
-    timelineItems.forEach(item => {
-        item.setAttribute("role", "button");
-        item.setAttribute("tabindex", "0");
-        item.setAttribute("aria-expanded", "false");
-
-        const targetId = item.dataset.target;
-
-        if (targetId) {
-            item.setAttribute("aria-controls", targetId);
-        }
-    });
-
-    timelineDetails.forEach(detail => {
-        detail.setAttribute("aria-hidden", "true");
-    });
-
-
-    /**
-     * 处理时间轴节点选择。
-     *
-     * 再次点击当前节点时收起详情；
-     * 点击其他节点时切换到对应详情。
-     *
-     * @param {HTMLElement} item
-     */
     function selectTimelineItem(item) {
-        const targetId = item.dataset.target;
+        const targetId =
+            item.dataset.target;
 
         if (!targetId) {
-            console.error("该时间轴节点没有设置 data-target。");
+            console.error(
+                "该时间轴节点没有设置 data-target。"
+            );
+
             return;
         }
 
-        const targetDetail = document.getElementById(targetId);
+        const targetDetail =
+            document.getElementById(
+                targetId
+            );
 
         if (!targetDetail) {
-            console.error(`未找到时间轴事件详情: #${targetId}`);
+            console.error(
+                `未找到时间轴事件详情: #${targetId}`
+            );
+
             return;
         }
 
-        const isCurrentItem = item.classList.contains("active");
+        const isCurrentItem =
+            item.classList.contains(
+                "active"
+            );
 
-        /* 再次点击当前节点时收起 */
+        /*
+         * 再次选择当前节点时，
+         * 收起详情。
+         */
         if (isCurrentItem) {
             hideTimelineDetails();
             return;
         }
 
-        /* 显示对应事件详情 */
-        showTimelineDetail(item, targetDetail);
+        showTimelineDetail(
+            item,
+            targetDetail
+        );
     }
 
-
-    /* 点击时间轴节点 */
     timelineItems.forEach(item => {
-        item.addEventListener("click", event => {
-            /*
-            * 阻止点击继续冒泡到 document，
-            * 避免详情刚显示就被全局点击事件关闭。
-            */
-            event.stopPropagation();
+        item.setAttribute(
+            "role",
+            "button"
+        );
 
-            selectTimelineItem(item);
-        });
+        item.setAttribute(
+            "tabindex",
+            "0"
+        );
 
-        /*
-        * 支持键盘操作：
-        * Enter 或空格键也可以打开详情。
-        */
-        item.addEventListener("keydown", event => {
-            if (event.key !== "Enter" && event.key !== " ") {
-                return;
+        item.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+
+        const targetId =
+            item.dataset.target;
+
+        if (targetId) {
+            item.setAttribute(
+                "aria-controls",
+                targetId
+            );
+        }
+
+        item.addEventListener(
+            "click",
+            event => {
+                /*
+                 * 阻止事件冒泡，
+                 * 避免详情显示后立即被关闭。
+                 */
+                event.stopPropagation();
+
+                selectTimelineItem(item);
             }
+        );
 
-            event.preventDefault();
-            event.stopPropagation();
-
-            selectTimelineItem(item);
-        });
-    });
-
-
-    /*
-    * 点击详情内容时不关闭详情。
-    * 这样可以正常选择文字、点击链接或与详情内部内容交互。
-    */
-    timelineDetails.forEach(detail => {
-        detail.addEventListener("click", event => {
-            event.stopPropagation();
-        });
-    });
-
-
-    /*
-    * 点击时间轴节点和详情区域以外的位置时，
-    * 隐藏当前事件详情。
-    */
-    document.addEventListener("click", event => {
-        const clickedTimelineItem = event.target.closest(".timeline-item");
-        const clickedTimelineDetail = event.target.closest(".timeline-detail");
-
-        if (!clickedTimelineItem && !clickedTimelineDetail) {
-            hideTimelineDetails();
-        }
-    });
-
-
-    /* 按下 Escape 键时关闭详情 */
-    document.addEventListener("keydown", event => {
-        if (event.key === "Escape") {
-            hideTimelineDetails();
-        }
-    });
-
-
-    /* ===========================
-       6. 情报署手风琴菜单
-       =========================== */
-
-    accordionOptions.forEach(option => {
-        option.addEventListener("click", () => {
-            const targetId = option.dataset.target;
-            const isExpanded = option.classList.contains("expanded");
-
-            /* 清除所有菜单选项的展开状态 */
-            accordionOptions.forEach(item => {
-                item.classList.remove("expanded");
-            });
-
-            /*
-            * 没有 data-target 的菜单：
-            * 仅负责展开或收起图片。
-            */
-            if (!targetId) {
-                if (!isExpanded) {
-                    option.classList.add("expanded");
+        item.addEventListener(
+            "keydown",
+            event => {
+                if (
+                    event.key !==
+                        "Enter" &&
+                    event.key !==
+                        " "
+                ) {
+                    return;
                 }
 
-                return;
+                event.preventDefault();
+                event.stopPropagation();
+
+                selectTimelineItem(item);
             }
+        );
+    });
 
-            /* 获取菜单对应的目标页面 */
-            const targetSection = document.getElementById(targetId);
+    timelineDetails.forEach(
+        detail => {
+            detail.setAttribute(
+                "aria-hidden",
+                "true"
+            );
 
-            if (!targetSection) {
-                console.error(`未找到情报署目标部件: #${targetId}`);
-                return;
-            }
+            /*
+             * 允许正常选择文字、
+             * 点击链接和操作详情内容。
+             */
+            detail.addEventListener(
+                "click",
+                event => {
+                    event.stopPropagation();
+                }
+            );
+        }
+    );
 
-            /* 先播放手风琴展开动画 */
-            option.classList.add("expanded");
+    document.addEventListener(
+        "click",
+        event => {
+            const clickedItem =
+                event.target.closest(
+                    ".timeline-item"
+                );
 
-            setTimeout(() => {
-                /*
-                * 清除菜单展开状态，
-                * 避免返回情报署后该选项仍然保持展开。
-                */
-                option.classList.remove("expanded");
+            const clickedDetail =
+                event.target.closest(
+                    ".timeline-detail"
+                );
 
-                /* 每次进入时间轴时重置事件详情 */
+            if (
+                !clickedItem &&
+                !clickedDetail
+            ) {
                 hideTimelineDetails();
+            }
+        }
+    );
 
-                /* 隐藏情报署主页 */
-                if (nhnSection) {
-                    nhnSection.style.display = "none";
+    document.addEventListener(
+        "keydown",
+        event => {
+            if (
+                event.key ===
+                "Escape"
+            ) {
+                hideTimelineDetails();
+            }
+        }
+    );
+
+    /*
+     * 供情报署菜单与返回按钮调用。
+     */
+    window.hideTimelineDetails =
+        hideTimelineDetails;
+}
+
+
+/* ===========================
+   8. 情报署手风琴
+=========================== */
+
+function initializeNhnAccordion() {
+    const accordionOptions =
+        document.querySelectorAll(
+            ".accordion-menu-option"
+        );
+
+    const nhnSection =
+        document.getElementById(
+            "nhn-section"
+        );
+
+    const backToHomeButton =
+        document.getElementById(
+            "back-to-home"
+        );
+
+    const backToNhnButtons =
+        document.querySelectorAll(
+            ".back-to-nhn"
+        );
+
+    if (
+        accordionOptions.length === 0 &&
+        backToNhnButtons.length === 0
+    ) {
+        return;
+    }
+
+    /*
+     * 从菜单 data-target 中收集
+     * 所有情报署子页面。
+     */
+    const nhnSubsections =
+        Array.from(
+            accordionOptions
+        )
+            .map(option => {
+                const targetId =
+                    option.dataset.target;
+
+                if (!targetId) {
+                    return null;
                 }
 
-                /*
-                * 重置目标页面显示状态，
-                * 使进入动画能够再次播放。
-                */
-                targetSection.classList.remove("visible");
-                targetSection.style.removeProperty("display");
+                return document.getElementById(
+                    targetId
+                );
+            })
+            .filter(Boolean);
 
-                /* 强制浏览器重新计算布局 */
-                void targetSection.offsetWidth;
+    function resetAccordionOptions() {
+        accordionOptions.forEach(
+            option => {
+                option.classList.remove(
+                    "expanded"
+                );
+            }
+        );
+    }
 
-                /* 显示目标页面 */
-                targetSection.classList.add("visible");
+    function hideAllNhnSubsections() {
+        nhnSubsections.forEach(
+            subsection => {
+                subsection.classList.remove(
+                    "visible"
+                );
 
-                /* 显示全局返回主页按钮 */
-                if (backButton) {
-                    backButton.style.display = "block";
+                subsection.style.display =
+                    "none";
+            }
+        );
+    }
+
+    function resetTimelineDetails() {
+        if (
+            typeof window
+                .hideTimelineDetails ===
+            "function"
+        ) {
+            window.hideTimelineDetails();
+        }
+    }
+
+    function showNhnHome() {
+        resetTimelineDetails();
+        hideAllNhnSubsections();
+        resetAccordionOptions();
+
+        if (nhnSection) {
+            nhnSection.style.removeProperty(
+                "display"
+            );
+
+            nhnSection.style.display =
+                "block";
+        }
+    }
+
+    accordionOptions.forEach(
+        option => {
+            option.addEventListener(
+                "click",
+                () => {
+                    const targetId =
+                        option.dataset.target;
+
+                    const isExpanded =
+                        option.classList.contains(
+                            "expanded"
+                        );
+
+                    resetAccordionOptions();
+
+                    /*
+                     * 没有 data-target 的选项，
+                     * 仅负责展开或收起。
+                     */
+                    if (!targetId) {
+                        if (!isExpanded) {
+                            option.classList.add(
+                                "expanded"
+                            );
+                        }
+
+                        return;
+                    }
+
+                    const targetSection =
+                        document.getElementById(
+                            targetId
+                        );
+
+                    if (!targetSection) {
+                        console.error(
+                            `未找到情报署目标部件: #${targetId}`
+                        );
+
+                        return;
+                    }
+
+                    /*
+                     * 先播放手风琴展开动画。
+                     */
+                    option.classList.add(
+                        "expanded"
+                    );
+
+                    window.setTimeout(
+                        () => {
+                            option.classList.remove(
+                                "expanded"
+                            );
+
+                            resetTimelineDetails();
+                            hideAllNhnSubsections();
+
+                            if (nhnSection) {
+                                nhnSection.style.display =
+                                    "none";
+                            }
+
+                            /*
+                             * 清除内联 display:none，
+                             * 再重新触发 visible 动画。
+                             */
+                            targetSection.style
+                                .removeProperty(
+                                    "display"
+                                );
+
+                            targetSection.classList
+                                .remove(
+                                    "visible"
+                                );
+
+                            /*
+                             * 强制浏览器重新计算布局，
+                             * 使进入动画可以再次播放。
+                             */
+                            void targetSection
+                                .offsetWidth;
+
+                            targetSection.classList
+                                .add(
+                                    "visible"
+                                );
+
+                            if (
+                                backToHomeButton
+                            ) {
+                                backToHomeButton
+                                    .style
+                                    .display =
+                                    "block";
+                            }
+                        },
+                        250
+                    );
                 }
-            }, 250);
+            );
+        }
+    );
+
+    backToNhnButtons.forEach(
+        button => {
+            button.addEventListener(
+                "click",
+                event => {
+                    event.stopPropagation();
+
+                    showNhnHome();
+                }
+            );
+        }
+    );
+}
+
+
+/* ===========================
+   9. 作品动态跳转
+=========================== */
+
+function initializeWorkFeed() {
+    const viewCreatorButtons =
+        document.querySelectorAll(
+            ".work-post-view-creator"
+        );
+
+    const worksSection =
+        document.getElementById(
+            "works-section"
+        );
+
+    const creatorsSection =
+        document.getElementById(
+            "creators-section"
+        );
+
+    if (
+        viewCreatorButtons.length === 0 ||
+        !creatorsSection
+    ) {
+        return;
+    }
+
+    function findCreatorCard(creatorId) {
+        return Array.from(
+            document.querySelectorAll(
+                ".creator-card"
+            )
+        ).find(card => {
+            return (
+                card.dataset.creator ===
+                creatorId
+            );
         });
+    }
+
+    function highlightCreatorCard(card) {
+        card.classList.remove(
+            "is-work-target"
+        );
+
+        void card.offsetWidth;
+
+        card.classList.add(
+            "is-work-target"
+        );
+
+        window.setTimeout(
+            () => {
+                card.classList.remove(
+                    "is-work-target"
+                );
+            },
+            2200
+        );
+    }
+
+    viewCreatorButtons.forEach(button => {
+        button.addEventListener(
+            "click",
+            () => {
+                const creatorId =
+                    button.dataset.creatorTarget;
+
+                const creatorCard =
+                    findCreatorCard(creatorId);
+
+                if (!creatorCard) {
+                    console.error(
+                        `未找到创作者卡片：${creatorId}`
+                    );
+
+                    return;
+                }
+
+                document
+                    .querySelectorAll(".section")
+                    .forEach(section => {
+                        section.style.display =
+                            "none";
+                    });
+
+                creatorsSection.style.display =
+                    "block";
+
+                if (worksSection) {
+                    worksSection.style.display =
+                        "none";
+                }
+
+                window.requestAnimationFrame(
+                    () => {
+                        creatorCard.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+
+                        highlightCreatorCard(
+                            creatorCard
+                        );
+                    }
+                );
+            }
+        );
     });
+}
 
 
-    /* ===========================
-       6. 返回情报署
-       =========================== */
+/* ===========================
+   10. 作品动态数字解码
+=========================== */
 
-    const backToNhnButtons = document.querySelectorAll(".back-to-nhn");
+function initializeWorkPostStats() {
+    const workPosts =
+        document.querySelectorAll(
+            ".work-post"
+        );
 
-    backToNhnButtons.forEach(button => {
-        button.addEventListener("click", event => {
-            event.stopPropagation();
+    if (workPosts.length === 0) {
+        return;
+    }
 
-            /* 关闭所有事件详情 */
-            hideTimelineDetails();
+    const scrambleCharacters =
+        "0123456789#$%&?@";
 
-            /* 隐藏时间轴页面 */
-            if (timelineSection) {
-                timelineSection.classList.remove("visible");
-                timelineSection.style.display = "none";
+    /*
+     * 返回指定范围内的随机整数。
+     */
+    function createRandomNumber(
+        minimum,
+        maximum
+    ) {
+        return Math.floor(
+            Math.random() *
+            (
+                maximum -
+                minimum +
+                1
+            )
+        ) + minimum;
+    }
+
+    /*
+     * 根据最终数字长度生成乱码。
+     */
+    function createScrambleText(length) {
+        let result = "";
+
+        for (
+            let index = 0;
+            index < length;
+            index += 1
+        ) {
+            const characterIndex =
+                Math.floor(
+                    Math.random() *
+                    scrambleCharacters.length
+                );
+
+            result +=
+                scrambleCharacters[
+                    characterIndex
+                ];
+        }
+
+        return result;
+    }
+
+    /*
+     * 播放单个数字的乱码解码动画。
+     */
+    function animateStatCount(countElement) {
+        const button =
+            countElement.closest(
+                ".work-post-stat"
+            );
+
+        if (!button) {
+            return;
+        }
+
+        const minimum =
+            Number.parseInt(
+                button.dataset.min,
+                10
+            );
+
+        const maximum =
+            Number.parseInt(
+                button.dataset.max,
+                10
+            );
+
+        if (
+            Number.isNaN(minimum) ||
+            Number.isNaN(maximum)
+        ) {
+            console.error(
+                "作品统计按钮缺少有效的 data-min 或 data-max。"
+            );
+
+            return;
+        }
+
+        const lowerBound =
+            Math.min(
+                minimum,
+                maximum
+            );
+
+        const upperBound =
+            Math.max(
+                minimum,
+                maximum
+            );
+
+        const finalNumber =
+            createRandomNumber(
+                lowerBound,
+                upperBound
+            );
+
+        const finalText =
+            finalNumber.toLocaleString(
+                "zh-CN"
+            );
+
+        const animationDuration = 1100;
+        const updateInterval = 55;
+        const startTime =
+            performance.now();
+
+        countElement.classList.add(
+            "is-decoding"
+        );
+
+        function updateScramble(
+            currentTime
+        ) {
+            const elapsedTime =
+                currentTime -
+                startTime;
+
+            const progress =
+                Math.min(
+                    elapsedTime /
+                    animationDuration,
+                    1
+                );
+
+            /*
+             * 动画后半段逐渐显示正确数字。
+             */
+            const resolvedLength =
+                Math.floor(
+                    finalText.length *
+                    Math.max(
+                        0,
+                        (
+                            progress -
+                            0.45
+                        ) /
+                        0.55
+                    )
+                );
+
+            const scrambleLength =
+                finalText.length -
+                resolvedLength;
+
+            const scrambleText =
+                createScrambleText(
+                    scrambleLength
+                );
+
+            const resolvedText =
+                finalText.slice(
+                    finalText.length -
+                    resolvedLength
+                );
+
+            countElement.textContent =
+                scrambleText +
+                resolvedText;
+
+            if (progress >= 1) {
+                countElement.textContent =
+                    finalText;
+
+                countElement.classList.remove(
+                    "is-decoding"
+                );
+
+                return;
             }
 
-            /* 重新显示情报署主页 */
-            if (nhnSection) {
-                nhnSection.style.removeProperty("display");
-                nhnSection.style.display = "block";
-            }
+            window.setTimeout(
+                () => {
+                    window.requestAnimationFrame(
+                        updateScramble
+                    );
+                },
+                updateInterval
+            );
+        }
 
-            /* 重置所有手风琴选项 */
-            accordionOptions.forEach(option => {
-                option.classList.remove("expanded");
-            });
-        });
+        window.requestAnimationFrame(
+            updateScramble
+        );
+    }
+
+    /*
+     * 播放一整条作品动态中的统计数字。
+     */
+    function animatePostStats(post) {
+        const countElements =
+            post.querySelectorAll(
+                ".work-post-action-count"
+            );
+
+        countElements.forEach(
+            (
+                countElement,
+                index
+            ) => {
+                window.setTimeout(
+                    () => {
+                        animateStatCount(
+                            countElement
+                        );
+                    },
+                    index * 140
+                );
+            }
+        );
+    }
+
+    if (
+        !(
+            "IntersectionObserver"
+            in window
+        )
+    ) {
+        workPosts.forEach(
+            animatePostStats
+        );
+
+        return;
+    }
+
+    const observer =
+        new IntersectionObserver(
+            entries => {
+                entries.forEach(entry => {
+                    if (
+                        !entry.isIntersecting
+                    ) {
+                        return;
+                    }
+
+                    const post =
+                        entry.target;
+
+                    /*
+                     * 每条动态只播放一次。
+                     */
+                    if (
+                        post.dataset
+                            .statsAnimated ===
+                        "true"
+                    ) {
+                        return;
+                    }
+
+                    post.dataset.statsAnimated =
+                        "true";
+
+                    animatePostStats(post);
+
+                    observer.unobserve(post);
+                });
+            },
+            {
+                root: null,
+                rootMargin:
+                    "0px 0px -12% 0px",
+                threshold: 0.35
+            }
+        );
+
+    workPosts.forEach(post => {
+        observer.observe(post);
     });
-});
+}
