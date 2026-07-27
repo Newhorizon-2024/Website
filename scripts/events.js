@@ -362,71 +362,239 @@ function initializeNavigation() {
             ".section"
         );
 
-    const mainContent =
-        document.getElementById(
-            "content"
-        );
-
     const backToHomeButton =
         document.getElementById(
             "back-to-home"
         );
 
-    const newsSection =
-        document.getElementById(
-            "news-section"
+    const reducedMotionQuery =
+        window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
         );
 
-    let homeUnlocked = false;
+    const depthDuration = 800;
+    const slideDuration = 650;
 
-    function hideAllSections() {
-        sections.forEach(section => {
-            section.style.display =
-                "none";
+    let activeSection =
+        document.querySelector(
+            ".section.is-active"
+        ) ||
+        document.getElementById(
+            "home-section"
+        );
+
+    let isTransitioning = false;
+
+    function wait(duration) {
+        return new Promise(resolve => {
+            window.setTimeout(
+                resolve,
+                duration
+            );
         });
     }
 
-    function showSection(sectionId) {
-        if (!sectionId) {
-            console.error(
-                "导航按钮缺少 data-target。"
+    function clearTransitionClasses(
+        section
+    ) {
+        if (!section) {
+            return;
+        }
+
+        section.classList.remove(
+            "depth-enter",
+            "slide-enter-left",
+            "slide-enter-right",
+        );
+    }
+
+    function resetSection(section) {
+        if (!section) {
+            return;
+        }
+
+        clearTransitionClasses(section);
+
+        section.classList.remove(
+            "is-active"
+        );
+
+        section.style.removeProperty(
+            "display"
+        );
+    }
+
+    function isBountySection(sectionId) {
+        return [
+            "bounty-board-section",
+            "wanted-info-section",
+            "the-ruler-info-section",
+            "the-monarch-info-section"
+        ].includes(sectionId);
+    }
+
+    function isNhnSection(sectionId) {
+        return [
+            "nhn-section",
+            "timeline-section"
+        ].includes(sectionId);
+    }
+
+    function getTransitionType(
+        fromId,
+        toId,
+        requestedType
+    ) {
+        if (
+            requestedType === "depth" ||
+            requestedType === "slide"
+        ) {
+            return requestedType;
+        }
+
+        if (
+            isBountySection(fromId) &&
+            isBountySection(toId)
+        ) {
+            return "slide";
+        }
+
+        if (
+            isNhnSection(fromId) &&
+            isNhnSection(toId)
+        ) {
+            return "slide";
+        }
+
+        return "depth";
+    }
+
+    function getDirection(
+        fromId,
+        toId,
+        requestedDirection
+    ) {
+        if (
+            requestedDirection === "forward" ||
+            requestedDirection === "backward"
+        ) {
+            return requestedDirection;
+        }
+
+        if (
+            toId === "home-section" ||
+            toId === "nhn-section" ||
+            toId === "bounty-board-section"
+        ) {
+            return "backward";
+        }
+
+        return "forward";
+    }
+
+    function updateBackButton(sectionId) {
+        if (!backToHomeButton) {
+            return;
+        }
+
+        backToHomeButton.style.display =
+            sectionId === "home-section"
+                ? "none"
+                : "block";
+    }
+
+    function updateTimelineState(sectionId) {
+        const timelineSection =
+            document.getElementById(
+                "timeline-section"
+            );
+
+        if (!timelineSection) {
+            return;
+        }
+
+        if (
+            sectionId !==
+            "timeline-section"
+        ) {
+            timelineSection.classList.remove(
+                "visible"
             );
 
             return;
         }
 
-        hideAllSections();
+        timelineSection.classList.remove(
+            "visible"
+        );
 
-        /*
-         * #content 保持显示，
-         * 避免其中的倒计时随栏目切换消失。
-         */
-        if (mainContent) {
-            mainContent.style.display =
-                "block";
+        void timelineSection.offsetWidth;
+
+        timelineSection.classList.add(
+            "visible"
+        );
+    }
+
+    /*
+     * scrollMode:
+     *
+     * "none"
+     * 不改变当前滚动位置。
+     *
+     * "top"
+     * 将目标区块顶部移动到视口顶部。
+     *
+     * "auto"
+     * 只有目标区块距离当前视口较远时，
+     * 才进行定位。
+     */
+    function updateSectionScroll(
+        targetSection,
+        scrollMode
+    ) {
+        if (
+            !targetSection ||
+            scrollMode === "none"
+        ) {
+            return;
         }
 
-        if (sectionId === "content") {
-            if (newsSection) {
-                newsSection.style.display =
-                    "block";
-            }
-
-            if (backToHomeButton) {
-                backToHomeButton.style.display =
-                    "none";
-            }
+        if (scrollMode === "top") {
+            targetSection.scrollIntoView({
+                behavior: "auto",
+                block: "start"
+            });
 
             return;
         }
 
-        /*
-         * 进入其他栏目时，
-         * 只隐藏主页新闻内容。
-         */
-        if (newsSection) {
-            newsSection.style.display =
-                "none";
+        const targetRect =
+            targetSection.getBoundingClientRect();
+
+        const acceptableTopDistance =
+            window.innerHeight * 0.35;
+
+        if (
+            Math.abs(targetRect.top) >
+            acceptableTopDistance
+        ) {
+            targetSection.scrollIntoView({
+                behavior: "auto",
+                block: "start"
+            });
+        }
+    }
+
+    async function showSection(
+        sectionId,
+        options = {}
+    ) {
+        if (!sectionId) {
+            console.error(
+                "导航按钮缺少 data-target。"
+            );
+
+            return false;
         }
 
         const targetSection =
@@ -436,19 +604,179 @@ function initializeNavigation() {
 
         if (!targetSection) {
             console.error(
-                `未找到目标部件: #${sectionId}`
+                `未找到目标部件：#${sectionId}`
             );
 
-            return;
+            return false;
         }
 
-        targetSection.style.display =
-            "block";
-
-        if (backToHomeButton) {
-            backToHomeButton.style.display =
-                "block";
+        if (isTransitioning) {
+            return false;
         }
+
+        if (targetSection === activeSection) {
+            updateSectionScroll(
+                targetSection,
+                options.scrollMode || "none"
+            );
+
+            return true;
+        }
+
+        const previousSection =
+            activeSection;
+
+        const previousId =
+            previousSection?.id || "";
+
+        const transitionType =
+            getTransitionType(
+                previousId,
+                sectionId,
+                options.transitionType
+            );
+
+        const direction =
+            getDirection(
+                previousId,
+                sectionId,
+                options.direction
+            );
+
+        const prefersReducedMotion =
+            reducedMotionQuery.matches;
+
+        const scrollMode =
+            options.scrollMode || "auto";
+
+        isTransitioning = true;
+
+        document.body.classList.add(
+            "is-section-transitioning"
+        );
+
+        sections.forEach(section => {
+            if (
+                section !== previousSection &&
+                section !== targetSection
+            ) {
+                resetSection(section);
+            }
+        });
+
+        clearTransitionClasses(
+            previousSection
+        );
+
+        clearTransitionClasses(
+            targetSection
+        );
+
+        targetSection.classList.add(
+            "is-active"
+        );
+
+        updateBackButton(sectionId);
+
+        if (
+            prefersReducedMotion ||
+            !previousSection
+        ) {
+            resetSection(previousSection);
+
+            targetSection.classList.add(
+                "is-active"
+            );
+
+            activeSection =
+                targetSection;
+
+            updateTimelineState(sectionId);
+
+            updateSectionScroll(
+                targetSection,
+                scrollMode
+            );
+
+            document.body.classList.remove(
+                "is-section-transitioning"
+            );
+
+            isTransitioning = false;
+
+            return true;
+        }
+
+        /*
+        * 旧区块立即退出。
+        * 只保留目标区块的进入动画，
+        * 避免两个页面同时叠加显示。
+        */
+        resetSection(previousSection);
+
+        if (transitionType === "slide") {
+            if (direction === "forward") {
+                targetSection.classList.add(
+                    "slide-enter-right"
+                );
+            } else {
+                targetSection.classList.add(
+                    "slide-enter-left"
+                );
+            }
+        } else {
+            targetSection.classList.add(
+                "depth-enter"
+            );
+        }
+
+        void targetSection.offsetWidth;
+
+        window.requestAnimationFrame(
+            () => {
+                targetSection.classList.remove(
+                    "depth-enter",
+                    "slide-enter-left",
+                    "slide-enter-right"
+                );
+
+                targetSection.classList.add(
+                    "is-active"
+                );
+            }
+        );
+
+        await wait(
+            transitionType === "slide"
+                ? slideDuration
+                : depthDuration
+        );
+
+        clearTransitionClasses(
+            targetSection
+        );
+
+        targetSection.classList.add(
+            "is-active"
+        );
+
+        activeSection =
+            targetSection;
+
+        updateTimelineState(sectionId);
+
+        updateSectionScroll(
+            targetSection,
+            scrollMode
+        );
+
+        document.body.classList.remove(
+            "is-section-transitioning"
+        );
+
+        isTransitioning = false;
+
+        return true;
     }
 
     navigationTabs.forEach(tab => {
@@ -456,27 +784,7 @@ function initializeNavigation() {
             "click",
             () => {
                 const targetId =
-                    tab.getAttribute(
-                        "data-target"
-                    );
-
-                /*
-                 * 导航栏中的主页按钮。
-                 */
-                if (
-                    targetId ===
-                    "back-to-home"
-                ) {
-                    if (!homeUnlocked) {
-                        return;
-                    }
-
-                    showSection(
-                        "content"
-                    );
-
-                    return;
-                }
+                    tab.dataset.target;
 
                 if (!targetId) {
                     console.error(
@@ -486,13 +794,14 @@ function initializeNavigation() {
                     return;
                 }
 
-                /*
-                 * 进入任意其他栏目后，
-                 * 解锁主页按钮。
-                 */
-                homeUnlocked = true;
-
-                showSection(targetId);
+                showSection(
+                    targetId,
+                    {
+                        transitionType: "depth",
+                        direction: "forward",
+                        scrollMode: "none"
+                    }
+                );
             }
         );
     });
@@ -500,20 +809,40 @@ function initializeNavigation() {
     backToHomeButton?.addEventListener(
         "click",
         () => {
-            showSection("content");
+            showSection(
+                "home-section",
+                {
+                    transitionType: "depth",
+                    direction: "backward",
+                    scrollMode: "top"
+                }
+            );
         }
     );
 
-    /*
-     * 初始化时隐藏所有栏目页面。
-     * 主页新闻内容由原始页面状态控制。
-     */
-    hideAllSections();
+    sections.forEach(section => {
+        if (section !== activeSection) {
+            resetSection(section);
+        }
+    });
 
-    if (backToHomeButton) {
-        backToHomeButton.style.display =
-            "none";
+    if (activeSection) {
+        clearTransitionClasses(
+            activeSection
+        );
+
+        activeSection.classList.add(
+            "is-active"
+        );
     }
+
+    updateBackButton(
+        activeSection?.id ||
+        "home-section"
+    );
+
+    window.showSection =
+        showSection;
 }
 
 
@@ -1369,16 +1698,6 @@ function initializeNhnAccordion() {
             ".accordion-menu-option"
         );
 
-    const nhnSection =
-        document.getElementById(
-            "nhn-section"
-        );
-
-    const backToHomeButton =
-        document.getElementById(
-            "back-to-home"
-        );
-
     const backToNhnButtons =
         document.querySelectorAll(
             ".back-to-nhn"
@@ -1391,47 +1710,12 @@ function initializeNhnAccordion() {
         return;
     }
 
-    /*
-     * 从菜单 data-target 中收集
-     * 所有情报署子页面。
-     */
-    const nhnSubsections =
-        Array.from(
-            accordionOptions
-        )
-            .map(option => {
-                const targetId =
-                    option.dataset.target;
-
-                if (!targetId) {
-                    return null;
-                }
-
-                return document.getElementById(
-                    targetId
-                );
-            })
-            .filter(Boolean);
-
     function resetAccordionOptions() {
         accordionOptions.forEach(
             option => {
                 option.classList.remove(
                     "expanded"
                 );
-            }
-        );
-    }
-
-    function hideAllNhnSubsections() {
-        nhnSubsections.forEach(
-            subsection => {
-                subsection.classList.remove(
-                    "visible"
-                );
-
-                subsection.style.display =
-                    "none";
             }
         );
     }
@@ -1446,19 +1730,25 @@ function initializeNhnAccordion() {
         }
     }
 
-    function showNhnHome() {
-        resetTimelineDetails();
-        hideAllNhnSubsections();
-        resetAccordionOptions();
-
-        if (nhnSection) {
-            nhnSection.style.removeProperty(
-                "display"
-            );
-
-            nhnSection.style.display =
-                "block";
+    function restartTimelineAnimation(
+        targetSection
+    ) {
+        if (
+            targetSection.id !==
+            "timeline-section"
+        ) {
+            return;
         }
+
+        targetSection.classList.remove(
+            "visible"
+        );
+
+        void targetSection.offsetWidth;
+
+        targetSection.classList.add(
+            "visible"
+        );
     }
 
     accordionOptions.forEach(
@@ -1477,8 +1767,8 @@ function initializeNhnAccordion() {
                     resetAccordionOptions();
 
                     /*
-                     * 没有 data-target 的选项，
-                     * 仅负责展开或收起。
+                     * 没有 data-target 的选项
+                     * 只负责手风琴展开。
                      */
                     if (!targetId) {
                         if (!isExpanded) {
@@ -1503,9 +1793,6 @@ function initializeNhnAccordion() {
                         return;
                     }
 
-                    /*
-                     * 先播放手风琴展开动画。
-                     */
                     option.classList.add(
                         "expanded"
                     );
@@ -1517,47 +1804,31 @@ function initializeNhnAccordion() {
                             );
 
                             resetTimelineDetails();
-                            hideAllNhnSubsections();
-
-                            if (nhnSection) {
-                                nhnSection.style.display =
-                                    "none";
-                            }
-
-                            /*
-                             * 清除内联 display:none，
-                             * 再重新触发 visible 动画。
-                             */
-                            targetSection.style
-                                .removeProperty(
-                                    "display"
-                                );
-
-                            targetSection.classList
-                                .remove(
-                                    "visible"
-                                );
-
-                            /*
-                             * 强制浏览器重新计算布局，
-                             * 使进入动画可以再次播放。
-                             */
-                            void targetSection
-                                .offsetWidth;
-
-                            targetSection.classList
-                                .add(
-                                    "visible"
-                                );
 
                             if (
-                                backToHomeButton
+                                typeof window
+                                    .showSection !==
+                                "function"
                             ) {
-                                backToHomeButton
-                                    .style
-                                    .display =
-                                    "block";
+                                console.error(
+                                    "全局 showSection 尚未初始化。"
+                                );
+
+                                return;
                             }
+
+                            window.showSection(
+                                targetId,
+                                {
+                                    transitionType: "slide",
+                                    direction: "forward",
+                                    scrollMode: "top"
+                                }
+                            );
+
+                            restartTimelineAnimation(
+                                targetSection
+                            );
                         },
                         250
                     );
@@ -1573,7 +1844,29 @@ function initializeNhnAccordion() {
                 event => {
                     event.stopPropagation();
 
-                    showNhnHome();
+                    resetTimelineDetails();
+                    resetAccordionOptions();
+
+                    if (
+                        typeof window
+                            .showSection !==
+                        "function"
+                    ) {
+                        console.error(
+                            "全局 showSection 尚未初始化。"
+                        );
+
+                        return;
+                    }
+
+                    window.showSection(
+                        "nhn-section",
+                        {
+                            transitionType: "slide",
+                            direction: "backward",
+                            scrollMode: "top"
+                        }
+                    );
                 }
             );
         }
@@ -1589,11 +1882,6 @@ function initializeWorkFeed() {
     const viewCreatorButtons =
         document.querySelectorAll(
             ".work-post-view-creator"
-        );
-
-    const worksSection =
-        document.getElementById(
-            "works-section"
         );
 
     const creatorsSection =
@@ -1660,33 +1948,43 @@ function initializeWorkFeed() {
                     return;
                 }
 
-                document
-                    .querySelectorAll(".section")
-                    .forEach(section => {
-                        section.style.display =
-                            "none";
-                    });
+                if (
+                    typeof window.
+                        showSection !==
+                    "function"
+                ) {
+                    console.error(
+                        "全局 showSection 尚未初始化。"
+                    );
 
-                creatorsSection.style.display =
-                    "block";
-
-                if (worksSection) {
-                    worksSection.style.display =
-                        "none";
+                    return;
                 }
 
-                window.requestAnimationFrame(
-                    () => {
-                        creatorCard.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center"
-                        });
-
-                        highlightCreatorCard(
-                            creatorCard
-                        );
+                window.showSection(
+                    "creators-section",
+                    {
+                        transitionType: "depth",
+                        direction: "forward",
+                        scrollMode: "none"
                     }
-                );
+                ).then(sectionChanged => {
+                    if (!sectionChanged) {
+                        return;
+                    }
+
+                    window.requestAnimationFrame(
+                        () => {
+                            creatorCard.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center"
+                            });
+
+                            highlightCreatorCard(
+                                creatorCard
+                            );
+                        }
+                    );
+                });
             }
         );
     });
@@ -1991,37 +2289,13 @@ function initializeBountyNavigation() {
             ".bounty-page-link"
         );
 
-    const bountySectionIds = [
-        "bounty-board-section",
-        "wanted-info-section",
-        "the-ruler-info-section",
-        "the-monarch-info-section"
-    ];
-
-    const bountySections =
-        bountySectionIds
-            .map(sectionId => {
-                return document.getElementById(
-                    sectionId
-                );
-            })
-            .filter(Boolean);
-
-    if (
-        bountyLinks.length === 0 ||
-        bountySections.length === 0
-    ) {
+    if (bountyLinks.length === 0) {
         return;
     }
 
-    function hideBountySections() {
-        bountySections.forEach(section => {
-            section.style.display =
-                "none";
-        });
-    }
-
-    function showBountySection(sectionId) {
+    function showBountySection(
+        sectionId
+    ) {
         const targetSection =
             document.getElementById(
                 sectionId
@@ -2035,25 +2309,33 @@ function initializeBountyNavigation() {
             return;
         }
 
-        hideBountySections();
+        if (
+            typeof window
+                .showSection !==
+            "function"
+        ) {
+            console.error(
+                "全局 showSection 尚未初始化。"
+            );
 
-        targetSection.style.removeProperty(
-            "display"
+            return;
+        }
+
+        const isReturning =
+            sectionId ===
+            "bounty-board-section";
+
+        window.showSection(
+            sectionId,
+            {
+                transitionType: "slide",
+                direction:
+                    isReturning
+                        ? "backward"
+                        : "forward",
+                scrollMode: "top"
+            }
         );
-
-        targetSection.style.display =
-            "block";
-
-        /*
-         * 重新触发淡入动画。
-         */
-        targetSection.style.animation =
-            "none";
-
-        void targetSection.offsetWidth;
-
-        targetSection.style.animation =
-            "";
     }
 
     bountyLinks.forEach(link => {
@@ -2069,7 +2351,9 @@ function initializeBountyNavigation() {
                 return;
             }
 
-            showBountySection(targetId);
+            showBountySection(
+                targetId
+            );
         }
 
         link.addEventListener(
