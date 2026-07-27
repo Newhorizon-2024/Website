@@ -14,6 +14,7 @@ document.addEventListener(
         initializeNhnAccordion();
         initializeWorkFeed();
         initializeWorkPostStats();
+        initializeBountyNavigation();
     },
     { once: true }
 );
@@ -353,7 +354,7 @@ function initializeCountdownTooltip() {
 function initializeNavigation() {
     const navigationTabs =
         document.querySelectorAll(
-            ".tab"
+            "#navbar .tab"
         );
 
     const sections =
@@ -1976,5 +1977,124 @@ function initializeWorkPostStats() {
 
     workPosts.forEach(post => {
         observer.observe(post);
+    });
+}
+
+
+/* ===========================
+   11. 悬赏令页面切换
+=========================== */
+
+function initializeBountyNavigation() {
+    const bountyLinks =
+        document.querySelectorAll(
+            ".bounty-page-link"
+        );
+
+    const bountySectionIds = [
+        "bounty-board-section",
+        "wanted-info-section",
+        "the-ruler-info-section",
+        "the-monarch-info-section"
+    ];
+
+    const bountySections =
+        bountySectionIds
+            .map(sectionId => {
+                return document.getElementById(
+                    sectionId
+                );
+            })
+            .filter(Boolean);
+
+    if (
+        bountyLinks.length === 0 ||
+        bountySections.length === 0
+    ) {
+        return;
+    }
+
+    function hideBountySections() {
+        bountySections.forEach(section => {
+            section.style.display =
+                "none";
+        });
+    }
+
+    function showBountySection(sectionId) {
+        const targetSection =
+            document.getElementById(
+                sectionId
+            );
+
+        if (!targetSection) {
+            console.error(
+                `未找到悬赏令页面：#${sectionId}`
+            );
+
+            return;
+        }
+
+        hideBountySections();
+
+        targetSection.style.removeProperty(
+            "display"
+        );
+
+        targetSection.style.display =
+            "block";
+
+        /*
+         * 重新触发淡入动画。
+         */
+        targetSection.style.animation =
+            "none";
+
+        void targetSection.offsetWidth;
+
+        targetSection.style.animation =
+            "";
+    }
+
+    bountyLinks.forEach(link => {
+        function activateLink() {
+            const targetId =
+                link.dataset.target;
+
+            if (!targetId) {
+                console.error(
+                    "悬赏令链接缺少 data-target。"
+                );
+
+                return;
+            }
+
+            showBountySection(targetId);
+        }
+
+        link.addEventListener(
+            "click",
+            event => {
+                event.stopPropagation();
+                activateLink();
+            }
+        );
+
+        link.addEventListener(
+            "keydown",
+            event => {
+                if (
+                    event.key !== "Enter" &&
+                    event.key !== " "
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+
+                activateLink();
+            }
+        );
     });
 }
