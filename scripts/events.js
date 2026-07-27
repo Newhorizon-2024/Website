@@ -722,10 +722,6 @@ function initializeNavigation() {
 
             updateTimelineState(sectionId);
 
-            updateTimelineState(
-                sectionId
-            );
-
             updateBountyPosterState(
                 sectionId
             );
@@ -801,10 +797,6 @@ function initializeNavigation() {
             targetSection;
 
         updateTimelineState(sectionId);
-
-        updateTimelineState(
-            sectionId
-        );
 
         updateBountyPosterState(
             sectionId
@@ -1882,12 +1874,7 @@ function initializeNhnAccordion() {
                                     scrollMode: "none"
                                 }
                             );
-
-                            restartTimelineAnimation(
-                                targetSection
-                            );
-                        },
-                        250
+                        }
                     );
                 }
             );
