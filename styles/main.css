@@ -75,6 +75,12 @@ body.locked {
     /* 公共文字 */
     --site-text-primary: #EEEEEE;
     --site-text-secondary: rgba(238, 238, 238, 0.85);
+
+    /* 页面区块转场 */
+    --section-depth-duration: 800ms;
+    --section-slide-duration: 650ms;
+    --section-transition-easing:
+        cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 
@@ -277,6 +283,126 @@ body.locked {
     justify-content: center;
     min-height: 100vh;
     position: relative;
+}
+
+
+/* ===========================
+   区块转场
+=========================== */
+
+/*
+ * 所有可切换页面的默认隐藏状态。
+ * JS 不再依靠 display:block / display:none
+ * 直接切换页面。
+ */
+.section {
+    box-sizing: border-box;
+    display: none;
+    filter: blur(0);
+    opacity: 0;
+    pointer-events: none;
+    position: relative;
+    transform:
+        translate3d(0, 32px, 0)
+        scale(0.96);
+    transition:
+        filter
+        var(--section-depth-duration)
+        var(--section-transition-easing),
+        opacity
+        500ms
+        ease,
+        transform
+        var(--section-depth-duration)
+        var(--section-transition-easing);
+    visibility: hidden;
+    width: 100%;
+}
+
+/* 当前显示的页面 */
+.section.is-active {
+    display: block;
+    filter: blur(0);
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
+    transform:
+        translate3d(0, 0, 0)
+        scale(1);
+    visibility: visible;
+}
+
+/* 景深进入前 */
+.section.depth-enter {
+    display: block;
+    filter: blur(7px);
+    opacity: 0;
+    pointer-events: none;
+    position: relative;
+    transform:
+        translate3d(0, 42px, 0)
+        scale(1.06);
+    visibility: visible;
+}
+
+/* 从右侧进入 */
+.section.slide-enter-right {
+    display: block;
+    filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    position: relative;
+    transform:
+        translate3d(90px, 0, 0)
+        scale(0.98);
+    visibility: visible;
+}
+
+/* 从左侧进入 */
+.section.slide-enter-left {
+    display: block;
+    filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    position: relative;
+    transform:
+        translate3d(-90px, 0, 0)
+        scale(0.98);
+    visibility: visible;
+}
+
+/* 转场期间禁止重复触发 */
+body.is-section-transitioning #navbar .tab,
+body.is-section-transitioning .accordion-menu-option,
+body.is-section-transitioning .bounty-page-link,
+body.is-section-transitioning .back-to-bounty,
+body.is-section-transitioning .back-to-nhn,
+body.is-section-transitioning #back-to-home {
+    pointer-events: none;
+}
+
+
+/* ===========================
+   页面层级分组
+=========================== */
+
+/* 一级页面位于 Three.js 画布上方 */
+#home-section,
+#bounty-board-section,
+#creators-section,
+#nhn-section,
+#works-section {
+    position: relative;
+    z-index: 4;
+}
+
+/* 内部信息页位于 Three.js 画布下方 */
+#timeline-section,
+#wanted-info-section,
+#the-ruler-info-section,
+#the-monarch-info-section {
+    position: relative;
+    z-index: 2;
 }
 
 
@@ -1297,13 +1423,11 @@ body.locked {
 
 /* 作品区块 */
 #works-section {
-    display: none;
     margin: 50px auto;
     max-width: 1200px;
     padding: 20px;
     position: relative;
     width: 90%;
-    z-index: 4;
 }
 
 /* 作品区块标题区域 */
@@ -1547,14 +1671,12 @@ body.locked {
     border-radius: 8px;
     box-sizing: border-box;
     color: #EEEEEE;
-    display: none;
     margin: 50px auto;
     max-width: 1400px;
     overflow: hidden;
     padding: clamp(40px, 7vw, 90px);
     position: relative;
     width: 88%;
-    z-index: 4;
 }
 
 /* 创作者区块渐隐背景 */
@@ -2312,14 +2434,12 @@ body.creator-lightbox-open {
     background-color: transparent;
     border-radius: 5px;
     color: #EEEEEE;
-    display: none;
     margin: 50px auto;
     max-width: 1200px;
     padding: 20px;
     position: relative;
     text-align: center;
     width: 80%;
-    z-index: 4;
 }
 
 /* 悬赏令标题 */
@@ -2434,7 +2554,6 @@ body.creator-lightbox-open {
     padding: 40px 20px;
     position: relative;
     text-align: center;
-    z-index: 2;
 }
 
 /* 情报署标志 */
@@ -2661,7 +2780,6 @@ body.creator-lightbox-open {
 
     align-items: center;
     box-sizing: border-box;
-    display: none;
     flex-direction: column;
     gap: 40px;
     justify-content: flex-start;
@@ -2672,26 +2790,14 @@ body.creator-lightbox-open {
 }
 
 /* 时间轴显示状态 */
-#timeline-section.visible {
-    animation:
-        timelineSectionIn
-        0.4s
-        ease
-        forwards;
+#timeline-section.is-active,
+#timeline-section.depth-enter,
+#timeline-section.depth-leave,
+#timeline-section.slide-enter-left,
+#timeline-section.slide-enter-right,
+#timeline-section.slide-leave-left,
+#timeline-section.slide-leave-right {
     display: flex;
-}
-
-/* 时间轴进入动画 */
-@keyframes timelineSectionIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 
@@ -3113,15 +3219,10 @@ body.creator-lightbox-open {
 
 /* 悬赏令信息区块 */
 #wanted-info-section {
-    animation:
-        fadeIn
-        0.4s
-        ease;
     height: auto;
     padding: 40px;
     position: relative;
     text-align: center;
-    z-index: 2;
 }
 
 /* 悬赏令信息标题 */
@@ -3148,10 +3249,6 @@ body.creator-lightbox-open {
 
 /* 魔君信息区块 */
 #the-ruler-info-section {
-    animation:
-        fadeIn
-        0.4s
-        ease;
     background-image:
         url(
             "../images/nhn/worldview/the-ruler/the-ruler-from-newhorizon.png"
@@ -3163,7 +3260,6 @@ body.creator-lightbox-open {
     padding: 40px;
     position: relative;
     text-align: center;
-    z-index: 2;
 }
 
 /* 魔君信息标题 */
@@ -3252,10 +3348,6 @@ body.creator-lightbox-open {
 
 /* 君主信息区块 */
 #the-monarch-info-section {
-    animation:
-        fadeIn
-        0.4s
-        ease;
     background-image:
         url(
             "../images/nhn/worldview/the-monarch/the-monarch-people.PNG"
@@ -3267,7 +3359,6 @@ body.creator-lightbox-open {
     padding: 40px;
     position: relative;
     text-align: center;
-    z-index: 2;
 }
 
 /* 君主信息标题 */
@@ -3334,24 +3425,6 @@ body.creator-lightbox-open {
 .go-to-the-ruler:focus-visible {
     outline: 1px solid rgba(238, 238, 238, 0.75);
     outline-offset: 4px;
-}
-
-
-/* ===========================
-   56. 通用淡入动画
-=========================== */
-
-/* 内容淡入动画 */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 
@@ -3784,24 +3857,47 @@ body.creator-lightbox-open {
 
 /* 遵循系统减少动态效果设置 */
 @media (prefers-reduced-motion: reduce) {
+
+    /* 页面切换 */
+    .section,
+    .section.is-active,
+    .section.depth-enter,
+    .section.slide-enter-left,
+    .section.slide-enter-right {
+        filter: none !important;
+        transform: none !important;
+        transition:
+            opacity 180ms ease !important;
+    }
+
+    /* 普通按钮 */
     #back-to-home,
-    #bossrush-eyes,
-    #bossrush-eyes-bg,
     .back-to-bounty,
     .go-to-the-ruler {
         transition: none;
     }
 
+    /* Bossrush */
+    #bossrush-eyes,
+    #bossrush-eyes-bg {
+        transition: none;
+    }
+
     #bossrush-eyes,
     #bossrush-eyes-bg,
-    #bossrush-filter,
-    #the-monarch-info-section,
-    #the-ruler-info-section,
-    #wanted-info-section,
-    .timeline-detail.active {
+    #bossrush-filter {
         animation: none;
     }
 
+    /* 页面内部动画 */
+    .timeline-detail.active,
+    #wanted-info-section,
+    #the-ruler-info-section,
+    #the-monarch-info-section {
+        animation: none;
+    }
+
+    /* 魔君标题漂浮 */
     #the-ruler-info-section h1::before {
         animation: none;
     }
