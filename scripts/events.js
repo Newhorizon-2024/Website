@@ -15,6 +15,7 @@ document.addEventListener(
         initializeNhnAccordion();
         initializeWorkFeed();
         initializeWorkPostStats();
+        initializeWorkPostPointerEffects();
         initializeBountyNavigation();
     },
     { once: true }
@@ -2324,7 +2325,112 @@ function initializeWorkPostStats() {
 
 
 /* ===========================
-   11. 悬赏令页面切换
+   11. 作品动态鼠标跟踪光幕
+=========================== */
+
+function initializeWorkPostPointerEffects() {
+    const workPosts =
+        document.querySelectorAll(
+            ".work-post"
+        );
+
+    const supportsPointerEffects =
+        window.matchMedia(
+            "(hover: hover) and (pointer: fine)"
+        ).matches;
+
+    if (
+        !supportsPointerEffects ||
+        workPosts.length === 0
+    ) {
+        return;
+    }
+
+    function resetWorkPostLight(post) {
+        post.classList.remove(
+            "is-pointer-active"
+        );
+
+        post.style.setProperty(
+            "--work-light-x",
+            "50%"
+        );
+
+        post.style.setProperty(
+            "--work-light-y",
+            "50%"
+        );
+    }
+
+    workPosts.forEach(post => {
+        post.addEventListener(
+            "mouseenter",
+            () => {
+                post.classList.add(
+                    "is-pointer-active"
+                );
+            }
+        );
+
+        post.addEventListener(
+            "mousemove",
+            event => {
+                const postRect =
+                    post.getBoundingClientRect();
+
+                if (
+                    postRect.width === 0 ||
+                    postRect.height === 0
+                ) {
+                    return;
+                }
+
+                const horizontalPosition =
+                    (
+                        event.clientX -
+                        postRect.left
+                    ) /
+                    postRect.width *
+                    100;
+
+                const verticalPosition =
+                    (
+                        event.clientY -
+                        postRect.top
+                    ) /
+                    postRect.height *
+                    100;
+
+                post.style.setProperty(
+                    "--work-light-x",
+                    `${horizontalPosition.toFixed(
+                        2
+                    )}%`
+                );
+
+                post.style.setProperty(
+                    "--work-light-y",
+                    `${verticalPosition.toFixed(
+                        2
+                    )}%`
+                );
+            }
+        );
+
+        post.addEventListener(
+            "mouseleave",
+            () => {
+                resetWorkPostLight(
+                    post
+                );
+            }
+        );
+    });
+}
+
+
+/* ===========================
+   12. 悬赏令页面切换
 =========================== */
 
 function initializeBountyNavigation() {
@@ -2429,7 +2535,7 @@ function initializeBountyNavigation() {
 
 
 /* ===========================
-   12. 悬赏令图片鼠标倾斜
+   13. 悬赏令图片鼠标倾斜
 =========================== */
 
 function initializeWantedPosterPointerEffects() {
