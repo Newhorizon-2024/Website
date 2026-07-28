@@ -26,6 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 页面加载完成后强制回到顶部
     window.scrollTo(0, 0);
 
+    // 初始化遮罩网络提示
+    initializeOverlayNetworkTip();
+
     const overlayElement =
         document.getElementById("overlay");
 
@@ -65,7 +68,7 @@ function startExperience() {
     experienceStarted = true;
 
     const overlayTitle =
-        overlayElement.querySelector("h2");
+        overlayElement.querySelector("h1");
 
     // 禁止遮罩层再次表现为可点击状态
     overlayElement.style.cursor = "default";
@@ -230,6 +233,168 @@ function showWelcomeMessage() {
             );
         }, 1000);
     }, 2500);
+}
+
+
+/* ===========================
+   遮罩网络加载提示
+=========================== */
+
+function initializeOverlayNetworkTip() {
+    const overlayTip =
+        document.getElementById(
+            "overlay-tip"
+        );
+
+    if (!overlayTip) {
+        return;
+    }
+
+    /*
+     * 超过该时间仍未完成加载，
+     * 认为页面加载较慢。
+     */
+    const slowLoadThreshold = 5000;
+
+    let pageLoaded =
+        document.readyState ===
+        "complete";
+
+    let slowLoadTimer = null;
+
+    function resetState() {
+        overlayTip.classList.remove(
+            "is-slow",
+            "is-loaded",
+            "is-offline"
+        );
+    }
+
+    function showNormalTip() {
+        resetState();
+
+        overlayTip.textContent =
+            "如加载缓慢，最好使用代理加速。";
+    }
+
+    function showSlowTip() {
+        if (pageLoaded) {
+            return;
+        }
+
+        resetState();
+
+        overlayTip.classList.add(
+            "is-slow"
+        );
+
+        overlayTip.textContent =
+            "当前加载速度较慢，最好使用代理加速。";
+    }
+
+    function showLoadedTip() {
+        pageLoaded = true;
+
+        if (slowLoadTimer !== null) {
+            clearTimeout(
+                slowLoadTimer
+            );
+
+            slowLoadTimer = null;
+        }
+
+        resetState();
+
+        overlayTip.classList.add(
+            "is-loaded"
+        );
+
+        overlayTip.textContent =
+            "网站资源已加载完成。";
+    }
+
+    function showOfflineTip() {
+        resetState();
+
+        overlayTip.classList.add(
+            "is-offline"
+        );
+
+        overlayTip.textContent =
+            "当前网络似乎已断开，请检查网络连接。";
+    }
+
+    function detectConnectionState() {
+        if (!navigator.onLine) {
+            showOfflineTip();
+            return;
+        }
+
+        if (pageLoaded) {
+            showLoadedTip();
+            return;
+        }
+
+        const connection =
+            navigator.connection ||
+            navigator.mozConnection ||
+            navigator.webkitConnection;
+
+        const slowConnectionTypes = [
+            "slow-2g",
+            "2g",
+            "3g"
+        ];
+
+        if (
+            connection &&
+            (
+                connection.saveData ||
+                slowConnectionTypes.includes(
+                    connection.effectiveType
+                )
+            )
+        ) {
+            showSlowTip();
+            return;
+        }
+
+        showNormalTip();
+    }
+
+    slowLoadTimer =
+        window.setTimeout(
+            showSlowTip,
+            slowLoadThreshold
+        );
+
+    if (pageLoaded) {
+        showLoadedTip();
+    } else {
+        window.addEventListener(
+            "load",
+            showLoadedTip,
+            { once: true }
+        );
+    }
+
+    window.addEventListener(
+        "online",
+        detectConnectionState
+    );
+
+    window.addEventListener(
+        "offline",
+        detectConnectionState
+    );
+
+    navigator.connection
+        ?.addEventListener(
+            "change",
+            detectConnectionState
+        );
+
+    detectConnectionState();
 }
 
 
