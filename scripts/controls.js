@@ -701,13 +701,6 @@ const playlist = [
 
     {
         path:
-            "media/Sparks - Lights & Motion.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
             "media/Spider-Man Epic Suite (No Way Home Tribute) - Samuel Kim.mp3",
         description:
             "分享自 佚名"
