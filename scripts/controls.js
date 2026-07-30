@@ -201,13 +201,6 @@ const playlist = [
 
     {
         path:
-            "media/STAY - Hans Zimmer.mp3",
-        description:
-            `电影《星际穿越》"Interstellar"`
-    },
-
-    {
-        path:
             "media/Self Love - Metro Boomin、Coi Leray.mp3",
         description:
             `电影《蜘蛛侠：纵横宇宙》"Spider-Man:Across The Spider-Verse"`
@@ -215,9 +208,30 @@ const playlist = [
 
     {
         path:
+            "media/STAY - Hans Zimmer.mp3",
+        description:
+            `电影《星际穿越》"Interstellar"`
+    },
+
+    {
+        path:
+            "media/Suite New Day (from Spider-Man Brand New Day Soundtrack) - Michael Giacchino.mp3",
+        description:
+            `电影《蜘蛛侠：崭新之日》"Spider-Man:Brand New Day"`
+    },
+
+    {
+        path:
             "media/Sunflower (Spider-Man Into the Spider-Verse) - Post Malone、Swae Lee.mp3",
         description:
             `电影《蜘蛛侠：平行宇宙》"Spider-Man: Into the Spider-Verse"`
+    },
+
+    {
+        path:
+            "media/Try - 派伟俊、周杰伦.mp3",
+        description:
+            `电影《功夫熊猫3》"Kung Fu Panda 3"`
     },
 
     {
@@ -253,6 +267,13 @@ const playlist = [
             "media/记忆碎片 - 发条月亮、啊哈、伍六七.mp3",
         description:
             "动画《刺客伍六七》"
+    },
+
+    {
+        path:
+            "media/开篇蒙太奇 - 幻想动漫音乐.mp3",
+        description:
+            `电影《罗小黑战记2》"`
     },
 
     {
@@ -423,9 +444,51 @@ const playlist = [
 
     {
         path:
+            "media/The Earth Color Remix - Cheetah Mobile.mp3",
+        description:
+            `游戏《跳舞的线》"Dancing Line"`
+    },
+
+    {
+        path:
+            "media/The Piano - Cheetah Mobile.mp3",
+        description:
+            `游戏《跳舞的线》"Dancing Line"`
+    },
+
+    {
+        path:
+            "media/The Space - Cheetah Mobile.mp3",
+        description:
+            `游戏《跳舞的线》"Dancing Line"`
+    },
+
+    {
+        path:
             "media/The Titan - Paradox Interactive.mp3",
         description:
             `游戏《群星》"Stellaris"`
+    },
+
+    {
+        path:
+            "media/The Ugly Duckling - Cheetah Mobile.mp3",
+        description:
+            `游戏《跳舞的线》"Dancing Line"`
+    },
+
+    {
+        path:
+            "media/The West - Cheetah Mobile.mp3",
+        description:
+            `游戏《跳舞的线》"Dancing Line"`
+    },
+
+    {
+        path:
+            "media/Web Launch (From Marvels Spider-Man Score) - John Paesano.mp3",
+        description:
+            `游戏《漫威蜘蛛侠》"Marvel Spider-Man"`
     },
 
     {
@@ -447,6 +510,13 @@ const playlist = [
             "media/她 - 郎朗.mp3",
         description:
             `游戏《第五人格》"Identity_V"`
+    },
+
+    {
+        path:
+            "media/王者再战 · 十年一刻 (Let Us Play Again) - Hans Zimmer.mp3",
+        description:
+            `游戏《王者荣耀》`
     },
 
     {
@@ -513,6 +583,13 @@ const playlist = [
     {
         path:
             "media/Every Door - CG5.mp3",
+        description:
+            "分享自 佚名"
+    },
+
+    {
+        path:
+            "media/F1 (Symphonic Version)(Live) - Imperial Orchestra.mp3",
         description:
             "分享自 佚名"
     },
@@ -611,13 +688,6 @@ const playlist = [
     {
         path:
             "media/Let Her Go - Passenger.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/Lets Play Again - Hans Zimmer.mp3",
         description:
             "分享自 佚名"
     },
@@ -732,13 +802,6 @@ const playlist = [
             "media/Toes - Glass Animals.mp3",
         description:
             "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/Try - 派伟俊、周杰伦.mp3",
-        description:
-            "分享自 Mortal"
     },
 
     {
