@@ -271,6 +271,13 @@ const playlist = [
 
     {
         path:
+            "media/鹿野 - 幻想动漫音乐.mp3",
+        description:
+            `电影《罗小黑战记2》"`
+    },
+
+    {
+        path:
             "media/平凡之路 - 朴树.mp3",
         description:
             "电影《后会无期》"
