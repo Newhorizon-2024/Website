@@ -102,8 +102,6 @@ directionalLight.position
     .set(5, 5, 5)
     .normalize();
 
-directionalLight.castShadow = true;
-
 scene.add(
     directionalLight
 );
@@ -140,19 +138,19 @@ window.material =
 
 
 /* ===========================
-   5. 创建方块
+   5. 创建与重置方块
 =========================== */
 
 /**
- * 创建一个新的背景方块。
+ * 为方块生成随机尺寸、位置和运动参数。
+ *
+ * 新方块和飞出画面的方块都会调用此函数。
+ *
+ * @param {THREE.Mesh} cube 方块对象
  */
-function createCube() {
-    const cube =
-        new THREE.Mesh(
-            cubeGeometry,
-            window.material
-        );
-
+function resetCube(
+    cube
+) {
     const size =
         Math.random() * 10 + 3;
 
@@ -162,6 +160,12 @@ function createCube() {
         size
     );
 
+    /*
+     * 将方块重新放置到画面的右上方区域。
+     *
+     * 保持原有createCube中的生成范围，
+     * 避免优化后改变方块密度和视觉效果。
+     */
     cube.position.set(
         window.innerWidth / 2 +
             Math.random() *
@@ -177,36 +181,91 @@ function createCube() {
         ) * 100
     );
 
-    cube.castShadow = true;
-    cube.receiveShadow = true;
+    /*
+     * 重置方块旋转角度，
+     * 防止同一个方块长期积累极大的旋转数值。
+     */
+    cube.rotation.set(
+        Math.random() *
+            Math.PI *
+            2,
 
+        Math.random() *
+            Math.PI *
+            2,
+
+        Math.random() *
+            Math.PI *
+            2
+    );
+
+    /*
+     * 重新随机生成运动和交互状态。
+     */
+    cube.userData.draggable =
+        false;
+
+    cube.userData.isDragging =
+        false;
+
+    cube.userData.rotationSpeedX =
+        Math.random() *
+        0.01 -
+        0.005;
+
+    cube.userData.rotationSpeedY =
+        Math.random() *
+        0.01 -
+        0.005;
+
+    cube.userData.speedX =
+        Math.random() *
+        0.2 +
+        0.03;
+
+    cube.userData.speedY =
+        Math.random() *
+        0.2 +
+        0.03;
+}
+
+/**
+ * 创建一个新的背景方块。
+ *
+ * 方块只会在网站初始化时创建。
+ * 动画运行期间不再销毁和重新创建。
+ */
+function createCube() {
+    const cube =
+        new THREE.Mesh(
+            cubeGeometry,
+            window.material
+        );
+
+    /*
+     * 先建立userData对象，
+     * 再由resetCube填写具体状态。
+     */
     cube.userData = {
         draggable: false,
         isDragging: false,
-
-        rotationSpeedX:
-            Math.random() *
-            0.01 -
-            0.005,
-
-        rotationSpeedY:
-            Math.random() *
-            0.01 -
-            0.005,
-
-        speedX:
-            Math.random() *
-            0.2 +
-            0.03,
-
-        speedY:
-            Math.random() *
-            0.2 +
-            0.03
+        rotationSpeedX: 0,
+        rotationSpeedY: 0,
+        speedX: 0,
+        speedY: 0
     };
 
-    scene.add(cube);
-    cubes.push(cube);
+    resetCube(
+        cube
+    );
+
+    scene.add(
+        cube
+    );
+
+    cubes.push(
+        cube
+    );
 }
 
 
@@ -1414,7 +1473,32 @@ function updateBountyPosters(
 
 
 /* ===========================
-   13. 方块与悬赏令动画
+   13. 页面可见状态
+=========================== */
+
+/*
+ * 页面位于后台标签页时，
+ * 暂停Three.js更新和渲染。
+ */
+let isPageVisible =
+    !document.hidden;
+
+/**
+ * 监听页面显示状态。
+ */
+function handleVisibilityChange() {
+    isPageVisible =
+        !document.hidden;
+}
+
+document.addEventListener(
+    "visibilitychange",
+    handleVisibilityChange
+);
+
+
+/* ===========================
+   14. 方块与悬赏令动画
 =========================== */
 
 /**
@@ -1422,26 +1506,38 @@ function updateBountyPosters(
  *
  * @param {number} timestamp 动画时间戳
  */
-function animate(timestamp) {
+function animate(
+    timestamp
+) {
     requestAnimationFrame(
         animate
     );
 
     /*
-     * 使用倒序循环。
-     * 删除数组元素时不会跳过后续方块。
+     * 页面处于后台标签页时，
+     * 保留动画循环，但不更新场景，也不执行渲染。
+     *
+     * 返回页面后会自动恢复，
+     * 不会限制前台运行时的最高帧率。
+     */
+    if (!isPageVisible) {
+        return;
+    }
+
+    const speedMultiplier =
+        window.globalSpeedMultiplier;
+
+    /*
+     * 方块不再从数组中删除，
+     * 因此可以直接使用正序循环。
      */
     for (
-        let index =
-            cubes.length - 1;
-        index >= 0;
-        index -= 1
+        let index = 0;
+        index < cubes.length;
+        index += 1
     ) {
         const cube =
             cubes[index];
-
-        const speedMultiplier =
-            window.globalSpeedMultiplier;
 
         cube.position.x -=
             cube.userData.speedX *
@@ -1469,18 +1565,21 @@ function animate(timestamp) {
             cube.position.y <
             -window.innerHeight / 2;
 
+        /*
+         * 飞出画面后直接重置原方块。
+         *
+         * 不再执行：
+         * scene.remove()
+         * cubes.splice()
+         * createCube()
+         */
         if (
             isOutsideHorizontalBoundary ||
             isOutsideVerticalBoundary
         ) {
-            scene.remove(cube);
-
-            cubes.splice(
-                index,
-                1
+            resetCube(
+                cube
             );
-
-            createCube();
         }
     }
 
@@ -1496,7 +1595,7 @@ function animate(timestamp) {
 
 
 /* ===========================
-   14. 鼠标交互
+   15. 鼠标交互
 =========================== */
 
 /* 射线检测器 */
@@ -1579,7 +1678,7 @@ window.addEventListener(
 
 
 /* ===========================
-   15. 窗口尺寸适配
+   16. 窗口尺寸适配
 =========================== */
 
 /**
@@ -1612,14 +1711,14 @@ window.addEventListener(
 
 
 /* ===========================
-   16. 启动 Three.js 动画
+   17. 启动 Three.js 动画
 =========================== */
 
 animate();
 
 
 /* ===========================
-   17. 网站运行时间
+   18. 网站运行时间
 =========================== */
 
 /* 网站起始时间 */
@@ -1714,7 +1813,7 @@ function updateCountdown() {
 
 
 /* ===========================
-   18. 网站运行时间全局入口
+   19. 网站运行时间全局入口
 =========================== */
 
 /*
