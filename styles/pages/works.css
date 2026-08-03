@@ -1,0 +1,590 @@
+/* ===========================
+   27. 作品区块
+=========================== */
+
+/* 作品区块 */
+#works-section {
+    margin: 50px auto;
+    max-width: 1200px;
+    padding: 20px;
+    position: relative;
+    width: 90%;
+}
+
+/* 作品区块标题区域 */
+.works-header {
+    margin: 0 auto 30px;
+    max-width: 720px;
+    text-align: center;
+}
+
+/* 作品描述文字 */
+#works-section p {
+    font-size: clamp(14px, 1.5vw, 20px);
+    line-height: 1.8;
+}
+
+/* 作品动态流 */
+.works-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin: 0 auto;
+    max-width: 760px;
+}
+
+
+/* ===========================
+   28. Spotlight Card
+=========================== */
+
+/* 单条作品动态 */
+.work-post {
+    --work-light-opacity: 0;
+    --work-light-x: 50%;
+    --work-light-y: 50%;
+
+    backdrop-filter:
+        blur(12px)
+        saturate(1.04);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(48, 48, 48, 0.88),
+            rgba(21, 21, 21, 0.92)
+        );
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.075);
+
+    border-radius: 12px;
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.035),
+
+        0 18px 40px
+        rgba(0, 0, 0, 0.25);
+
+    color: #EEEEEE;
+    isolation: isolate;
+    overflow: hidden;
+    padding: 22px;
+    position: relative;
+
+    transition:
+        border-color 0.35s ease,
+        box-shadow 0.35s ease,
+        transform 0.35s ease;
+}
+
+/*
+ * 鼠标跟随聚光。
+ * 亮度比典型 Spotlight Card 更低，
+ * 只用于揭示卡片表面结构。
+ */
+.work-post::before {
+    background:
+        radial-gradient(
+            420px circle
+            at var(--work-light-x)
+            var(--work-light-y),
+
+            rgba(255, 255, 255, 0.055) 0%,
+            rgba(255, 255, 255, 0.025) 18%,
+            rgba(255, 255, 255, 0.009) 38%,
+            transparent 68%
+        );
+
+    content: "";
+    inset: 0;
+    opacity: var(--work-light-opacity);
+    pointer-events: none;
+    position: absolute;
+
+    transition:
+        opacity 0.4s ease;
+
+    z-index: 0;
+}
+
+/*
+ * 聚光边缘层。
+ * 让鼠标附近的边框略微增强。
+ */
+.work-post::after {
+    background:
+        radial-gradient(
+            300px circle
+            at var(--work-light-x)
+            var(--work-light-y),
+
+            rgba(255, 255, 255, 0.16),
+            rgba(255, 255, 255, 0.045) 36%,
+            transparent 70%
+        );
+
+    border-radius: inherit;
+    content: "";
+    inset: 0;
+    opacity: var(--work-light-opacity);
+    padding: 1px;
+    pointer-events: none;
+    position: absolute;
+
+    transition:
+        opacity 0.4s ease;
+
+    z-index: 2;
+
+    -webkit-mask:
+        linear-gradient(#000 0 0)
+        content-box,
+        linear-gradient(#000 0 0);
+
+    -webkit-mask-composite:
+        xor;
+
+    mask:
+        linear-gradient(#000 0 0)
+        content-box,
+        linear-gradient(#000 0 0);
+
+    mask-composite:
+        exclude;
+}
+
+/* 鼠标进入状态 */
+.work-post.is-pointer-active {
+    --work-light-opacity: 1;
+
+    border-color:
+        rgba(255, 255, 255, 0.1);
+
+    box-shadow:
+        inset 0 1px 0
+        rgba(255, 255, 255, 0.045),
+
+        0 22px 48px
+        rgba(0, 0, 0, 0.29);
+
+    transform:
+        translateY(-2px);
+}
+
+/* 内容位于光幕上方 */
+.work-post > * {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* ===========================
+   29. 发布者信息
+=========================== */
+
+.work-post-author {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+}
+
+/* 发布者头像 */
+.work-post-avatar {
+    border-radius: 50%;
+    flex-shrink: 0;
+    height: 48px;
+    object-fit: cover;
+    width: 48px;
+}
+
+/* 发布者文字信息 */
+.work-post-identity {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* 发布者名称行 */
+.work-post-name-row {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* 发布者名称 */
+.work-post-name {
+    font-size: 16px;
+}
+
+/* 创作者标签 */
+.work-post-badge {
+    background-color:
+        rgba(24, 24, 24, 0.72);
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.16);
+
+    border-radius: 999px;
+    color: #EEEEEE;
+    font-size: 12px;
+    padding: 2px 8px;
+}
+
+/* ID 与发布时间 */
+.work-post-meta {
+    color:
+        rgba(238, 238, 238, 0.55);
+
+    font-size: 13px;
+    margin-top: 3px;
+}
+
+
+/* ===========================
+   30. 动态正文
+=========================== */
+
+.work-post-content {
+    margin-top: 18px;
+}
+
+.work-post-content p {
+    font-size: 15px;
+    line-height: 1.8;
+    margin: 0;
+}
+
+
+/* ===========================
+   31. Chroma 图片聚焦
+=========================== */
+
+/*
+ * 容器高度直接由原始图片撑开，
+ * 不设置固定高度、比例或背景留白。
+ */
+.work-post-media {
+    --chroma-opacity: 0;
+    --chroma-radius: 500px;
+    --chroma-x: 50%;
+    --chroma-y: 50%;
+
+    border-radius: 8px;
+    isolation: isolate;
+    line-height: 0;
+    margin-top: 18px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 原图作为黑白底图 */
+.work-post-media > img:not(
+    .work-post-media-color
+) {
+    display: block;
+    filter:
+        grayscale(1)
+        saturate(0)
+        brightness(0.78)
+        contrast(1.08);
+    height: auto;
+    max-height: none;
+    object-fit: initial;
+    position: relative;
+    transition:
+        filter 0.45s ease,
+        transform 0.7s
+        cubic-bezier(
+            0.2,
+            0.75,
+            0.2,
+            1
+        );
+    width: 100%;
+    z-index: 1;
+}
+
+/*
+ * 彩色图层与底图严格重叠。
+ * inset: 0 配合 width/height: 100%，
+ * 两层拥有完全一致的显示区域。
+ */
+.work-post-media-color {
+    display: block;
+    filter:
+        grayscale(0)
+        saturate(0.82)
+        brightness(0.9)
+        contrast(1.02);
+    height: 100%;
+    inset: 0;
+    max-height: none;
+    object-fit: fill;
+    opacity: var(--chroma-opacity);
+    pointer-events: none;
+    position: absolute;
+    transition:
+        opacity 0.38s ease,
+        transform 0.7s
+        cubic-bezier(
+            0.2,
+            0.75,
+            0.2,
+            1
+        );
+    width: 100%;
+    z-index: 2;
+
+    -webkit-mask-image:
+        radial-gradient(
+            circle var(--chroma-radius)
+            at var(--chroma-x)
+            var(--chroma-y),
+            #000 0%,
+            rgba(0, 0, 0, 0.94) 28%,
+            rgba(0, 0, 0, 0.58) 52%,
+            transparent 78%
+        );
+
+    mask-image:
+        radial-gradient(
+            circle var(--chroma-radius)
+            at var(--chroma-x)
+            var(--chroma-y),
+            #000 0%,
+            rgba(0, 0, 0, 0.94) 28%,
+            rgba(0, 0, 0, 0.58) 52%,
+            transparent 78%
+        );
+
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+/* 图片表面暗淡聚光 */
+.work-post-media::after {
+    background:
+        radial-gradient(
+            circle 220px
+            at var(--chroma-x)
+            var(--chroma-y),
+            rgba(255, 255, 255, 0.045),
+            rgba(255, 255, 255, 0.012) 38%,
+            transparent 72%
+        );
+    content: "";
+    inset: 0;
+    opacity: var(--chroma-opacity);
+    pointer-events: none;
+    position: absolute;
+    transition:
+        opacity 0.38s ease;
+    z-index: 3;
+}
+
+/* 聚焦状态 */
+.work-post-media.is-chroma-active {
+    --chroma-opacity: 1;
+}
+
+/* 聚焦时轻微放大 */
+.work-post-media.is-chroma-active >
+img:not(.work-post-media-color),
+.work-post-media.is-chroma-active >
+.work-post-media-color {
+    transform: scale(1.012);
+}
+
+
+/* ===========================
+   32. 动态操作栏
+=========================== */
+
+.work-post-actions {
+    align-items: center;
+
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    display: flex;
+    gap: 18px;
+    margin-top: 18px;
+    padding-top: 14px;
+}
+
+/* 操作按钮与链接 */
+.work-post-actions button,
+.work-post-actions a {
+    background: none;
+    border: none;
+
+    color:
+        rgba(238, 238, 238, 0.65);
+
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    padding: 0;
+    text-decoration: none;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+/* 操作按钮悬停 */
+.work-post-actions button:hover,
+.work-post-actions a:hover {
+    color: #FFFFFF;
+
+    transform:
+        translateY(-1px);
+}
+
+
+/* ===========================
+   33. 作品定位状态
+=========================== */
+
+.creator-card.is-work-target {
+    animation:
+        creator-work-target
+        2.2s
+        ease;
+}
+
+
+/* ===========================
+   34. 统计按钮
+=========================== */
+
+.work-post-stat {
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
+}
+
+.work-post-action-label {
+    display: inline-block;
+}
+
+.work-post-action-count {
+    display: inline-block;
+
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+
+    min-width: 3ch;
+    text-align: left;
+}
+
+.work-post-action-count.is-decoding {
+    color: #FFFFFF;
+
+    text-shadow:
+        0 0 8px
+        rgba(255, 255, 255, 0.28);
+}
+
+
+/* ===========================
+   35. 触摸设备
+=========================== */
+
+@media (hover: none), (pointer: coarse) {
+    /* 取消卡片聚光 */
+    .work-post {
+        --work-light-opacity: 0;
+        transform: none;
+    }
+
+    .work-post::before,
+    .work-post::after {
+        display: none;
+    }
+
+    /* 移动端直接显示原图 */
+    .work-post-media >
+    img:not(.work-post-media-color) {
+        filter: none;
+        transform: none;
+    }
+
+    /* 隐藏 JS 复制的彩色遮罩层 */
+    .work-post-media-color {
+        display: none;
+    }
+
+    /* 取消图片聚光层 */
+    .work-post-media::after {
+        display: none;
+    }
+
+    .work-post-media.is-chroma-active {
+        --chroma-opacity: 0;
+    }
+}
+
+
+/* ===========================
+   36. 移动端
+=========================== */
+
+@media (max-width: 600px) {
+    #works-section {
+        padding:
+            12px;
+        width:
+            94%;
+    }
+
+    .work-post {
+        border-radius:
+            10px;
+        padding:
+            17px;
+    }
+
+    .work-post-media {
+        --chroma-radius:
+            130px;
+    }
+
+    .work-post-actions {
+        flex-wrap:
+            wrap;
+        gap:
+            14px;
+    }
+}
+
+
+/* ===========================
+   37. 减少动态效果
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .work-post,
+    .work-post::before,
+    .work-post::after,
+    .work-post-media::after,
+    .work-post-media > img {
+        transition:
+            none;
+    }
+
+    .work-post.is-pointer-active,
+    .work-post-media.is-chroma-active >
+    img {
+        transform:
+            none;
+    }
+}

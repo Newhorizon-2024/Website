@@ -1,0 +1,28 @@
+/* ===========================
+   54. 君主信息页
+=========================== */
+
+/* 君主信息区块 */
+#the-monarch-info-section {
+    background-image:
+        url(
+            "../../images/nhn/worldview/the-monarch/the-monarch-people.PNG"
+        );
+    background-position: center 75%;
+    background-repeat: no-repeat;
+    background-size: 50%;
+    height: auto;
+    padding: 40px;
+    position: relative;
+    text-align: center;
+}
+
+/* 君主信息标题 */
+#the-monarch-info-section h1 {
+    color: #EEEEEE;
+    font-size: clamp(128px, 6vw, 256px);
+    position: relative;
+    text-align: center;
+    text-shadow: 0 0 20px #000000;
+    white-space: nowrap;
+}

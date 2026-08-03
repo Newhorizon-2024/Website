@@ -1,0 +1,481 @@
+/* ===========================
+   1. 音乐播放器面板
+=========================== */
+
+/* 网站音乐播放器面板 */
+#settings-section {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    background-color: rgba(40, 40, 40, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    box-sizing: border-box;
+    color: #EEEEEE;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 5vh auto 0;
+    max-width: 1400px;
+    padding: 5vh 0;
+    position: relative;
+    width: 88%;
+    z-index: 4;
+}
+
+
+/* ===========================
+   2. 音乐进度条容器
+=========================== */
+
+/* 音乐进度条容器 */
+#progress-bar-container {
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 2vh auto 0;
+    width: 88%;
+}
+
+/* 当前播放时间与剩余时间 */
+#current-time,
+#remaining-time {
+    flex: 0 0 70px;
+    font-size: clamp(12px, 1vw, 16px);
+    line-height: 1;
+    padding: 0;
+    white-space: nowrap;
+}
+
+/* 当前播放时间 */
+#current-time {
+    text-align: right;
+}
+
+/* 剩余播放时间 */
+#remaining-time {
+    text-align: left;
+}
+
+
+/* ===========================
+   3. 音乐进度条
+=========================== */
+
+/* 音乐进度条 */
+#progress-bar {
+    -webkit-appearance: none;
+    appearance: none;
+    background:
+        linear-gradient(
+            to right,
+            #888888 var(--progress, 0%),
+            #444444 var(--progress, 0%)
+        );
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    flex: 1;
+    height: 6px;
+    margin: 0;
+    min-width: 0;
+    outline: none;
+}
+
+/* WebKit 音乐进度条轨道 */
+#progress-bar::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    height: 6px;
+}
+
+/* WebKit 音乐进度条拖动点 */
+#progress-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    background: #EEEEEE;
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 0 10px #888888;
+    cursor: pointer;
+    height: 14px;
+    margin-top: -4px;
+    width: 14px;
+}
+
+/* Firefox 音乐进度条轨道 */
+#progress-bar::-moz-range-track {
+    background: #444444;
+    border: none;
+    border-radius: 3px;
+    height: 6px;
+}
+
+/* Firefox 音乐进度条已播放区域 */
+#progress-bar::-moz-range-progress {
+    background: #888888;
+    border-radius: 3px;
+    height: 6px;
+}
+
+/* Firefox 音乐进度条拖动点 */
+#progress-bar::-moz-range-thumb {
+    background: #EEEEEE;
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 0 10px #888888;
+    cursor: pointer;
+    height: 14px;
+    width: 14px;
+}
+
+/* 音乐进度条键盘焦点 */
+#progress-bar:focus-visible {
+    outline: 1px solid rgba(238, 238, 238, 0.75);
+    outline-offset: 5px;
+}
+
+
+/* ===========================
+   4. 音乐控制按钮
+=========================== */
+
+/* 音乐控制按钮容器 */
+#music-controls {
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 1.2em;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* 音乐控制按钮 */
+#music-controls button {
+    background-color: #444444;
+    border: none;
+    border-radius: 5px;
+    color: #EEEEEE;
+    cursor: pointer;
+    padding: 10px 15px;
+    transition:
+        background-color 0.3s ease-in-out,
+        transform 0.3s ease-in-out;
+    white-space: nowrap;
+}
+
+/* 音乐控制按钮悬停状态 */
+#music-controls button:hover {
+    background-color: #888888;
+    transform: translateY(-1px);
+}
+
+/* 音乐控制按钮键盘焦点 */
+#music-controls button:focus-visible {
+    outline: 1px solid rgba(238, 238, 238, 0.75);
+    outline-offset: 3px;
+}
+
+/* 音量按钮 */
+#volume-btn {
+    padding: 10px 20px;
+}
+
+
+/* ===========================
+   5. 音量滑块容器
+=========================== */
+
+/*
+ * 音量滑块容器的显示状态由 JavaScript 控制。
+ * HTML 中如果保留 style="display: none;"，
+ * 内联样式仍会覆盖这里的 display 属性。
+ */
+#volume-slider-container {
+    display: block;
+    margin-top: 2vh;
+    text-align: center;
+}
+
+
+/* ===========================
+   6. 音量滑块
+=========================== */
+
+/* 音量滑块 */
+#volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    background:
+        linear-gradient(
+            to right,
+            #888888 var(--volume, 0%),
+            #444444 var(--volume, 0%)
+        );
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    height: 6px;
+    margin: 10px 0;
+    outline: none;
+    width: 25%;
+}
+
+/* WebKit 音量滑块轨道 */
+#volume-slider::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    height: 6px;
+}
+
+/* WebKit 音量滑块拖动点 */
+#volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    background: #EEEEEE;
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 0 10px #888888;
+    cursor: pointer;
+    height: 14px;
+    margin-top: -4px;
+    width: 14px;
+}
+
+/* Firefox 音量滑块轨道 */
+#volume-slider::-moz-range-track {
+    background: #444444;
+    border: none;
+    border-radius: 3px;
+    height: 6px;
+}
+
+/* Firefox 音量滑块已调节区域 */
+#volume-slider::-moz-range-progress {
+    background: #888888;
+    border-radius: 3px;
+    height: 6px;
+}
+
+/* Firefox 音量滑块拖动点 */
+#volume-slider::-moz-range-thumb {
+    background: #EEEEEE;
+    border: none;
+    border-radius: 3px;
+    box-shadow: 0 0 10px #888888;
+    cursor: pointer;
+    height: 14px;
+    width: 14px;
+}
+
+/* 音量滑块键盘焦点 */
+#volume-slider:focus-visible {
+    outline: 1px solid rgba(238, 238, 238, 0.75);
+    outline-offset: 5px;
+}
+
+
+/* ===========================
+   7. 平板设备适配
+=========================== */
+
+@media (max-width: 768px) {
+    #progress-bar-container {
+        gap: 10px;
+        max-width: 90%;
+        padding: 0 3%;
+        width: 90%;
+    }
+
+    #current-time,
+    #remaining-time {
+        flex-basis: 50px;
+        font-size: 0.9em;
+    }
+}
+
+
+/* ===========================
+   8. 手机设备适配
+=========================== */
+
+@media (max-width: 480px) {
+    #settings-section {
+        padding: 4vh 0;
+    }
+
+    #settings-section h1 {
+        font-size: 1.5em;
+    }
+
+    #progress-bar-container {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 1vh;
+        max-width: none;
+        padding: 0;
+        width: 90%;
+    }
+
+    #current-time,
+    #remaining-time {
+        flex: none;
+        font-size: 0.8em;
+        text-align: center;
+    }
+
+    #progress-bar {
+        flex: none;
+        margin: 0 auto;
+        width: 90%;
+    }
+
+    /* 五个播放按钮保持在同一行 */
+    #music-controls {
+        flex-wrap: nowrap;
+        gap: 6px;
+        padding: 0 10px;
+        transform: none;
+        width: auto;
+    }
+
+    /* 五个按钮平均分配宽度 */
+    #music-controls button {
+        box-sizing: border-box;
+        flex: 1 1 0;
+        font-size: 0.68em;
+        min-width: 0;
+        overflow: hidden;
+        padding: 8px 4px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #volume-btn {
+        padding: 8px 4px;
+    }
+
+    #volume-slider {
+        width: 80%;
+    }
+}
+
+
+/* ===========================
+   9. 触摸设备适配
+=========================== */
+
+@media (hover: none), (pointer: coarse) {
+    #music-controls button:hover {
+        transform: none;
+    }
+}
+
+
+/* ===========================
+   10. 减少动态效果
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    #music-controls button {
+        transition: none;
+    }
+}
+
+/* ===========================
+   16. 导航栏与设置面板响应式
+=========================== */
+
+/* 中等屏幕 */
+@media (max-width: 768px) {
+    #progress-bar-container {
+        gap: 10px;
+        max-width: 90%;
+        padding: 0 3%;
+        width: 90%;
+    }
+
+    #current-time,
+    #remaining-time {
+        flex-basis: 50px;
+        font-size: 0.9em;
+    }
+}
+
+/* 小屏幕 */
+@media (max-width: 480px) {
+    #settings-section {
+        padding: 4vh 0;
+    }
+
+    #progress-bar-container {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 1vh;
+        max-width: none;
+        padding: 0;
+        width: 90%;
+    }
+
+    #current-time,
+    #remaining-time {
+        flex: none;
+        font-size: 0.8em;
+        text-align: center;
+    }
+
+    #progress-bar {
+        flex: none;
+        margin: 0 auto;
+        width: 90%;
+    }
+
+    /* 五个播放按钮保持在同一行 */
+    #music-controls {
+        flex-wrap: nowrap;
+        gap: 6px;
+        padding: 0 10px;
+        transform: none;
+        width: auto;
+    }
+
+    /* 五个按钮平均分配宽度 */
+    #music-controls button {
+        box-sizing: border-box;
+        flex: 1 1 0;
+        font-size: 0.68em;
+        min-width: 0;
+        overflow: hidden;
+        padding: 8px 4px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* 防止音量按钮沿用较大的单独内边距 */
+    #volume-btn {
+        padding: 8px 4px;
+    }
+
+    #settings-section h1 {
+        font-size: 1.5em;
+    }
+}
+
+/* 触摸设备取消按钮悬停位移 */
+@media (hover: none), (pointer: coarse) {
+    #music-controls button:hover {
+        transform: none;
+    }
+}
+
+/* 遵循系统减少动态效果设置 */
+@media (prefers-reduced-motion: reduce) {
+    #music-controls button,
+    #nav-indicator {
+        transition: none;
+    }
+}

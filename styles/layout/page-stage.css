@@ -1,0 +1,29 @@
+/* ===========================
+   5. 页面主体
+=========================== */
+
+/* 页面主体内容区域 */
+#content {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
+}
+
+
+/* ===========================
+   6. Three.js 背景画布
+=========================== */
+
+/* 全屏动态背景画布 */
+#background-3d {
+    height: 100%;
+    left: 0;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 3;
+}

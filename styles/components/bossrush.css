@@ -1,0 +1,371 @@
+/* ===========================
+   64. Bossrush 眼睛
+=========================== */
+
+/* Bossrush 前景眼睛 */
+#bossrush-eyes {
+    animation:
+        bossrushFadeIn 1s ease-out,
+        bossrushFloat 6s ease-in-out infinite,
+        bossrushGlow 2.5s ease-in-out infinite;
+    display: none;
+    height: var(--eyes-bg-size);
+    left: 50%;
+    pointer-events: none;
+    position: fixed;
+    top: 25%;
+    transform: translate(-50%, -50%);
+    transition:
+        height 0.4s ease,
+        width 0.4s ease;
+    width: var(--eyes-bg-size);
+    z-index: 1;
+}
+
+/* Bossrush 前景眼睛图片 */
+#bossrush-eyes img {
+    height: 100%;
+    object-fit: contain;
+    width: 100%;
+}
+
+
+/* ===========================
+   65. Bossrush 眼睛重影
+=========================== */
+
+/* Bossrush 眼睛背景重影 */
+#bossrush-eyes-bg {
+    animation:
+        bossrushFadeIn 1.2s ease-out,
+        bossrushFloatBg 10s ease-in-out infinite;
+    display: none;
+    height: var(--eyes-bg-size);
+    left: 50%;
+    opacity: 0.25;
+    pointer-events: none;
+    position: fixed;
+    top: 25%;
+    transform: translate(-50%, -50%);
+    transition:
+        height 0.4s ease,
+        width 0.4s ease;
+    width: var(--eyes-bg-size);
+    z-index: 1;
+}
+
+/* Bossrush 眼睛重影图片 */
+#bossrush-eyes-bg img {
+    filter: blur(2px);
+    height: 100%;
+    object-fit: contain;
+    width: 100%;
+}
+
+
+/* ===========================
+   66. Bossrush 滤镜
+=========================== */
+
+/* Bossrush 滤镜层 */
+#bossrush-filter {
+    animation:
+        bossrushFadeIn
+        1s
+        ease-out;
+    display: none;
+    height: 100%;
+    left: 50%;
+    pointer-events: none;
+    position: fixed;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    z-index: 0;
+}
+
+/* Bossrush 滤镜图片 */
+#bossrush-filter img {
+    height: 100%;
+    opacity: 0.4;
+    width: 100%;
+}
+
+
+/* ===========================
+   67. Bossrush 音频光频遮罩
+=========================== */
+
+/*
+ * 由 song-visuals.js 自动创建。
+ * 位于屏幕底部，根据音频能量向上扩张。
+ */
+#bossrush-audio-mask {
+    animation:
+        bossrushAudioMaskFadeIn
+        1.2s
+        ease-out;
+    bottom: -10vh;
+    display: none;
+    filter:
+        blur(24px)
+        saturate(0.35)
+        brightness(0.9)
+        contrast(1);
+    height: 70vh;
+    left: -5%;
+    mix-blend-mode: screen;
+    opacity: 0.5;
+    pointer-events: none;
+    position: fixed;
+    transform:
+        translate3d(0, 0, 0)
+        scaleX(1.08)
+        scaleY(1);
+    transform-origin: center bottom;
+    width: 110%;
+    will-change:
+        filter,
+        opacity,
+        transform;
+    z-index: 1;
+}
+
+/* 音频光频激活状态 */
+#bossrush-audio-mask.is-active {
+    filter:
+        blur(24px)
+        saturate(0.35)
+        brightness(0.9)
+        contrast(1)
+        drop-shadow(
+            0 -12px 30px
+            rgba(150, 150, 150, 0.1)
+        );
+}
+
+
+/* ===========================
+   68. Bossrush 动画
+=========================== */
+
+/* Bossrush 淡入动画 */
+@keyframes bossrushFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Bossrush 淡出动画 */
+@keyframes bossrushFadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+/* 音频光频淡入动画 */
+@keyframes bossrushAudioMaskFadeIn {
+    from {
+        opacity: 0;
+        transform:
+            translate3d(
+                0,
+                14vh,
+                0
+            )
+            scaleX(1.08)
+            scaleY(0.72);
+    }
+
+    to {
+        opacity: 0.5;
+        transform:
+            translate3d(
+                0,
+                0,
+                0
+            )
+            scaleX(1.08)
+            scaleY(1);
+    }
+}
+
+/* Bossrush 前景眼睛漂浮动画 */
+@keyframes bossrushFloat {
+    0% {
+        transform:
+            translate(-50%, -50%)
+            translate(0, 0);
+    }
+
+    25% {
+        transform:
+            translate(-50%, -50%)
+            translate(5px, -3px);
+    }
+
+    50% {
+        transform:
+            translate(-50%, -50%)
+            translate(-4px, 6px);
+    }
+
+    75% {
+        transform:
+            translate(-50%, -50%)
+            translate(3px, 4px);
+    }
+
+    100% {
+        transform:
+            translate(-50%, -50%)
+            translate(0, 0);
+    }
+}
+
+/* Bossrush 发光脉冲动画 */
+@keyframes bossrushGlow {
+    0% {
+        filter:
+            drop-shadow(
+                0 0 2px #EEEEEE
+            );
+    }
+
+    50% {
+        filter:
+            drop-shadow(
+                0 0 12px #EEEEEE
+            );
+    }
+
+    100% {
+        filter:
+            drop-shadow(
+                0 0 2px #EEEEEE
+            );
+    }
+}
+
+/* Bossrush 背景重影漂浮动画 */
+@keyframes bossrushFloatBg {
+    0% {
+        transform:
+            translate(-50%, -50%)
+            translate(0, 0);
+    }
+
+    20% {
+        transform:
+            translate(-50%, -50%)
+            translate(-6px, 3px);
+    }
+
+    40% {
+        transform:
+            translate(-50%, -50%)
+            translate(4px, -8px);
+    }
+
+    60% {
+        transform:
+            translate(-50%, -50%)
+            translate(-10px, -2px);
+    }
+
+    80% {
+        transform:
+            translate(-50%, -50%)
+            translate(8px, 6px);
+    }
+
+    100% {
+        transform:
+            translate(-50%, -50%)
+            translate(0, 0);
+    }
+}
+
+
+/* ===========================
+   69. Bossrush 设备适配
+=========================== */
+
+/* 中等屏幕 */
+@media (max-width: 768px) {
+    #bossrush-audio-mask {
+        bottom: -7vh;
+        filter:
+            blur(19px)
+            saturate(0.35)
+            brightness(0.9)
+            contrast(1);
+        height: 60vh;
+        opacity: 0.46;
+    }
+
+    #bossrush-audio-mask.is-active {
+        filter:
+            blur(19px)
+            saturate(0.35)
+            brightness(0.9)
+            contrast(1)
+            drop-shadow(
+                0 -9px 24px
+                rgba(150, 150, 150, 0.09)
+            );
+    }
+}
+
+/* 小屏幕 */
+@media (max-width: 480px) {
+    #bossrush-audio-mask {
+        bottom: -4vh;
+        filter:
+            blur(15px)
+            saturate(0.3)
+            brightness(0.86)
+            contrast(1);
+        height: 52vh;
+        opacity: 0.42;
+    }
+
+    #bossrush-audio-mask.is-active {
+        filter:
+            blur(15px)
+            saturate(0.3)
+            brightness(0.86)
+            contrast(1)
+            drop-shadow(
+                0 -7px 20px
+                rgba(150, 150, 150, 0.08)
+            );
+    }
+}
+
+
+/* ===========================
+   70. 减少动态效果
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    #bossrush-eyes,
+    #bossrush-eyes-bg {
+        transition: none;
+    }
+
+    #bossrush-eyes,
+    #bossrush-eyes-bg,
+    #bossrush-filter,
+    #bossrush-audio-mask {
+        animation: none;
+    }
+}

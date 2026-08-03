@@ -1,0 +1,402 @@
+/* ===========================
+   1. 世界观自定义光标
+=========================== */
+
+#worldview-target-cursor {
+    --target-cursor-height: 26px;
+    --target-cursor-width: 26px;
+    --target-cursor-x: -100px;
+    --target-cursor-y: -100px;
+
+    height: var(--target-cursor-height);
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    transform:
+        translate3d(
+            var(--target-cursor-x),
+            var(--target-cursor-y),
+            0
+        );
+    transition:
+        height 0.28s
+        cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.22s ease,
+        width 0.28s
+        cubic-bezier(0.22, 1, 0.36, 1);
+    width: var(--target-cursor-width);
+    will-change:
+        transform,
+        width,
+        height;
+    z-index: 10000;
+}
+
+/* 世界观区块启用 */
+#worldview-target-cursor.is-active {
+    opacity: 1;
+}
+
+/* 拖动期间降低存在感 */
+#worldview-target-cursor.is-suspended {
+    opacity: 0.3;
+}
+
+/* 锁定方块 */
+#worldview-target-cursor.is-locked {
+    opacity: 1;
+}
+
+
+/* ===========================
+   2. 四角标记
+=========================== */
+
+.worldview-target-corner {
+    height: 9px;
+    position: absolute;
+    width: 9px;
+}
+
+/* 左上 */
+.corner-top-left {
+    border-left: 1px solid rgba(255, 255, 255, 0.82);
+    border-top: 1px solid rgba(255, 255, 255, 0.82);
+    left: 0;
+    top: 0;
+}
+
+/* 右上 */
+.corner-top-right {
+    border-right: 1px solid rgba(255, 255, 255, 0.82);
+    border-top: 1px solid rgba(255, 255, 255, 0.82);
+    right: 0;
+    top: 0;
+}
+
+/* 左下 */
+.corner-bottom-left {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.82);
+    border-left: 1px solid rgba(255, 255, 255, 0.82);
+    bottom: 0;
+    left: 0;
+}
+
+/* 右下 */
+.corner-bottom-right {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.82);
+    border-right: 1px solid rgba(255, 255, 255, 0.82);
+    bottom: 0;
+    right: 0;
+}
+
+
+/* ===========================
+   3. 中心点
+=========================== */
+
+.worldview-target-center {
+    background: rgba(255, 255, 255, 0.52);
+    border-radius: 50%;
+    height: 2px;
+    left: 50%;
+    opacity: 0.7;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.2s ease;
+    width: 2px;
+}
+
+#worldview-target-cursor.is-locked
+.worldview-target-center {
+    opacity: 0;
+}
+
+
+/* ===========================
+   4. Crosshair
+=========================== */
+
+#worldview-crosshair {
+    --crosshair-x: -100px;
+    --crosshair-y: -100px;
+
+    height: 100vh;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    transform:
+        translate3d(
+            var(--crosshair-x),
+            var(--crosshair-y),
+            0
+        )
+        translate(-50%, -50%);
+    width: 100vw;
+    z-index: 10001;
+}
+
+/* Crosshair 释放状态 */
+#worldview-crosshair.is-releasing {
+    animation:
+        worldview-crosshair-release
+        0.72s
+        cubic-bezier(
+            0.16,
+            1,
+            0.3,
+            1
+        )
+        forwards;
+}
+
+
+/* ===========================
+   5. Crosshair 横线
+=========================== */
+
+.worldview-crosshair-horizontal {
+    background:
+        linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.02) 12%,
+            rgba(255, 255, 255, 0.18) 38%,
+            rgba(255, 255, 255, 0.85) 50%,
+            rgba(255, 255, 255, 0.18) 62%,
+            rgba(255, 255, 255, 0.02) 88%,
+            transparent 100%
+        );
+    height: 1px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform:
+        translate(-50%, -50%)
+        scaleX(0);
+    transform-origin: center;
+    width: 100vw;
+}
+
+
+/* ===========================
+   6. Crosshair 竖线
+=========================== */
+
+.worldview-crosshair-vertical {
+    background:
+        linear-gradient(
+            180deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.02) 12%,
+            rgba(255, 255, 255, 0.18) 38%,
+            rgba(255, 255, 255, 0.85) 50%,
+            rgba(255, 255, 255, 0.18) 62%,
+            rgba(255, 255, 255, 0.02) 88%,
+            transparent 100%
+        );
+    height: 100vh;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform:
+        translate(-50%, -50%)
+        scaleY(0);
+    transform-origin: center;
+    width: 1px;
+}
+
+
+/* ===========================
+   7. Crosshair 中心点
+=========================== */
+
+.worldview-crosshair-point {
+    background: #FFFFFF;
+    border-radius: 50%;
+    box-shadow:
+        0 0 8px
+        rgba(255, 255, 255, 0.75),
+        0 0 28px
+        rgba(255, 255, 255, 0.24);
+    height: 4px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform:
+        translate(-50%, -50%)
+        scale(0);
+    width: 4px;
+}
+
+
+/* ===========================
+   8. Crosshair 动画绑定
+=========================== */
+
+#worldview-crosshair.is-releasing
+.worldview-crosshair-horizontal {
+    animation:
+        worldview-crosshair-horizontal
+        0.72s
+        cubic-bezier(
+            0.16,
+            1,
+            0.3,
+            1
+        )
+        forwards;
+}
+
+#worldview-crosshair.is-releasing
+.worldview-crosshair-vertical {
+    animation:
+        worldview-crosshair-vertical
+        0.72s
+        cubic-bezier(
+            0.16,
+            1,
+            0.3,
+            1
+        )
+        forwards;
+}
+
+#worldview-crosshair.is-releasing
+.worldview-crosshair-point {
+    animation:
+        worldview-crosshair-point
+        0.58s
+        ease-out
+        forwards;
+}
+
+
+/* ===========================
+   9. Crosshair 释放动画
+=========================== */
+
+@keyframes worldview-crosshair-release {
+    0% {
+        opacity: 0;
+    }
+
+    8% {
+        opacity: 1;
+    }
+
+    42% {
+        opacity: 0.88;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+
+/* 横线从中心瞬间贯穿屏幕 */
+@keyframes worldview-crosshair-horizontal {
+    0% {
+        filter: blur(2px);
+        opacity: 0;
+        transform:
+            translate(-50%, -50%)
+            scaleX(0);
+    }
+
+    18% {
+        filter: blur(0);
+        opacity: 1;
+        transform:
+            translate(-50%, -50%)
+            scaleX(1);
+    }
+
+    55% {
+        opacity: 0.72;
+        transform:
+            translate(-50%, -50%)
+            scaleX(1);
+    }
+
+    100% {
+        filter: blur(1px);
+        opacity: 0;
+        transform:
+            translate(-50%, -50%)
+            scaleX(1.08);
+    }
+}
+
+
+/* 竖线从中心瞬间贯穿屏幕 */
+@keyframes worldview-crosshair-vertical {
+    0% {
+        filter: blur(2px);
+        opacity: 0;
+        transform:
+            translate(-50%, -50%)
+            scaleY(0);
+    }
+
+    18% {
+        filter: blur(0);
+        opacity: 1;
+        transform:
+            translate(-50%, -50%)
+            scaleY(1);
+    }
+
+    55% {
+        opacity: 0.72;
+        transform:
+            translate(-50%, -50%)
+            scaleY(1);
+    }
+
+    100% {
+        filter: blur(1px);
+        opacity: 0;
+        transform:
+            translate(-50%, -50%)
+            scaleY(1.08);
+    }
+}
+
+
+/* 中心点爆发 */
+@keyframes worldview-crosshair-point {
+    0% {
+        opacity: 0;
+        transform:
+            translate(-50%, -50%)
+            scale(0);
+    }
+
+    18% {
+        opacity: 1;
+        transform:
+            translate(-50%, -50%)
+            scale(2.2);
+    }
+
+    42% {
+        opacity: 0.92;
+        transform:
+            translate(-50%, -50%)
+            scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform:
+            translate(-50%, -50%)
+            scale(0.25);
+    }
+}

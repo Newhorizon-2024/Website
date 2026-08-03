@@ -1,0 +1,45 @@
+/* ===========================
+   62. 返回主页按钮
+=========================== */
+
+/* 返回主页按钮 */
+#back-to-home {
+    background-color: #444444;
+    border: none;
+    border-radius: 5px;
+    color: #EEEEEE;
+    cursor: pointer;
+    display: block;
+    font-size: 1.2em;
+    margin: 40px auto;
+    padding: 10px 20px;
+    position: relative;
+    transition:
+        background-color 0.3s ease,
+        transform 0.2s ease;
+    z-index: 2;
+}
+
+/* 返回主页按钮悬停状态 */
+#back-to-home:hover {
+    background-color: #888888;
+    transform: translateY(-2px);
+}
+
+/* 返回主页按钮键盘焦点 */
+#back-to-home:focus-visible {
+    outline: 1px solid rgba(238, 238, 238, 0.75);
+    outline-offset: 4px;
+}
+
+@media (hover: none), (pointer: coarse) {
+    #back-to-home:hover {
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #back-to-home {
+        transition: none;
+    }
+}

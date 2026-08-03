@@ -1,0 +1,222 @@
+/* ===========================
+   40. 情报署主页
+=========================== */
+
+/* 情报署主页 */
+#nhn-section {
+    color: #EEEEEE;
+    padding: 40px 20px;
+    position: relative;
+    text-align: center;
+}
+
+/* 情报署标志 */
+.nhn-logo {
+    display: block;
+    height: auto;
+    margin: 40px auto 60px;
+    opacity: 0.9;
+    transition:
+        opacity 0.2s ease,
+        transform 0.18s ease-out;
+    width: clamp(200px, 50vw, 600px);
+}
+
+/* 情报署一级标题 */
+#nhn-section h1 {
+    font-size: 26px;
+    letter-spacing: 2px;
+    margin: 0 auto 20px;
+}
+
+/* 情报署正文 */
+#nhn-section p {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* ===========================
+   41. 情报署按钮
+=========================== */
+
+/* 情报署按钮容器 */
+.nhn-btn-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+}
+
+/* 情报署按钮 */
+.nhn-btn {
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: inherit;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 18px;
+    padding: 12px 22px;
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease;
+}
+
+/* 情报署按钮悬停状态 */
+.nhn-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-4px);
+}
+
+/* 情报署按钮键盘焦点 */
+.nhn-btn:focus-visible {
+    outline: 1px solid rgba(238, 238, 238, 0.75);
+    outline-offset: 3px;
+}
+
+
+/* ===========================
+   42. 情报署手风琴菜单
+=========================== */
+
+/* 手风琴菜单容器 */
+.accordion-menu {
+    border-radius: 10px;
+    display: flex;
+    height: clamp(300px, 50vh, 700px);
+    margin: 0 auto;
+    max-width: 1320px;
+    overflow: hidden;
+    width: 100%;
+}
+
+/* 手风琴菜单选项 */
+.accordion-menu-option {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    display: block;
+    flex: 1;
+    font: inherit;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+    text-align: center;
+    transition: flex 0.5s ease;
+}
+
+/* 手风琴菜单选项展开状态 */
+.accordion-menu-option.expanded {
+    flex: 4;
+}
+
+/* 手风琴菜单图片 */
+.accordion-menu-option img {
+    display: block;
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* 手风琴菜单文字 */
+.accordion-menu-option .text {
+    bottom: 0;
+    font-size: 1.5rem;
+    left: 0;
+    opacity: 0;
+    padding-bottom: 1.5rem;
+    position: absolute;
+    text-align: center;
+    text-shadow: 0 0 10px #000000;
+    transform: translateY(100%);
+    transition:
+        opacity 500ms
+        cubic-bezier(0.4, 0, 0.2, 1),
+        transform 500ms
+        cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    z-index: 2;
+}
+
+/* 展开状态中的菜单文字 */
+.accordion-menu-option.expanded .text {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 200ms;
+}
+
+/* 手风琴菜单高光遮罩 */
+.accordion-menu-option::before {
+    background-image:
+        linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.25),
+            transparent
+        );
+    content: "";
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 1;
+}
+
+/* 手风琴菜单键盘焦点 */
+.accordion-menu-option:focus-visible {
+    outline: 2px solid rgba(238, 238, 238, 0.75);
+    outline-offset: -2px;
+}
+
+/* 支持悬停的精确指针设备 */
+@media (hover: hover) and (pointer: fine) {
+    .accordion-menu-option:hover {
+        flex: 4;
+    }
+
+    .accordion-menu-option:hover .text {
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 200ms;
+    }
+}
+
+
+/* ===========================
+   43. 返回情报署按钮
+=========================== */
+
+/* 返回情报署按钮 */
+.back-to-nhn {
+    background: transparent;
+    border: 2px solid #EEEEEE;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #444444;
+    color: inherit;
+    cursor: pointer;
+    display: block;
+    font-weight: 700;
+    margin: 40px auto 0;
+    padding: 10px 20px;
+    text-align: center;
+    transition:
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+    width: fit-content;
+}
+
+/* 返回情报署按钮悬停状态 */
+.back-to-nhn:hover {
+    box-shadow: 0 0 14px #444444;
+    transform: translateY(-2px);
+}
+
+/* 返回情报署按钮键盘焦点 */
+.back-to-nhn:focus-visible {
+    outline: 1px solid rgba(238, 238, 238, 0.75);
+    outline-offset: 4px;
+}

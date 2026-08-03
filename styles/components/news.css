@@ -1,0 +1,32 @@
+/* ===========================
+   26. 新闻区块
+=========================== */
+
+/* 新闻图片 */
+#news {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    display: block;
+    height: auto;
+    margin: 20px auto 0;
+    max-width: 800px;
+    transition:
+        box-shadow 0.3s ease,
+        transform 0.3s ease;
+    width: 100%;
+}
+
+/* 新闻图片悬停状态 */
+#news:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    transform: translateY(-3px);
+}
+
+/* 新闻图片手机适配 */
+@media (max-width: 600px) {
+    #news:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        transform: none;
+    }
+}

@@ -1,0 +1,84 @@
+/* ===========================
+   1. 全局基础样式
+=========================== */
+
+/* 全局样式：页面基础外观与字体设置 */
+html {
+    background-color: #000000;
+    margin: 0;
+    min-height: 100%;
+    padding: 0;
+    scrollbar-width: none;
+}
+
+body {
+    color: #EEEEEE;
+    font-family:
+        "Roboto",
+        "Noto Sans CJK SC",
+        sans-serif;
+    margin: 0;
+    min-height: 100%;
+    padding: 0;
+    position: relative;
+}
+
+/* 固定在单个视口内的灰黑渐变背景 */
+body::before {
+    background:
+        linear-gradient(
+            120deg,
+            #000000 0%,
+            #444444 100%
+        );
+    content: "";
+    height: 100vh;
+    height: 100dvh;
+    inset: 0;
+    pointer-events: none;
+    position: fixed;
+    width: 100%;
+    z-index: 0;
+}
+
+/* 隐藏 WebKit 浏览器滚动条 */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none;
+}
+
+/* 页面启动期间锁定滚动 */
+body.locked {
+    overflow: hidden;
+}
+
+
+/* ===========================
+   2. 全局设计变量
+=========================== */
+
+:root {
+    /* 公共面板 */
+    --site-panel-background: rgba(40, 40, 40, 0.9);
+    --site-panel-blur: 8px;
+    --site-panel-border: rgba(255, 255, 255, 0.08);
+    --site-panel-margin: 50px auto;
+    --site-panel-max-width: 1400px;
+    --site-panel-padding: 24px;
+    --site-panel-radius: 5px;
+    --site-panel-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    --site-panel-width: 90%;
+
+    /* 公共内容 */
+    --site-content-max-width: 900px;
+
+    /* 公共文字 */
+    --site-text-primary: #EEEEEE;
+    --site-text-secondary: rgba(238, 238, 238, 0.85);
+
+    /* 页面区块转场 */
+    --section-depth-duration: 800ms;
+    --section-slide-duration: 650ms;
+    --section-transition-easing:
+        cubic-bezier(0.22, 1, 0.36, 1);
+}

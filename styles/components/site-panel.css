@@ -1,0 +1,185 @@
+/* ===========================
+   3. 公共玻璃面板
+=========================== */
+
+/* 注册光幕角度变量，使角度变化可以平滑过渡 */
+@property --panel-light-angle {
+    inherits: true;
+    initial-value: 215deg;
+    syntax: "<angle>";
+}
+
+/* 公共玻璃面板 */
+.site-panel {
+    --panel-light-angle: 215deg;
+    --panel-light-shift-x: 0px;
+    --panel-light-shift-y: 0px;
+    --panel-rotate-x: 0deg;
+    --panel-rotate-y: 0deg;
+
+    -webkit-backdrop-filter: blur(var(--site-panel-blur));
+    backdrop-filter: blur(var(--site-panel-blur));
+    background-color: var(--site-panel-background);
+    border: 1px solid var(--site-panel-border);
+    border-radius: var(--site-panel-radius);
+    box-shadow: var(--site-panel-shadow);
+    box-sizing: border-box;
+    color: var(--site-text-primary);
+    isolation: isolate;
+    margin: var(--site-panel-margin);
+    max-width: var(--site-panel-max-width);
+    overflow: hidden;
+    padding: var(--site-panel-padding);
+    position: relative;
+    text-align: center;
+    transform:
+        perspective(1200px)
+        rotateX(var(--panel-rotate-x))
+        rotateY(var(--panel-rotate-y));
+    transform-style: preserve-3d;
+    transition:
+        box-shadow 0.35s ease,
+        transform 0.2s ease-out;
+    width: var(--site-panel-width);
+    will-change: transform;
+    z-index: 4;
+}
+
+/* 面板右上角动态斜向光幕 */
+.site-panel::before {
+    background:
+        linear-gradient(
+            var(--panel-light-angle),
+            rgba(255, 255, 255, 0.18) 0%,
+            rgba(255, 255, 255, 0.09) 14%,
+            rgba(255, 255, 255, 0.035) 30%,
+            transparent 58%
+        );
+    content: "";
+    height: 150%;
+    pointer-events: none;
+    position: absolute;
+    right: -25%;
+    top: -65%;
+    transform:
+        translate(
+            var(--panel-light-shift-x),
+            var(--panel-light-shift-y)
+        );
+    transform-origin: top right;
+    transition:
+        --panel-light-angle 0.22s ease-out,
+        opacity 0.35s ease,
+        transform 0.22s ease-out;
+    width: 150%;
+    z-index: 0;
+}
+
+/* 面板右上角固定柔光 */
+.site-panel::after {
+    background:
+        radial-gradient(
+            ellipse at top right,
+            rgba(255, 255, 255, 0.12) 0%,
+            rgba(255, 255, 255, 0.045) 24%,
+            transparent 58%
+        );
+    content: "";
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 0;
+}
+
+/* 鼠标进入面板时增强阴影 */
+.site-panel.is-pointer-active {
+    box-shadow:
+        var(--site-panel-shadow),
+        0 16px 44px rgba(0, 0, 0, 0.26);
+}
+
+/* 面板内部直属内容 */
+.site-panel > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* 面板一级标题 */
+.site-panel > h1 {
+    color: var(--site-text-primary);
+    margin: 0 auto 20px;
+}
+
+/* 面板二级标题 */
+.site-panel > h2 {
+    color: var(--site-text-secondary);
+    font-size: clamp(16px, 1.8vw, 24px);
+    font-weight: 400;
+    margin: 0 auto 20px;
+    max-width: var(--site-content-max-width);
+}
+
+/* 面板直属正文段落 */
+.site-panel > p {
+    color: var(--site-text-secondary);
+    line-height: 1.8;
+    margin: 0 auto 16px;
+    max-width: var(--site-content-max-width);
+}
+
+/* 移除面板最后一个直属段落的底部间距 */
+.site-panel > p:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ===========================
+   4. 公共面板响应式
+=========================== */
+
+/* 平板设备 */
+@media (max-width: 900px) {
+    .site-panel {
+        padding: 22px;
+        width: 92%;
+    }
+}
+
+/* 手机设备 */
+@media (max-width: 600px) {
+    .site-panel {
+        margin: 30px auto;
+        padding: 18px 16px;
+        width: 94%;
+    }
+
+    .site-panel > p {
+        max-width: none;
+    }
+}
+
+/* 触摸设备不启用面板倾斜 */
+@media (hover: none), (pointer: coarse) {
+    .site-panel {
+        transform: none;
+        will-change: auto;
+    }
+
+    .site-panel::before {
+        transform: none;
+    }
+}
+
+/* 遵循系统减少动态效果设置 */
+@media (prefers-reduced-motion: reduce) {
+    .site-panel {
+        transform: none !important;
+        transition: none !important;
+        will-change: auto;
+    }
+
+    .site-panel::before {
+        transform: none !important;
+        transition: none !important;
+    }
+}

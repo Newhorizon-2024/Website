@@ -1,0 +1,41 @@
+/* ===========================
+   55. 悬赏令信息页按钮
+=========================== */
+
+/* 前往魔君页面按钮 */
+.go-to-the-ruler {
+    background: transparent;
+    color: #EEEEEE;
+    cursor: pointer;
+    font-weight: 700;
+    transition:
+        opacity 0.2s ease,
+        text-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+/* 前往魔君页面按钮悬停状态 */
+.go-to-the-ruler:hover {
+    text-shadow: 0 0 10px rgba(238, 238, 238, 0.8);
+    transform: translateY(-2px);
+}
+
+/* 前往魔君页面按钮键盘焦点 */
+.go-to-the-ruler:focus-visible {
+    outline: 1px solid rgba(238, 238, 238, 0.75);
+    outline-offset: 4px;
+}
+
+/* 触摸设备取消按钮悬停位移 */
+@media (hover: none), (pointer: coarse) {
+    .go-to-the-ruler:hover {
+        transform: none;
+    }
+}
+
+/* 遵循系统减少动态效果设置 */
+@media (prefers-reduced-motion: reduce) {
+    .go-to-the-ruler {
+        transition: none;
+    }
+}

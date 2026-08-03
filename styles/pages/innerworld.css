@@ -1,0 +1,1360 @@
+/* ===========================
+   1. 里世界区块
+=========================== */
+
+#innerworld-section {
+    --innerworld-content-width:
+        920px;
+
+    --innerworld-wide-width:
+        1280px;
+
+    --innerworld-reveal-delay:
+        0ms;
+
+    --innerworld-reveal-duration:
+        900ms;
+
+    background:
+        transparent;
+    box-sizing:
+        border-box;
+    color:
+        #EEEEEE;
+    margin:
+        0 auto;
+    min-height:
+        100vh;
+    overflow:
+        hidden;
+    padding:
+        clamp(80px, 10vw, 150px)
+        0
+        clamp(100px, 14vw, 190px);
+    position:
+        relative;
+    width:
+        100%;
+}
+
+/*
+ * 覆盖通用 section 可能存在的
+ * 面板背景、边框或毛玻璃。
+ */
+#innerworld-section.section {
+    background:
+        transparent;
+    border:
+        0;
+    border-radius:
+        0;
+    box-shadow:
+        none;
+    max-width:
+        none;
+}
+
+/* 内容层级 */
+#innerworld-section > * {
+    position:
+        relative;
+    z-index:
+        2;
+}
+
+
+/* ===========================
+   2. 页面环境光
+=========================== */
+
+/*
+ * 页面上半部分的微弱环境光。
+ * 不构成实体面板，仅用于分离文字与背景。
+ */
+#innerworld-section::before {
+    background:
+        radial-gradient(
+            ellipse
+            at 50% 8%,
+            rgba(
+                255,
+                255,
+                255,
+                0.055
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.012
+            ) 28%,
+            transparent 68%
+        );
+    content:
+        "";
+    height:
+        760px;
+    left:
+        50%;
+    opacity:
+        0;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    top:
+        0;
+    transform:
+        translateX(-50%);
+    transition:
+        opacity
+        1.4s
+        ease;
+    width:
+        min(
+            1500px,
+            140vw
+        );
+    z-index:
+        0;
+}
+
+/* 页面激活时显示环境光 */
+#innerworld-section.is-active::before,
+#innerworld-section.depth-enter::before,
+#innerworld-section.slide-enter-left::before,
+#innerworld-section.slide-enter-right::before {
+    opacity:
+        1;
+}
+
+
+/* ===========================
+   3. 里世界页首
+=========================== */
+
+.innerworld-hero {
+    align-items:
+        center;
+    display:
+        flex;
+    flex-direction:
+        column;
+    margin:
+        0 auto;
+    max-width:
+        var(
+            --innerworld-content-width
+        );
+    padding:
+        0 30px;
+    text-align:
+        center;
+}
+
+/* LOGO */
+.innerworld-logo {
+    display:
+        block;
+    filter:
+        drop-shadow(
+            0 0 24px
+            rgba(
+                255,
+                255,
+                255,
+                0.08
+            )
+        );
+    height:
+        auto;
+    max-width:
+        720px;
+    opacity:
+        0;
+    transform:
+        translate3d(
+            0,
+            30px,
+            0
+        )
+        scale(0.97);
+    transition:
+        filter
+        0.6s
+        ease,
+        opacity
+        1.2s
+        ease,
+        transform
+        1.2s
+        cubic-bezier(
+            0.2,
+            0.7,
+            0.2,
+            1
+        );
+    width:
+        min(
+            78vw,
+            720px
+        );
+}
+
+/* 页首档案标签 */
+.innerworld-eyebrow {
+    color:
+        rgba(
+            238,
+            238,
+            238,
+            0.42
+        );
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        clamp(
+            10px,
+            1vw,
+            13px
+        );
+    letter-spacing:
+        0.28em;
+    margin:
+        42px 0 0;
+    opacity:
+        0;
+    text-transform:
+        uppercase;
+    transform:
+        translateY(18px);
+    transition:
+        opacity
+        0.9s
+        ease
+        0.18s,
+        transform
+        0.9s
+        ease
+        0.18s;
+}
+
+/* 主标题 */
+.innerworld-title {
+    color:
+        #F0F0F0;
+    font-size:
+        clamp(
+            28px,
+            4.5vw,
+            58px
+        );
+    font-weight:
+        400;
+    letter-spacing:
+        0.04em;
+    line-height:
+        1.35;
+    margin:
+        20px 0 0;
+    opacity:
+        0;
+    text-wrap:
+        balance;
+    transform:
+        translateY(24px);
+    transition:
+        opacity
+        1s
+        ease
+        0.3s,
+        transform
+        1s
+        ease
+        0.3s;
+}
+
+/* 页面激活后的页首动画 */
+#innerworld-section.is-innerworld-ready
+.innerworld-logo {
+    opacity:
+        0.92;
+    transform:
+        translate3d(
+            0,
+            0,
+            0
+        )
+        scale(1);
+}
+
+#innerworld-section.is-innerworld-ready
+.innerworld-eyebrow,
+#innerworld-section.is-innerworld-ready
+.innerworld-title {
+    opacity:
+        1;
+    transform:
+        translateY(0);
+}
+
+
+/* ===========================
+   4. 通用章节
+=========================== */
+
+.innerworld-chapter {
+    box-sizing:
+        border-box;
+    margin:
+        clamp(
+            130px,
+            16vw,
+            240px
+        )
+        auto
+        0;
+    max-width:
+        var(
+            --innerworld-wide-width
+        );
+    padding:
+        0 40px;
+    position:
+        relative;
+}
+
+/* 普通正文宽度 */
+.innerworld-copy {
+    margin:
+        0 auto;
+    max-width:
+        var(
+            --innerworld-content-width
+        );
+}
+
+/* 正文 */
+.innerworld-copy p {
+    color:
+        rgba(
+            238,
+            238,
+            238,
+            0.72
+        );
+    font-size:
+        clamp(
+            15px,
+            1.45vw,
+            20px
+        );
+    letter-spacing:
+        0.025em;
+    line-height:
+        2.05;
+    margin:
+        0 0 1.5em;
+}
+
+/* 引导段 */
+.innerworld-copy
+.innerworld-lead {
+    color:
+        rgba(
+            255,
+            255,
+            255,
+            0.94
+        );
+    font-size:
+        clamp(
+            20px,
+            2.7vw,
+            34px
+        );
+    font-weight:
+        400;
+    letter-spacing:
+        0.04em;
+    line-height:
+        1.65;
+    margin-bottom:
+        1.4em;
+}
+
+/* 强调语句 */
+.innerworld-emphasis {
+    color:
+        #F2F2F2
+        !important;
+    font-size:
+        clamp(
+            18px,
+            2.1vw,
+            27px
+        )
+        !important;
+    letter-spacing:
+        0.05em
+        !important;
+    margin:
+        2.5em 0
+        0
+        !important;
+    text-align:
+        center;
+}
+
+/* 章节标题区域 */
+.innerworld-chapter-header {
+    margin:
+        0 auto
+        clamp(
+            40px,
+            6vw,
+            76px
+        );
+    max-width:
+        var(
+            --innerworld-content-width
+        );
+}
+
+/* 章节编号 */
+.innerworld-chapter-index {
+    color:
+        rgba(
+            238,
+            238,
+            238,
+            0.3
+        );
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        12px;
+    letter-spacing:
+        0.28em;
+    margin:
+        0 0 14px;
+}
+
+/* 章节标题 */
+.innerworld-chapter-header h2,
+.innerworld-testimony-header h2,
+.innerworld-ending h2 {
+    color:
+        #F0F0F0;
+    font-size:
+        clamp(
+            28px,
+            4.2vw,
+            54px
+        );
+    font-weight:
+        400;
+    letter-spacing:
+        0.04em;
+    line-height:
+        1.35;
+    margin:
+        0;
+}
+
+
+/* ===========================
+   5. Scroll Reveal 文字
+=========================== */
+
+/*
+ * 章节容器不再整体浮入。
+ * 容器始终存在，具体文字由单词级进度控制。
+ */
+.innerworld-chapter,
+.innerworld-testimony,
+.innerworld-ending {
+    opacity: 1;
+    transform: none;
+}
+
+/*
+ * JS 自动生成的单词。
+ */
+.innerworld-reveal-word {
+    --innerworld-word-blur: 10px;
+    --innerworld-word-opacity: 0.12;
+    --innerworld-word-shift: 10px;
+
+    display: inline;
+    filter:
+        blur(
+            var(--innerworld-word-blur)
+        );
+    opacity:
+        var(--innerworld-word-opacity);
+    transform:
+        translate3d(
+            0,
+            var(--innerworld-word-shift),
+            0
+        );
+    transition:
+        filter 90ms linear,
+        opacity 90ms linear,
+        transform 90ms linear;
+    will-change:
+        filter,
+        opacity,
+        transform;
+}
+
+/*
+ * 保留拆分前后的普通空格。
+ */
+.innerworld-reveal-space {
+    white-space: pre;
+}
+
+/*
+ * 标题的模糊范围略小，
+ * 避免大字号初始状态过于散乱。
+ */
+.innerworld-title
+.innerworld-reveal-word,
+.innerworld-chapter-header
+.innerworld-reveal-word,
+.innerworld-testimony-header
+.innerworld-reveal-word,
+.innerworld-ending
+> h2
+.innerworld-reveal-word {
+    --innerworld-word-blur: 7px;
+    --innerworld-word-shift: 8px;
+}
+
+/*
+ * 引文使用更缓慢的显现质感。
+ */
+.innerworld-quote
+.innerworld-reveal-word {
+    --innerworld-word-opacity: 0.08;
+    --innerworld-word-blur: 9px;
+}
+
+/*
+ * 已彻底清晰的词。
+ * 实际过程仍由 JS 写入内联变量。
+ */
+.innerworld-reveal-word.is-word-revealed {
+    --innerworld-word-blur: 0px;
+    --innerworld-word-opacity: 1;
+    --innerworld-word-shift: 0px;
+}
+
+
+/* ===========================
+   6. 通用插图
+=========================== */
+
+.innerworld-figure {
+    margin:
+        clamp(
+            42px,
+            6vw,
+            76px
+        )
+        auto;
+    max-width:
+        var(
+            --innerworld-wide-width
+        );
+    position:
+        relative;
+}
+
+/* 插图容器 */
+.innerworld-image-frame {
+    --innerworld-image-x:
+        0px;
+
+    --innerworld-image-y:
+        0px;
+
+    border-radius:
+        4px;
+    isolation:
+        isolate;
+    overflow:
+        hidden;
+    position:
+        relative;
+    transform:
+        translate3d(
+            var(
+                --innerworld-image-x
+            ),
+            var(
+                --innerworld-image-y
+            ),
+            0
+        );
+    transition:
+        transform
+        0.22s
+        ease-out;
+}
+
+/* 插图 */
+.innerworld-image-frame > img {
+    display:
+        block;
+    filter:
+        saturate(0.72)
+        brightness(0.82)
+        contrast(1.04);
+    height:
+        auto;
+    position:
+        relative;
+    transform:
+        scale(1.015);
+    transition:
+        filter
+        0.8s
+        ease,
+        transform
+        1.4s
+        cubic-bezier(
+            0.2,
+            0.7,
+            0.2,
+            1
+        );
+    width:
+        100%;
+    z-index:
+        1;
+}
+
+/* 鼠标接近插图 */
+.innerworld-image-frame.is-innerworld-image-active
+> img {
+    filter:
+        saturate(0.9)
+        brightness(0.9)
+        contrast(1.02);
+    transform:
+        scale(1.025);
+}
+
+/* 图注 */
+.innerworld-figure figcaption {
+    color:
+        rgba(
+            238,
+            238,
+            238,
+            0.42
+        );
+    font-size:
+        clamp(
+            12px,
+            1.15vw,
+            15px
+        );
+    letter-spacing:
+        0.05em;
+    line-height:
+        1.75;
+    margin:
+        18px auto
+        0;
+    max-width:
+        var(
+            --innerworld-content-width
+        );
+    text-align:
+        center;
+}
+
+
+/* ===========================
+   7. 现实映射插图
+=========================== */
+
+.innerworld-figure-reality {
+    max-width: 540px;
+    width: min(78vw, 540px);
+}
+
+/* 中央映射光 */
+.innerworld-figure-reality
+.innerworld-image-frame::before {
+    background:
+        radial-gradient(
+            circle
+            at var(
+                --innerworld-reality-x,
+                50%
+            )
+            var(
+                --innerworld-reality-y,
+                50%
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.1
+            ),
+            rgba(
+                255,
+                255,
+                255,
+                0.018
+            ) 24%,
+            transparent 58%
+        );
+    content:
+        "";
+    inset:
+        -20%;
+    opacity:
+        0;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    transition:
+        opacity
+        0.5s
+        ease;
+    z-index:
+        2;
+}
+
+.innerworld-figure-reality
+.innerworld-image-frame
+.is-innerworld-image-active::before,
+.innerworld-figure-reality
+.innerworld-image-frame.is-innerworld-image-active::before {
+    opacity:
+        1;
+}
+
+
+/* ===========================
+   8. 世界原貌插图
+=========================== */
+
+.innerworld-world-chapter {
+    max-width:
+        none;
+    padding:
+        0;
+}
+
+/* 世界原貌标题和正文保持正常宽度 */
+.innerworld-world-chapter
+.innerworld-chapter-header,
+.innerworld-world-chapter
+.innerworld-copy {
+    padding-left:
+        40px;
+    padding-right:
+        40px;
+}
+
+/* 横向大幅景观 */
+.innerworld-figure-world {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 750px;
+    width: min(82vw, 750px);
+}
+
+/* 世界图像更暗更平缓 */
+.innerworld-figure-world
+.innerworld-image-frame > img {
+    filter:
+        grayscale(0.2)
+        saturate(0.55)
+        brightness(0.72)
+        contrast(1.08);
+}
+
+.innerworld-figure-world
+.innerworld-image-frame
+.is-innerworld-image-active > img,
+.innerworld-figure-world
+.innerworld-image-frame.is-innerworld-image-active > img {
+    filter:
+        grayscale(0.08)
+        saturate(0.68)
+        brightness(0.8)
+        contrast(1.06);
+}
+
+
+/* ===========================
+   9. 灰色章节
+=========================== */
+
+.innerworld-gray-chapter {
+    max-width:
+        1080px;
+}
+
+/* 灰色章节背后的低对比渐变 */
+.innerworld-gray-chapter::before {
+    background:
+        radial-gradient(
+            ellipse
+            at 50% 45%,
+            rgba(
+                110,
+                110,
+                110,
+                0.065
+            ),
+            transparent 68%
+        );
+    content:
+        "";
+    inset:
+        -120px
+        -18vw;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    z-index:
+        -1;
+}
+
+/* 收束句 */
+.innerworld-conclusion-line {
+    color:
+        rgba(
+            255,
+            255,
+            255,
+            0.88
+        )
+        !important;
+    font-size:
+        clamp(
+            18px,
+            2vw,
+            26px
+        )
+        !important;
+    margin-top:
+        3em
+        !important;
+}
+
+
+/* ===========================
+   10. 引文区域
+=========================== */
+
+.innerworld-testimony {
+    box-sizing:
+        border-box;
+    margin:
+        clamp(
+            150px,
+            20vw,
+            300px
+        )
+        auto
+        0;
+    max-width:
+        1120px;
+    padding:
+        clamp(
+            70px,
+            10vw,
+            130px
+        )
+        clamp(
+            30px,
+            7vw,
+            90px
+        );
+    position:
+        relative;
+}
+
+/* 引文背景暗场 */
+.innerworld-testimony::before {
+    background:
+        linear-gradient(
+            180deg,
+            transparent,
+            rgba(
+                0,
+                0,
+                0,
+                0.3
+            ) 16%,
+            rgba(
+                0,
+                0,
+                0,
+                0.46
+            ) 50%,
+            rgba(
+                0,
+                0,
+                0,
+                0.3
+            ) 84%,
+            transparent
+        );
+    content:
+        "";
+    inset:
+        -10%
+        -20vw;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    z-index:
+        -1;
+}
+
+.innerworld-testimony-header {
+    margin:
+        0 0
+        clamp(
+            46px,
+            7vw,
+            82px
+        );
+}
+
+/* 引文 */
+.innerworld-quote {
+    border-left:
+        1px solid
+        rgba(
+            255,
+            255,
+            255,
+            0.14
+        );
+    margin:
+        0;
+    padding:
+        0 0 0
+        clamp(
+            24px,
+            4vw,
+            54px
+        );
+}
+
+/* 引文段落 */
+.innerworld-quote p {
+    color:
+        rgba(
+            238,
+            238,
+            238,
+            0.74
+        );
+    font-size:
+        clamp(
+            16px,
+            1.75vw,
+            23px
+        );
+    letter-spacing:
+        0.025em;
+    line-height:
+        2.05;
+    margin:
+        0 0 1.55em;
+}
+
+/* 引用来源 */
+.innerworld-quote footer {
+    margin-top:
+        54px;
+    text-align:
+        right;
+}
+
+.innerworld-quote cite {
+    color:
+        rgba(
+            238,
+            238,
+            238,
+            0.42
+        );
+    font-size:
+        14px;
+    font-style:
+        normal;
+    letter-spacing:
+        0.08em;
+}
+
+
+/* ===========================
+   11. 意识与角色
+=========================== */
+
+.innerworld-figure-characters {
+    max-width: 590px;
+    width: min(78vw, 590px);
+}
+
+
+/* ===========================
+   12. 结语
+=========================== */
+
+.innerworld-ending {
+    box-sizing:
+        border-box;
+    margin:
+        clamp(
+            160px,
+            22vw,
+            330px
+        )
+        auto
+        0;
+    max-width:
+        var(
+            --innerworld-content-width
+        );
+    padding:
+        0 40px;
+    text-align:
+        center;
+}
+
+/* 结语正文 */
+.innerworld-ending
+.innerworld-copy {
+    margin-top:
+        58px;
+}
+
+/* 结语文字 */
+.innerworld-ending
+.innerworld-copy p {
+    text-align:
+        center;
+}
+
+/* 核心结论 */
+.innerworld-ending-statement {
+    color:
+        rgba(
+            255,
+            255,
+            255,
+            0.86
+        )
+        !important;
+    font-size:
+        clamp(
+            19px,
+            2.25vw,
+            29px
+        )
+        !important;
+    margin-top:
+        3em
+        !important;
+}
+
+/* 最后一行 */
+.innerworld-ending-answer {
+    color:
+        #FFFFFF
+        !important;
+    font-size:
+        clamp(
+            22px,
+            3vw,
+            38px
+        )
+        !important;
+    letter-spacing:
+        0.055em
+        !important;
+    margin:
+        2.2em 0 0
+        !important;
+}
+
+
+/* ===========================
+   13. 返回按钮
+=========================== */
+
+.innerworld-back-button {
+    display:
+        flex;
+    margin:
+        clamp(
+            90px,
+            12vw,
+            160px
+        )
+        auto
+        0;
+}
+
+
+/* ===========================
+   14. 移动端
+=========================== */
+
+@media (max-width: 768px) {
+    #innerworld-section {
+        padding:
+            70px
+            0
+            110px;
+    }
+
+    .innerworld-hero {
+        padding:
+            0 22px;
+    }
+
+    .innerworld-logo {
+        width:
+            min(
+                86vw,
+                600px
+            );
+    }
+
+    .innerworld-eyebrow {
+        letter-spacing:
+            0.18em;
+        margin-top:
+            30px;
+    }
+
+    .innerworld-chapter {
+        margin-top:
+            120px;
+        padding:
+            0 24px;
+    }
+
+    .innerworld-world-chapter {
+        padding:
+            0;
+    }
+
+    .innerworld-world-chapter
+    .innerworld-chapter-header,
+    .innerworld-world-chapter
+    .innerworld-copy {
+        padding-left:
+            24px;
+        padding-right:
+            24px;
+    }
+
+    .innerworld-figure {
+        margin:
+            54px auto;
+    }
+
+    .innerworld-figure-world {
+        width: 
+            min(88vw, 750px);
+    }
+
+    .innerworld-figure-world
+    .innerworld-image-frame {
+        border-radius: 
+            4px;
+    }
+
+    .innerworld-testimony {
+        margin-top:
+            150px;
+        padding:
+            70px
+            28px;
+    }
+
+    .innerworld-quote {
+        padding-left:
+            22px;
+    }
+
+    .innerworld-ending {
+        margin-top:
+            170px;
+        padding:
+            0 24px;
+    }
+
+    .innerworld-transform-list p {
+        gap:
+            12px;
+        grid-template-columns:
+            76px
+            1fr;
+    }
+}
+
+
+/* ===========================
+   15. 小屏设备
+=========================== */
+
+@media (max-width: 480px) {
+    .innerworld-title {
+        font-size:
+            28px;
+    }
+
+    .innerworld-copy p {
+        font-size:
+            15px;
+        line-height:
+            1.95;
+    }
+
+    .innerworld-copy
+    .innerworld-lead {
+        font-size:
+            21px;
+    }
+
+    .innerworld-chapter-header h2,
+    .innerworld-testimony-header h2,
+    .innerworld-ending h2 {
+        font-size:
+            31px;
+    }
+
+    .innerworld-quote p {
+        font-size:
+            16px;
+        line-height:
+            1.95;
+    }
+
+    .innerworld-transform-list p {
+        display:
+            block;
+    }
+
+    .innerworld-transform-list span {
+        display:
+            block;
+        margin-bottom:
+            3px;
+    }
+}
+
+
+/* ===========================
+   16. 触摸设备
+=========================== */
+
+@media (hover: none), (pointer: coarse) {
+    .innerworld-image-frame {
+        transform:
+            none
+            !important;
+    }
+
+    .innerworld-image-frame > img {
+        filter:
+            saturate(0.76)
+            brightness(0.84)
+            contrast(1.04);
+        transform:
+            none;
+    }
+
+    .innerworld-figure-world
+    .innerworld-image-frame > img {
+        filter:
+            grayscale(0.16)
+            saturate(0.62)
+            brightness(0.76)
+            contrast(1.07);
+    }
+
+    .innerworld-figure-characters
+    .innerworld-image-frame > img {
+        filter:
+            grayscale(0.22)
+            saturate(0.68)
+            brightness(0.74)
+            contrast(1.08);
+    }
+}
+
+
+/* ===========================
+   17. 减少动态效果
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .innerworld-logo,
+    .innerworld-eyebrow,
+    .innerworld-title,
+    .innerworld-chapter,
+    .innerworld-testimony,
+    .innerworld-ending,
+    .innerworld-image-frame,
+    .innerworld-image-frame > img {
+        transition:
+            none;
+    }
+
+    .innerworld-logo,
+    .innerworld-eyebrow,
+    .innerworld-title,
+    .innerworld-chapter,
+    .innerworld-testimony,
+    .innerworld-ending {
+        opacity:
+            1;
+        transform:
+            none;
+    }
+
+    .innerworld-image-frame {
+        transform:
+            none
+            !important;
+    }
+
+    .innerworld-image-frame > img {
+        transform:
+            none;
+    }
+
+    .innerworld-reveal-word {
+        filter: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+}

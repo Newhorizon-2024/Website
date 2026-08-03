@@ -1,0 +1,313 @@
+/* ===========================
+   7. 页面启动遮罩
+=========================== */
+
+/* 页面启动遮罩层 */
+#overlay {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    left: 0;
+    pointer-events: auto;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 4;
+}
+
+/* 启动遮罩背景 */
+#overlay::before {
+    background-color: rgba(0, 0, 0, 0.7);
+    content: "";
+    inset: 0;
+    opacity: 1;
+    position: absolute;
+    transition: opacity 1.5s ease-in-out;
+}
+
+/* 遮罩背景淡出状态 */
+#overlay.hidden::before {
+    opacity: 0;
+}
+
+/* 遮罩隐藏后不再拦截交互 */
+#overlay.hidden {
+    pointer-events: none;
+}
+
+/* 启动遮罩标题 */
+#overlay h1 {
+    align-items: center;
+    color: #EEEEEE;
+    display: flex;
+    font-size: clamp(24px, 2.2vw, 34px);
+    height: 40px;
+    justify-content: center;
+    line-height: 1;
+    margin: 0;
+    max-width: 300px;
+    overflow: hidden;
+    position: relative;
+    text-align: center;
+    white-space: nowrap;
+    width: 300px;
+    z-index: 1;
+}
+
+/* 加载期间隐藏遮罩标题 */
+#overlay.loading h1 {
+    animation: overlay-title-disappear 2.5s linear forwards;
+}
+
+/* 遮罩底部网络提示 */
+#overlay-tip {
+    animation:
+        overlayTipBreathing
+        5s
+        ease-in-out
+        infinite;
+    bottom: 30px;
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 12px;
+    left: 50%;
+    letter-spacing: 1.5px;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+    transform: translateX(-50%);
+    transition:
+        color 0.35s ease,
+        opacity 0.35s ease;
+    user-select: none;
+    white-space: nowrap;
+}
+
+/* 检测到加载缓慢 */
+#overlay-tip.is-slow {
+    animation-duration: 3.5s;
+    color: rgba(255, 225, 160, 0.82);
+    font-weight: 500;
+}
+
+/* 完全离线 */
+#overlay-tip.is-offline {
+    animation: none;
+    color: rgba(255, 170, 170, 0.9);
+    opacity: 1;
+}
+
+/* 页面完成加载后隐藏提示 */
+#overlay-tip.is-loaded {
+    animation: none;
+    opacity: 0;
+}
+
+@keyframes overlayTipBreathing {
+    0%,
+    20% {
+        opacity: 0;
+    }
+
+    40%,
+    70% {
+        opacity: 0.9;
+    }
+
+    90%,
+    100% {
+        opacity: 0;
+    }
+}
+
+
+/* ===========================
+   8. 启动加载动画
+=========================== */
+
+/* 加载期间隐藏遮罩标题 */
+#overlay.loading h1 {
+    animation: overlayTitleDisappear 2.5s linear forwards;
+}
+
+/* 加载动画轨道 */
+#loading-bar {
+    height: 40px;
+    left: 50%;
+    overflow: hidden;
+    pointer-events: none;
+    position: fixed;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    z-index: 10;
+}
+
+/* 加载动画矩形 */
+#loading-bar::before {
+    animation: loadingSequence 2.5s ease-in-out forwards;
+    background-color: #EEEEEE;
+    bottom: 0;
+    content: "";
+    height: 0;
+    left: 0;
+    position: absolute;
+    width: 40px;
+}
+
+/* 遮罩标题消失动画 */
+@keyframes overlayTitleDisappear {
+    0%,
+    46% {
+        opacity: 1;
+    }
+
+    50%,
+    100% {
+        opacity: 0;
+    }
+}
+
+/* 加载动画序列 */
+@keyframes loadingSequence {
+    /* 左侧矩形从下向上形成正方形 */
+    0% {
+        height: 0;
+        left: 0;
+        width: 40px;
+    }
+
+    20% {
+        height: 40px;
+        left: 0;
+        width: 40px;
+    }
+
+    /* 向右拉伸成为长方形 */
+    50% {
+        height: 40px;
+        left: 0;
+        width: 300px;
+    }
+
+    /* 左端向右移动并缩回正方形 */
+    80% {
+        height: 40px;
+        left: 260px;
+        width: 40px;
+    }
+
+    /* 从上向下收缩 */
+    100% {
+        height: 0;
+        left: 260px;
+        width: 40px;
+    }
+}
+
+/* 启动动画小屏幕适配 */
+@media (max-width: 480px) {
+    #overlay h1 {
+        font-size: clamp(20px, 7vw, 28px);
+        max-width: 240px;
+        width: 240px;
+    }
+
+    #loading-bar {
+        width: 240px;
+    }
+
+    @keyframes loadingSequence {
+        0% {
+            height: 0;
+            left: 0;
+            width: 40px;
+        }
+
+        20% {
+            height: 40px;
+            left: 0;
+            width: 40px;
+        }
+
+        50% {
+            height: 40px;
+            left: 0;
+            width: 240px;
+        }
+
+        80% {
+            height: 40px;
+            left: 200px;
+            width: 40px;
+        }
+
+        100% {
+            height: 0;
+            left: 200px;
+            width: 40px;
+        }
+    }
+}
+
+
+/* ===========================
+   9. 欢迎信息
+=========================== */
+
+/* 启动后的欢迎文字 */
+#welcome-message {
+    font-size: 3vw;
+    left: 50%;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    text-align: center;
+    text-overflow: ellipsis;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 2.5s ease-in-out;
+    white-space: nowrap;
+    width: 100%;
+    z-index: 3;
+}
+
+
+/* ===========================
+   10. 运行时间
+=========================== */
+
+/* 网站运行时间显示 */
+#countdown {
+    font-size: 4vw;
+    left: 50%;
+    opacity: 0;
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity 2.5s ease-in-out;
+    z-index: 3;
+}
+
+
+/* ===========================
+   11. 主页文字响应式
+=========================== */
+
+@media (max-width: 600px) {
+    #overlay h1 {
+        font-size: 6vw;
+    }
+
+    #welcome-message {
+        font-size: 5vw;
+    }
+
+    #countdown {
+        font-size: 6vw;
+    }
+}

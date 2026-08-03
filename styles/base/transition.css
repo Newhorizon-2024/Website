@@ -1,0 +1,126 @@
+/* ===========================
+   1. 区块转场
+=========================== */
+
+/*
+ * 所有可切换页面的默认隐藏状态。
+ * JS 不再依靠 display:block / display:none
+ * 直接切换页面。
+ */
+.section {
+    box-sizing: border-box;
+    display: none;
+    filter: blur(0);
+    opacity: 0;
+    pointer-events: none;
+    position: relative;
+    transform:
+        translate3d(0, 32px, 0)
+        scale(0.96);
+    transition:
+        filter
+        var(--section-depth-duration)
+        var(--section-transition-easing),
+        opacity
+        500ms
+        ease,
+        transform
+        var(--section-depth-duration)
+        var(--section-transition-easing);
+    visibility: hidden;
+    width: 100%;
+}
+
+/* 当前显示的页面 */
+.section.is-active {
+    display: block;
+    filter: blur(0);
+    opacity: 1;
+    pointer-events: auto;
+    position: relative;
+    transform:
+        translate3d(0, 0, 0)
+        scale(1);
+    visibility: visible;
+}
+
+/* 景深进入前 */
+.section.depth-enter {
+    display: block;
+    filter: blur(7px);
+    opacity: 0;
+    pointer-events: none;
+    position: relative;
+    transform:
+        translate3d(0, 42px, 0)
+        scale(1.06);
+    visibility: visible;
+}
+
+/* 从右侧进入 */
+.section.slide-enter-right {
+    display: block;
+    filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    position: relative;
+    transform:
+        translate3d(90px, 0, 0)
+        scale(0.98);
+    visibility: visible;
+}
+
+/* 从左侧进入 */
+.section.slide-enter-left {
+    display: block;
+    filter: blur(3px);
+    opacity: 0;
+    pointer-events: none;
+    position: relative;
+    transform:
+        translate3d(-90px, 0, 0)
+        scale(0.98);
+    visibility: visible;
+}
+
+/* 转场期间禁止重复触发 */
+body.is-section-transitioning #navbar .tab,
+body.is-section-transitioning .accordion-menu-option,
+body.is-section-transitioning .bounty-page-link,
+body.is-section-transitioning .back-to-parent,
+body.is-section-transitioning .back-to-nhn,
+body.is-section-transitioning #back-to-home {
+    pointer-events: none;
+}
+
+
+/* ===========================
+   2. 页面层级分组
+=========================== */
+
+/* 一级页面位于 Three.js 画布上方 */
+#home-section,
+#bounty-board-section,
+#creators-section,
+#nhn-section,
+#works-section {
+    position: relative;
+    z-index: 4;
+}
+
+/* 内部信息页位于 Three.js 画布下方 */
+#timeline-section,
+#wanted-info-section,
+#the-ruler-info-section,
+#the-monarch-info-section {
+    position: relative;
+    z-index: 2;
+}
+
+/* 主页定位锚点 */
+#home-scroll-anchor {
+    height: 0;
+    pointer-events: none;
+    position: relative;
+    width: 100%;
+}

@@ -1,0 +1,1070 @@
+/* ===========================
+   1. 事物区块
+=========================== */
+
+#worldview-things-section {
+    --things-wheel-size:
+        min(70vw, 660px);
+
+    background:
+        transparent;
+    box-sizing:
+        border-box;
+    color:
+        #EEEEEE;
+    margin:
+        0 auto;
+    min-height:
+        100vh;
+    overflow:
+        hidden;
+    padding:
+        clamp(80px, 10vw, 140px)
+        24px
+        clamp(100px, 13vw, 170px);
+    position:
+        relative;
+    width:
+        100%;
+}
+
+/* 覆盖通用 Section 面板样式 */
+#worldview-things-section.section {
+    background:
+        transparent;
+    border:
+        0;
+    border-radius:
+        0;
+    box-shadow:
+        none;
+    max-width:
+        none;
+}
+
+
+/* ===========================
+   2. 页首
+=========================== */
+
+.things-header {
+    margin:
+        0 auto
+        clamp(60px, 8vw, 100px);
+    max-width:
+        760px;
+    text-align:
+        center;
+}
+
+.things-eyebrow {
+    color:
+        rgba(238, 238, 238, 0.34);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        11px;
+    letter-spacing:
+        0.26em;
+    margin:
+        0 0 18px;
+}
+
+.things-header h1 {
+    color:
+        #F2F2F2;
+    font-size:
+        clamp(38px, 6vw, 74px);
+    font-weight:
+        400;
+    letter-spacing:
+        0.08em;
+    line-height:
+        1.25;
+    margin:
+        0;
+}
+
+.things-description {
+    color:
+        rgba(238, 238, 238, 0.56);
+    font-size:
+        clamp(14px, 1.4vw, 18px);
+    line-height:
+        1.9;
+    margin:
+        28px auto 0;
+    max-width:
+        620px;
+}
+
+
+/* ===========================
+   3. Option Wheel 容器
+=========================== */
+
+.things-option-wheel {
+    --things-blur-strength:
+        0;
+
+    --things-blur-x:
+        50%;
+
+    --things-blur-y:
+        50%;
+
+    --things-blur-drift-x:
+        0px;
+
+    --things-blur-drift-y:
+        0px;
+
+    --things-blur-scale:
+        1;
+
+    -webkit-touch-callout:
+        none;
+    -webkit-user-select:
+        none;
+    cursor:
+        grab;
+    height:
+        var(--things-wheel-size);
+    margin:
+        0 auto;
+    outline:
+        none;
+    overscroll-behavior:
+        contain;
+    position:
+        relative;
+    touch-action:
+        none;
+    user-select:
+        none;
+    width:
+        var(--things-wheel-size);
+}
+
+.things-option-wheel.is-dragging {
+    cursor:
+        grabbing;
+}
+
+.things-option-wheel:focus-visible {
+    outline:
+        1px solid
+        rgba(255, 255, 255, 0.16);
+    outline-offset:
+        12px;
+}
+
+
+/* ===========================
+   4. 轮盘层级
+=========================== */
+
+.things-wheel-stage,
+.things-wheel-options {
+    inset:
+        0;
+    position:
+        absolute;
+}
+
+/* 装饰层不接收点击 */
+.things-wheel-stage {
+    overflow:
+        visible;
+    pointer-events:
+        none;
+    z-index:
+        0;
+}
+
+/* 选项容器不接收点击 */
+.things-wheel-options {
+    pointer-events:
+        none;
+    z-index:
+        2;
+}
+
+
+/* ===========================
+   5. Shape Blur
+=========================== */
+
+.things-shape-blur {
+    border-radius:
+        50%;
+    inset:
+        6%;
+    position:
+        absolute;
+}
+
+/* Shape Blur 公共形状 */
+.things-shape-layer {
+    border:
+        calc(
+            1px +
+            var(--things-blur-strength)
+            * 1px
+        )
+        solid
+        rgba(
+            255,
+            255,
+            255,
+            calc(
+                0.12 +
+                var(--things-blur-strength)
+                * 0.34
+            )
+        );
+    border-radius:
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 8%
+        )
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 7%
+        )
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 10%
+        )
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 6%
+        )
+        /
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 6%
+        )
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 9%
+        )
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 5%
+        )
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 7%
+        );
+    inset:
+        calc(
+            var(--things-blur-strength)
+            * -16px
+        );
+    opacity:
+        calc(
+            0.16 +
+            var(--things-blur-strength)
+            * 0.54
+        );
+    position:
+        absolute;
+    transform:
+        translate3d(
+            var(--things-blur-drift-x),
+            var(--things-blur-drift-y),
+            0
+        )
+        scale(
+            calc(
+                var(--things-blur-scale)
+                +
+                var(--things-blur-strength)
+                * 0.055
+            )
+        );
+    transform-origin:
+        var(--things-blur-x)
+        var(--things-blur-y);
+    transition:
+        border-color 0.35s ease,
+        border-radius 0.45s ease,
+        opacity 0.35s ease;
+    will-change:
+        border-radius,
+        filter,
+        opacity,
+        transform;
+}
+
+
+/* ===========================
+   Shape Blur 第一层
+=========================== */
+
+.things-shape-layer-a {
+    filter:
+        blur(
+            calc(
+                0.4px +
+                var(--things-blur-strength)
+                * 3px
+            )
+        );
+
+    opacity:
+        calc(
+            0.22 +
+            var(--things-blur-strength)
+            * 0.58
+        );
+}
+
+
+/* ===========================
+   Shape Blur 第二层
+=========================== */
+
+.things-shape-layer-b {
+    border-color:
+        rgba(
+            255,
+            255,
+            255,
+            calc(
+                0.08 +
+                var(--things-blur-strength)
+                * 0.28
+            )
+        );
+    border-radius:
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 10%
+        )
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 8%
+        )
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 12%
+        )
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 9%
+        )
+        /
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 7%
+        )
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 11%
+        )
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 5%
+        )
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 8%
+        );
+    filter:
+        blur(
+            calc(
+                3px +
+                var(--things-blur-strength)
+                * 8px
+            )
+        );
+    inset:
+        calc(
+            1% -
+            var(--things-blur-strength)
+            * 10px
+        );
+    opacity:
+        calc(
+            0.1 +
+            var(--things-blur-strength)
+            * 0.3
+        );
+    transform:
+        translate3d(
+            calc(
+                var(--things-blur-drift-x)
+                * -0.8
+            ),
+            calc(
+                var(--things-blur-drift-y)
+                * -0.8
+            ),
+            0
+        )
+        rotate(
+            calc(
+                var(--things-blur-strength)
+                * 7deg
+            )
+        )
+        scale(
+            calc(
+                1 +
+                var(--things-blur-strength)
+                * 0.075
+            )
+        );
+}
+
+
+/* ===========================
+   Shape Blur 第三层
+=========================== */
+
+.things-shape-layer-c {
+    border-color:
+        rgba(
+            255,
+            255,
+            255,
+            calc(
+                0.05 +
+                var(--things-blur-strength)
+                * 0.2
+            )
+        );
+    border-radius:
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 12%
+        )
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 9%
+        )
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 7%
+        )
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 11%
+        )
+        /
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 10%
+        )
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 8%
+        )
+        calc(
+            50% +
+            var(--things-blur-strength)
+            * 12%
+        )
+        calc(
+            50% -
+            var(--things-blur-strength)
+            * 6%
+        );
+    filter:
+        blur(
+            calc(
+                7px +
+                var(--things-blur-strength)
+                * 15px
+            )
+        );
+    inset:
+        calc(
+            4% -
+            var(--things-blur-strength)
+            * 14px
+        );
+    opacity:
+        calc(
+            0.05 +
+            var(--things-blur-strength)
+            * 0.19
+        );
+    transform:
+        translate3d(
+            calc(
+                var(--things-blur-drift-x)
+                * 0.55
+            ),
+            calc(
+                var(--things-blur-drift-y)
+                * 0.55
+            ),
+            0
+        )
+        rotate(
+            calc(
+                var(--things-blur-strength)
+                * -9deg
+            )
+        )
+        scale(
+            calc(
+                1 -
+                var(--things-blur-strength)
+                * 0.035
+            )
+        );
+}
+
+
+/* ===========================
+   6. 主轮盘边界
+=========================== */
+
+.things-wheel-ring {
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+    border-radius:
+        50%;
+    box-shadow:
+        0 0 20px
+        rgba(255, 255, 255, 0.025);
+    inset:
+        8%;
+    opacity:
+        calc(
+            0.7 +
+            var(--things-blur-strength)
+            * 0.3
+        );
+    position:
+        absolute;
+    transform:
+        scale(
+            calc(
+                1 +
+                var(--things-blur-strength)
+                * 0.018
+            )
+        );
+    transition:
+        border-color 0.35s ease,
+        box-shadow 0.35s ease,
+        filter 0.35s ease,
+        opacity 0.35s ease;
+}
+
+/* 内圆环 */
+.things-wheel-ring::before {
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.045);
+    border-radius:
+        50%;
+    content:
+        "";
+    inset:
+        22%;
+    position:
+        absolute;
+}
+
+/* 互动状态 */
+.things-option-wheel.is-shape-active
+.things-wheel-ring {
+    border-color:
+        rgba(255, 255, 255, 0.34);
+    box-shadow:
+        0 0 18px
+        rgba(255, 255, 255, 0.08),
+        0 0 52px
+        rgba(255, 255, 255, 0.035);
+}
+
+
+/* ===========================
+   7. 圆周选项
+=========================== */
+
+.things-wheel-option {
+    --things-option-angle:
+        0deg;
+
+    --things-option-radius:
+        calc(
+            var(--things-wheel-size)
+            * 0.39
+        );
+
+    -webkit-tap-highlight-color:
+        transparent;
+    -webkit-touch-callout:
+        none;
+    -webkit-user-drag:
+        none;
+    -webkit-user-select:
+        none;
+    appearance:
+        none;
+    background:
+        none;
+    border:
+        0;
+    color:
+        rgba(238, 238, 238, 0.28);
+    cursor:
+        pointer;
+    display:
+        block;
+    font:
+        inherit;
+    font-size:
+        clamp(13px, 1.5vw, 18px);
+    left:
+        50%;
+    letter-spacing:
+        0.05em;
+    line-height:
+        1.4;
+    margin:
+        0;
+    min-height:
+        40px;
+    min-width:
+        72px;
+    padding:
+        10px 16px;
+    pointer-events:
+        auto;
+    position:
+        absolute;
+    top:
+        50%;
+    transform:
+        translate(-50%, -50%)
+        rotate(
+            var(--things-option-angle)
+        )
+        translateY(
+            calc(
+                var(--things-option-radius)
+                * -1
+            )
+        )
+        rotate(
+            calc(
+                var(--things-option-angle)
+                * -1
+            )
+        );
+    transition:
+        color 0.38s ease,
+        filter 0.38s ease,
+        opacity 0.38s ease,
+        text-shadow 0.38s ease,
+        transform 0.55s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        );
+    user-select:
+        none;
+    white-space:
+        nowrap;
+}
+
+.things-wheel-option span {
+    display:
+        block;
+    pointer-events:
+        none;
+}
+
+.things-wheel-option:hover,
+.things-wheel-option:focus-visible {
+    color:
+        rgba(255, 255, 255, 0.82);
+    outline:
+        none;
+    text-shadow:
+        0 0 14px
+        rgba(255, 255, 255, 0.15);
+}
+
+/*
+ * 选中项由中央名称表示，
+ * 圆周文字降低存在感。
+ */
+.things-wheel-option.is-selected {
+    color:
+        rgba(255, 255, 255, 0.07);
+}
+
+
+/* ===========================
+   8. 中心确认按钮
+=========================== */
+
+.things-wheel-center {
+    -webkit-tap-highlight-color:
+        transparent;
+    appearance:
+        none;
+    background:
+        none;
+    border:
+        0;
+    color:
+        inherit;
+    cursor:
+        pointer;
+    display:
+        flex;
+    flex-direction:
+        column;
+    font:
+        inherit;
+    justify-content:
+        center;
+    left:
+        50%;
+    margin:
+        0;
+    min-height:
+        180px;
+    padding:
+        20px;
+    position:
+        absolute;
+    text-align:
+        center;
+    top:
+        50%;
+    transform:
+        translate(-50%, -50%);
+    width:
+        min(62%, 380px);
+    z-index:
+        4;
+}
+
+.things-wheel-center:focus-visible {
+    outline:
+        1px solid
+        rgba(255, 255, 255, 0.3);
+    outline-offset:
+        8px;
+}
+
+.things-wheel-center.is-unavailable {
+    cursor:
+        default;
+}
+
+
+/* ===========================
+   9. 中心编号
+=========================== */
+
+.things-wheel-index {
+    color:
+        rgba(238, 238, 238, 0.26);
+    display:
+        block;
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        11px;
+    letter-spacing:
+        0.18em;
+    margin:
+        0 0 8px;
+}
+
+
+/* ===========================
+   10. Fuzzy Text
+=========================== */
+
+.things-wheel-fuzzy-text {
+    display:
+        block;
+    height:
+        clamp(58px, 8vw, 96px);
+    margin:
+        0 auto;
+    max-width:
+        100%;
+    pointer-events:
+        none;
+    width:
+        100%;
+}
+
+/* 文字切换状态 */
+.things-wheel-fuzzy-text.is-changing {
+    filter:
+        blur(7px);
+    opacity:
+        0;
+    transform:
+        translateY(7px);
+}
+
+/* 正常状态 */
+.things-wheel-fuzzy-text {
+    filter:
+        blur(0);
+    opacity:
+        1;
+    transform:
+        translateY(0);
+    transition:
+        filter 0.25s ease,
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+/* 无障碍文字 */
+.things-wheel-current-accessible {
+    clip:
+        rect(0 0 0 0);
+    clip-path:
+        inset(50%);
+    height:
+        1px;
+    overflow:
+        hidden;
+    position:
+        absolute;
+    white-space:
+        nowrap;
+    width:
+        1px;
+}
+
+
+/* ===========================
+   11. 当前状态
+=========================== */
+
+.things-wheel-status {
+    color:
+        rgba(238, 238, 238, 0.32);
+    display:
+        block;
+    font-size:
+        12px;
+    letter-spacing:
+        0.14em;
+    margin:
+        8px 0 0;
+}
+
+
+/* ===========================
+   12. 操作提示
+=========================== */
+
+.things-wheel-help {
+    color:
+        rgba(238, 238, 238, 0.26);
+    font-size:
+        12px;
+    letter-spacing:
+        0.12em;
+    margin:
+        30px 0 0;
+    text-align:
+        center;
+}
+
+
+/* ===========================
+   13. 返回按钮
+=========================== */
+
+.things-back-button {
+    display:
+        flex;
+    margin:
+        clamp(70px, 9vw, 120px)
+        auto
+        0;
+}
+
+
+/* ===========================
+   14. 拖动保护
+=========================== */
+
+.things-option-wheel *,
+.things-wheel-option,
+.things-wheel-option span,
+.things-wheel-center,
+.things-wheel-center span {
+    -webkit-touch-callout:
+        none;
+    -webkit-user-drag:
+        none;
+    -webkit-user-select:
+        none;
+    user-select:
+        none;
+}
+
+body.is-things-wheel-dragging,
+body.is-things-wheel-dragging * {
+    -webkit-user-select:
+        none !important;
+    user-select:
+        none !important;
+}
+
+
+/* ===========================
+   15. 移动端
+=========================== */
+
+@media (max-width: 600px) {
+    #worldview-things-section {
+        --things-wheel-size:
+            min(94vw, 520px);
+
+        padding-left:
+            12px;
+        padding-right:
+            12px;
+    }
+
+    .things-header {
+        margin-bottom:
+            50px;
+    }
+
+    .things-wheel-option {
+        --things-option-radius:
+            calc(
+                var(--things-wheel-size)
+                * 0.4
+            );
+
+        font-size:
+            12px;
+        min-height:
+            36px;
+        min-width:
+            58px;
+        padding:
+            8px;
+    }
+
+    .things-wheel-center {
+        min-height:
+            140px;
+        padding:
+            12px 4px;
+        width:
+            56%;
+    }
+
+    .things-wheel-fuzzy-text {
+        height:
+            68px;
+    }
+
+    .things-wheel-help {
+        margin-top:
+            18px;
+    }
+}
+
+
+/* ===========================
+   16. 触摸设备
+=========================== */
+
+@media (hover: none), (pointer: coarse) {
+    .things-wheel-option:hover {
+        color:
+            rgba(238, 238, 238, 0.28);
+        text-shadow:
+            none;
+    }
+
+    /*
+     * 触摸设备不使用鼠标位置形变，
+     * 保留低强度静态轮廓。
+     */
+    .things-option-wheel {
+        --things-blur-strength:
+            0.16;
+    }
+}
+
+
+/* ===========================
+   17. 减少动态效果
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .things-wheel-option,
+    .things-wheel-fuzzy-text,
+    .things-shape-layer,
+    .things-wheel-ring {
+        transition:
+            none;
+    }
+
+    .things-wheel-fuzzy-text.is-changing {
+        filter:
+            none;
+        opacity:
+            1;
+        transform:
+            none;
+    }
+
+    .things-option-wheel {
+        --things-blur-strength:
+            0;
+        --things-blur-drift-x:
+            0px;
+        --things-blur-drift-y:
+            0px;
+        --things-blur-scale:
+            1;
+    }
+}

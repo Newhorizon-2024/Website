@@ -1,0 +1,424 @@
+/* ===========================
+   1. 歌单面板
+=========================== */
+
+/* 歌单容器 */
+#playlist-container {
+    background: #222222;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 5px;
+    box-sizing: border-box;
+    color: #EEEEEE;
+    display: block;
+    margin: 20px auto 0;
+    max-height: 0;
+    max-width: 1200px;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 20px;
+    pointer-events: none;
+    position: relative;
+    transform:
+        translateY(-12px)
+        scale(0.985);
+    transform-origin: top center;
+    transition:
+        max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease,
+        padding 0.4s ease,
+        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s linear 0.55s;
+    visibility: hidden;
+    width: 80%;
+    z-index: 4;
+}
+
+/* 歌单展开状态 */
+#playlist-container.is-open {
+    max-height: 70vh;
+    max-height: 70dvh;
+    opacity: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 20px;
+    pointer-events: auto;
+    scrollbar-color:
+        rgba(238, 238, 238, 0.35)
+        transparent;
+    scrollbar-width: thin;
+    transform:
+        translateY(0)
+        scale(1);
+    transition:
+        max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease,
+        padding 0.4s ease,
+        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s;
+    visibility: visible;
+}
+
+/* WebKit 歌单滚动条 */
+#playlist-container.is-open::-webkit-scrollbar {
+    width: 6px;
+}
+
+/* WebKit 歌单滚动条轨道 */
+#playlist-container.is-open::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* WebKit 歌单滚动条滑块 */
+#playlist-container.is-open::-webkit-scrollbar-thumb {
+    background: rgba(238, 238, 238, 0.35);
+    border-radius: 999px;
+}
+
+
+/* ===========================
+   2. 歌单列表
+=========================== */
+
+/* 歌单列表 */
+#playlist {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* 歌单列表项 */
+#playlist li {
+    align-items: center;
+    background-color: #444444;
+    border-radius: 5px;
+    color: #EEEEEE;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin: 5px 0;
+    min-width: 0;
+    padding: 10px;
+    position: relative;
+    transition:
+        background-color 0.3s ease-in-out,
+        box-shadow 0.3s ease,
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 普通歌曲列表项 */
+#playlist .playlist-song {
+    display: flex;
+}
+
+/* 折叠状态中的歌曲 */
+#playlist .playlist-song.is-collapsed {
+    display: none;
+}
+
+/* 普通歌曲悬停状态 */
+#playlist .playlist-song:hover {
+    background-color: #666666;
+    box-shadow:
+        0 5px 16px
+        rgba(0, 0, 0, 0.2);
+    transform: translateX(4px);
+}
+
+/* 歌单展开时歌曲依次进入 */
+#playlist-container.is-open
+.playlist-song:not(.is-collapsed) {
+    animation:
+        playlist-item-enter
+        0.4s
+        ease
+        both;
+    animation-delay:
+        calc(
+            var(--playlist-item-index, 0)
+            * 35ms
+        );
+}
+
+/* 分组展开时歌曲依次进入 */
+.playlist-song:not(.is-collapsed) {
+    animation-delay:
+        calc(
+            var(--group-item-index, 0)
+            * 35ms
+        );
+}
+
+/* 歌曲信息区域 */
+.playlist-song-info {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ===========================
+   3. 歌单分组
+=========================== */
+
+/* 歌单分组标题 */
+#playlist .playlist-separator {
+    background-color:
+        rgba(255, 255, 255, 0.035);
+    cursor: pointer;
+    display: block;
+    font-weight: bold;
+    margin: 12px 0;
+    opacity: 0.7;
+    padding: 10px;
+    position: relative;
+    text-align: center;
+    transition:
+        background-color 0.3s ease,
+        opacity 0.3s ease,
+        transform 0.3s ease;
+}
+
+/* 歌单分组标题悬停状态 */
+#playlist .playlist-separator:hover {
+    background-color:
+        rgba(255, 255, 255, 0.07);
+    box-shadow: none;
+    opacity: 1;
+    transform: none;
+}
+
+
+/* ===========================
+   4. 当前播放状态
+=========================== */
+
+/* 当前播放歌曲 */
+#playlist li.active {
+    background-color: #444444;
+    box-shadow:
+        inset 3px 0 0 #EEEEEE,
+        0 5px 16px rgba(0, 0, 0, 0.18);
+}
+
+
+/* ===========================
+   5. 登录曲按钮
+=========================== */
+
+/* 登录曲按钮 */
+.login-song-btn {
+    background: #444444;
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: #EEEEEE;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 12px;
+    margin-left: 10px;
+    opacity: 0;
+    padding: 4px 9px;
+    pointer-events: none;
+    transform:
+        translateX(6px)
+        scale(0.96);
+    transition:
+        background-color 0.3s ease-in-out,
+        border-color 0.3s ease-in-out,
+        opacity 0.3s ease,
+        transform 0.3s
+        cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+/* 歌曲悬停时显示登录曲按钮 */
+#playlist li:hover .login-song-btn {
+    opacity: 1;
+    pointer-events: auto;
+    transform:
+        translateX(0)
+        scale(1);
+}
+
+/* 登录曲按钮悬停状态 */
+.login-song-btn:hover {
+    background: #222222;
+    border-color:
+        rgba(255, 255, 255, 0.16);
+    transform:
+        translateX(0)
+        translateY(-1px)
+        scale(1);
+}
+
+/* 登录曲按钮键盘焦点 */
+.login-song-btn:focus-visible {
+    opacity: 1;
+    outline:
+        1px solid
+        rgba(238, 238, 238, 0.75);
+    outline-offset: 2px;
+    pointer-events: auto;
+    transform:
+        translateX(0)
+        scale(1);
+}
+
+
+/* ===========================
+   6. 歌单动画
+=========================== */
+
+/* 歌曲列表项进入动画 */
+@keyframes playlist-item-enter {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+
+/* ===========================
+   7. 平板设备适配
+=========================== */
+
+@media (max-width: 768px) {
+    #playlist-container {
+        padding-left: 16px;
+        padding-right: 16px;
+        width: 88%;
+    }
+
+    #playlist-container.is-open {
+        padding: 16px;
+    }
+}
+
+
+/* ===========================
+   8. 手机设备适配
+=========================== */
+
+@media (max-width: 480px) {
+    #playlist-container {
+        padding-left: 12px;
+        padding-right: 12px;
+        width: 92%;
+    }
+
+    #playlist-container.is-open {
+        max-height: 72vh;
+        max-height: 72dvh;
+        overflow-y: auto;
+        padding: 12px;
+    }
+
+    #playlist li {
+        padding: 9px;
+    }
+}
+
+
+/* ===========================
+   9. 触摸设备适配
+=========================== */
+
+/* 触摸设备隐藏登录曲按钮 */
+@media (hover: none) and (pointer: coarse) {
+    .login-song-btn {
+        display: none !important;
+    }
+
+    #playlist .playlist-song:hover {
+        box-shadow: none;
+        transform: none;
+    }
+}
+
+
+/* ===========================
+   10. 减少动态效果
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    #playlist-container,
+    #playlist li,
+    .login-song-btn {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ===========================
+   24. 音量与歌单响应式
+=========================== */
+
+/* 中等屏幕 */
+@media (max-width: 768px) {
+    #playlist-container {
+        padding-left: 16px;
+        padding-right: 16px;
+        width: 88%;
+    }
+
+    #playlist-container.is-open {
+        padding: 16px;
+    }
+}
+
+/* 小屏幕 */
+@media (max-width: 480px) {
+    #volume-slider {
+        width: 80%;
+    }
+
+    #playlist-container {
+        padding-left: 12px;
+        padding-right: 12px;
+        width: 92%;
+    }
+
+    #playlist-container.is-open {
+        max-height: 72vh;
+        max-height: 72dvh;
+        overflow-y: auto;
+        padding: 12px;
+    }
+
+    #playlist li {
+        padding: 9px;
+    }
+}
+
+
+/* ===========================
+   25. 歌单设备适配
+=========================== */
+
+/* 触摸设备隐藏登录曲按钮 */
+@media (hover: none) and (pointer: coarse) {
+    .login-song-btn {
+        display: none !important;
+    }
+
+    #playlist .playlist-song:hover {
+        box-shadow: none;
+        transform: none;
+    }
+}
+
+/* 遵循系统减少动态效果设置 */
+@media (prefers-reduced-motion: reduce) {
+    #playlist-container,
+    #playlist li,
+    .login-song-btn {
+        animation: none !important;
+        transition: none !important;
+    }
+}

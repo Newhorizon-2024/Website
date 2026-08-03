@@ -1,0 +1,802 @@
+/* ===========================
+   28. 创作者区块
+=========================== */
+
+/* 创作者区块 */
+#creators-section {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    box-sizing: border-box;
+    color: #EEEEEE;
+    margin: 50px auto;
+    max-width: 1400px;
+    overflow: hidden;
+    padding: clamp(40px, 7vw, 90px);
+    position: relative;
+    width: 88%;
+}
+
+/* 创作者区块渐隐背景 */
+#creators-section::before {
+    -webkit-backdrop-filter: blur(8px);
+    -webkit-mask-image:
+        linear-gradient(
+            to bottom,
+            #000000 0%,
+            #000000 35%,
+            rgba(0, 0, 0, 0.5) 75%,
+            transparent 100%
+        );
+    backdrop-filter: blur(8px);
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(40, 40, 40, 0.75) 0%,
+            rgba(40, 40, 40, 0.5) 30%,
+            rgba(40, 40, 40, 0.25) 50%,
+            rgba(40, 40, 40, 0) 100%
+        );
+    content: "";
+    inset: 0;
+    mask-image:
+        linear-gradient(
+            to bottom,
+            #000000 0%,
+            #000000 35%,
+            rgba(0, 0, 0, 0.5) 75%,
+            transparent 100%
+        );
+    pointer-events: none;
+    position: absolute;
+    z-index: -1;
+}
+
+/* 创作者区块标题区域 */
+.creators-header {
+    margin: 0 auto clamp(80px, 12vw, 150px);
+    max-width: 760px;
+    position: relative;
+    text-align: center;
+    z-index: 2;
+}
+
+/* 创作者英文标识 */
+.creators-eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    margin: 0 0 16px;
+    opacity: 0.58;
+}
+
+/* 创作者区块主标题 */
+.creators-header h1 {
+    font-size: clamp(30px, 4vw, 54px);
+    letter-spacing: 0.08em;
+    margin: 0;
+}
+
+/* 创作者区块说明 */
+.creators-lead {
+    line-height: 1.9;
+    margin: 24px auto 0;
+    max-width: 620px;
+    opacity: 0.72;
+}
+
+
+/* ===========================
+   29. 创作者栏目列表
+=========================== */
+
+/* 创作者栏目列表 */
+.creators-list {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(90px, 13vw, 180px);
+    position: relative;
+    width: 100%;
+}
+
+/* 单个创作者栏目 */
+.creator-card {
+    --avatar-rotation: -3deg;
+    --card-shift: 0px;
+    --work-rotation-1: -4deg;
+    --work-rotation-2: 3deg;
+    --work-rotation-3: -2deg;
+    --work-rotation-4: 4deg;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.025)
+        );
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 8px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+    box-sizing: border-box;
+    max-width: min(880px, 84%);
+    min-height: 460px;
+    opacity: 0.28;
+    padding: clamp(28px, 4vw, 54px);
+    position: relative;
+    transform:
+        translateX(var(--card-shift))
+        translateY(80px)
+        scale(0.94);
+    transition:
+        box-shadow 0.5s ease,
+        opacity 0.8s ease,
+        transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 100%;
+}
+
+/* 创作者栏目进入视口状态 */
+.creator-card.is-entering {
+    opacity: 0.78;
+    transform:
+        translateX(0)
+        translateY(20px)
+        scale(0.98);
+}
+
+/* 创作者栏目最终停靠状态 */
+.creator-card.is-settled {
+    opacity: 1;
+    transform:
+        translateX(var(--card-shift))
+        translateY(0)
+        scale(1);
+}
+
+/* 奇数栏目停靠左侧 */
+.creator-card:nth-child(odd) {
+    --card-shift: -5%;
+
+    align-self: flex-start;
+}
+
+/* 偶数栏目停靠右侧 */
+.creator-card:nth-child(even) {
+    --card-shift: 5%;
+
+    align-self: flex-end;
+}
+
+/* 创作者栏目悬停状态 */
+.creator-card:hover {
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
+}
+
+
+/* ===========================
+   30. 创作者身份区域
+=========================== */
+
+/* 创作者头像与昵称区域 */
+.creator-identity {
+    align-items: flex-start;
+    display: flex;
+    gap: clamp(20px, 3vw, 38px);
+    position: relative;
+    z-index: 4;
+}
+
+/* 偶数栏目反向排列身份信息 */
+.creator-card:nth-child(even) .creator-identity {
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+/* 创作者头像 */
+.creator-avatar {
+    aspect-ratio: 1;
+    border: 5px solid #444444;
+    border-radius: 3px;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.38);
+    flex: 0 0 clamp(112px, 14vw, 170px);
+    height: auto;
+    object-fit: cover;
+    transform: rotate(var(--avatar-rotation));
+    transition:
+        box-shadow 0.35s ease,
+        transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    width: clamp(112px, 14vw, 170px);
+}
+
+/* 创作者头像悬停状态 */
+.creator-card:hover .creator-avatar {
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.48);
+    transform:
+        rotate(calc(var(--avatar-rotation) * 0.35))
+        scale(1.025);
+}
+
+/* 创作者昵称区域 */
+.creator-name {
+    padding-top: clamp(8px, 2vw, 24px);
+}
+
+/* 创作者编号 */
+.creator-index {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    margin-bottom: 12px;
+    opacity: 0.46;
+}
+
+/* 创作者昵称 */
+.creator-name h2 {
+    font-size: clamp(26px, 4vw, 48px);
+    letter-spacing: 0.04em;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* 创作者身份说明 */
+.creator-name p {
+    font-size: clamp(13px, 1.4vw, 16px);
+    margin: 10px 0 0;
+    opacity: 0.6;
+}
+
+
+/* ===========================
+   31. 创作者内容区域
+=========================== */
+
+/* 创作者作品与介绍布局 */
+.creator-content {
+    align-items: end;
+    display: grid;
+    gap: clamp(30px, 5vw, 70px);
+    grid-template-columns:
+        minmax(260px, 1.1fr)
+        minmax(220px, 0.9fr);
+    margin-top: clamp(35px, 6vw, 70px);
+}
+
+/* 偶数栏目作品区域 */
+.creator-card:nth-child(even) .creator-gallery {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+/* 偶数栏目介绍区域 */
+.creator-card:nth-child(even) .creator-description {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+
+/* ===========================
+   32. 创作者作品图
+=========================== */
+
+/* 创作者作品堆叠区域 */
+.creator-gallery {
+    height: clamp(230px, 28vw, 340px);
+    position: relative;
+    width: 100%;
+    z-index: 1;
+}
+
+/* 单张创作者作品按钮 */
+.creator-work {
+    appearance: none;
+    background: transparent;
+    border: 1px solid #222222;
+    border-radius: 2px;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.42);
+    cursor: zoom-in;
+    left: 0;
+    max-height: 90%;
+    max-width: 78%;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    top: 8%;
+    transform-origin: center;
+    transition:
+        box-shadow 0.35s ease,
+        filter 0.35s ease,
+        transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 创作者作品图片 */
+.creator-work img {
+    display: block;
+    height: auto;
+    max-height: 300px;
+    max-width: 100%;
+    pointer-events: none;
+    transition: transform 0.6s ease;
+    width: auto;
+}
+
+/* 第一张作品 */
+.creator-work:nth-child(1) {
+    transform:
+        rotate(var(--work-rotation-1))
+        translate(0, 0);
+    z-index: 4;
+}
+
+/* 第二张作品 */
+.creator-work:nth-child(2) {
+    transform:
+        rotate(var(--work-rotation-2))
+        translate(15%, 6%);
+    z-index: 3;
+}
+
+/* 第三张作品 */
+.creator-work:nth-child(3) {
+    transform:
+        rotate(var(--work-rotation-3))
+        translate(29%, 12%);
+    z-index: 2;
+}
+
+/* 第四张作品 */
+.creator-work:nth-child(4) {
+    transform:
+        rotate(var(--work-rotation-4))
+        translate(42%, 17%);
+    z-index: 1;
+}
+
+/* 偶数栏目作品从右侧开始堆叠 */
+.creator-card:nth-child(even) .creator-work {
+    left: auto;
+    right: 0;
+}
+
+/* 偶数栏目第一张作品 */
+.creator-card:nth-child(even) .creator-work:nth-child(1) {
+    transform:
+        rotate(var(--work-rotation-1))
+        translate(0, 0);
+}
+
+/* 偶数栏目第二张作品 */
+.creator-card:nth-child(even) .creator-work:nth-child(2) {
+    transform:
+        rotate(var(--work-rotation-2))
+        translate(-15%, 6%);
+}
+
+/* 偶数栏目第三张作品 */
+.creator-card:nth-child(even) .creator-work:nth-child(3) {
+    transform:
+        rotate(var(--work-rotation-3))
+        translate(-29%, 12%);
+}
+
+/* 偶数栏目第四张作品 */
+.creator-card:nth-child(even) .creator-work:nth-child(4) {
+    transform:
+        rotate(var(--work-rotation-4))
+        translate(-42%, 17%);
+}
+
+/* 创作者作品悬停与键盘焦点 */
+.creator-work:hover,
+.creator-work:focus-visible {
+    box-shadow: 0 26px 58px rgba(0, 0, 0, 0.58);
+    filter: brightness(1.08);
+    outline: none;
+    transform:
+        rotate(0)
+        translate(0, -12px)
+        scale(1.035);
+    z-index: 4;
+}
+
+/* 创作者作品内部图片放大 */
+.creator-work:hover img {
+    transform: scale(1.035);
+}
+
+
+/* ===========================
+   33. 创作者作品图桌面适配
+=========================== */
+
+/* PC 端作品图尺寸 */
+@media (min-width: 1024px) {
+    .creator-gallery {
+        height: clamp(460px, 38vw, 620px);
+    }
+
+    .creator-work {
+        max-height: none;
+        max-width: none;
+        top: 3%;
+        width: clamp(380px, 32vw, 560px);
+    }
+
+    .creator-work img {
+        height: auto;
+        max-height: none;
+        max-width: none;
+        width: 100%;
+    }
+}
+
+/* 大型 PC 屏幕作品图尺寸 */
+@media (min-width: 1440px) {
+    .creator-gallery {
+        height: 680px;
+    }
+
+    .creator-work {
+        width: clamp(500px, 34vw, 680px);
+    }
+}
+
+
+/* ===========================
+   34. 创作者介绍
+=========================== */
+
+/* 创作者介绍区域 */
+.creator-description {
+    border-left: 1px solid rgba(255, 255, 255, 0.18);
+    box-sizing: border-box;
+    line-height: 1.9;
+    padding: 4px 0 4px clamp(20px, 3vw, 36px);
+    position: relative;
+    z-index: 2;
+}
+
+/* 偶数栏目介绍区域 */
+.creator-card:nth-child(even) .creator-description {
+    border-left: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.18);
+    padding:
+        4px
+        clamp(20px, 3vw, 36px)
+        4px
+        0;
+    text-align: right;
+}
+
+/* 创作者介绍文字 */
+.creator-description > p {
+    font-size: clamp(14px, 1.5vw, 17px);
+    margin: 0;
+    opacity: 0.78;
+    text-shadow:
+        0 0 6px #000000;
+    z-index: 4;
+}
+
+/* 创作者标签区域 */
+.creator-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+/* 偶数栏目标签靠右 */
+.creator-card:nth-child(even) .creator-tags {
+    justify-content: flex-end;
+}
+
+/* 创作者标签 */
+.creator-tags span {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    opacity: 0.7;
+    padding: 7px 12px;
+}
+
+
+/* ===========================
+   35. 创作者作品大图预览
+=========================== */
+
+/* 作品大图预览背景 */
+#creator-lightbox {
+    align-items: center;
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    background: rgba(5, 5, 5, 0.9);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    opacity: 0;
+    padding: clamp(24px, 5vw, 80px);
+    pointer-events: none;
+    position: fixed;
+    transition: opacity 0.35s ease;
+    z-index: 4;
+}
+
+/* 作品大图预览显示状态 */
+#creator-lightbox.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 作品大图预览主体 */
+.creator-lightbox-figure {
+    margin: 0;
+    max-height: 88vh;
+    max-width: min(1200px, 82vw);
+    position: relative;
+    text-align: center;
+}
+
+/* 作品大图预览图片 */
+#creator-lightbox-image {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.72);
+    display: block;
+    max-height: 78vh;
+    max-width: 100%;
+    object-fit: contain;
+    transform: scale(0.94);
+    transition:
+        transform 0.4s
+        cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 作品大图出现状态 */
+#creator-lightbox.active #creator-lightbox-image {
+    transform: scale(1);
+}
+
+/* 作品大图说明文字 */
+#creator-lightbox-caption {
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    margin-top: 18px;
+    opacity: 0.72;
+}
+
+/* 作品大图关闭按钮 */
+.creator-lightbox-close {
+    background: transparent;
+    border: 0;
+    color: #EEEEEE;
+    cursor: pointer;
+    font-size: 44px;
+    line-height: 1;
+    opacity: 0.65;
+    padding: 10px;
+    position: absolute;
+    right: clamp(18px, 4vw, 55px);
+    top: clamp(15px, 3vw, 40px);
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+/* 作品大图关闭按钮悬停状态 */
+.creator-lightbox-close:hover {
+    opacity: 1;
+    transform: rotate(8deg);
+}
+
+/* 作品大图切换按钮 */
+.creator-lightbox-control {
+    background: transparent;
+    border: 0;
+    color: #EEEEEE;
+    cursor: pointer;
+    font-size: clamp(44px, 7vw, 80px);
+    opacity: 0.5;
+    padding: 20px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+/* 作品大图切换按钮悬停状态 */
+.creator-lightbox-control:hover {
+    opacity: 1;
+}
+
+/* 上一张作品按钮 */
+.creator-lightbox-prev {
+    left: clamp(8px, 3vw, 45px);
+}
+
+/* 下一张作品按钮 */
+.creator-lightbox-next {
+    right: clamp(8px, 3vw, 45px);
+}
+
+/* 作品预览期间锁定页面滚动 */
+body.creator-lightbox-open {
+    overflow: hidden;
+}
+
+
+/* ===========================
+   36. 创作者区块移动端适配
+=========================== */
+
+@media (max-width: 760px) {
+    /* 创作者区块 */
+    #creators-section {
+        padding: 55px 20px;
+        width: 92%;
+    }
+
+    /* 创作者栏目列表 */
+    .creators-list {
+        gap: 80px;
+    }
+
+    /* 单个创作者栏目 */
+    .creator-card {
+        align-self: center;
+        max-width: 100%;
+        min-height: 0;
+        padding: 24px;
+    }
+
+    /* 移动端栏目统一居中 */
+    .creator-card:nth-child(odd),
+    .creator-card:nth-child(even) {
+        --card-shift: 0px;
+
+        align-self: center;
+    }
+
+    /* 移动端创作者身份区域 */
+    .creator-card:nth-child(even) .creator-identity,
+    .creator-identity {
+        align-items: center;
+        flex-direction: row;
+        gap: 18px;
+        text-align: left;
+    }
+
+    /* 移动端创作者头像 */
+    .creator-avatar {
+        border-width: 4px;
+        flex-basis: 96px;
+        width: 96px;
+    }
+
+    /* 移动端创作者昵称 */
+    .creator-name {
+        padding-top: 0;
+    }
+
+    /* 移动端创作者内容区域 */
+    .creator-content {
+        display: flex;
+        flex-direction: column;
+        gap: 35px;
+        margin-top: 42px;
+    }
+
+    /* 移动端作品区域 */
+    .creator-gallery {
+        height: 250px;
+        order: 1;
+    }
+
+    /* 移动端创作者介绍 */
+    .creator-card:nth-child(even) .creator-description,
+    .creator-description {
+        border-left: 1px solid rgba(255, 255, 255, 0.18);
+        border-right: 0;
+        order: 2;
+        padding: 2px 0 2px 20px;
+        text-align: left;
+    }
+
+    /* 移动端创作者标签靠左 */
+    .creator-card:nth-child(even) .creator-tags {
+        justify-content: flex-start;
+    }
+
+    /* 移动端作品大图预览 */
+    #creator-lightbox {
+        padding: 60px 18px;
+    }
+
+    /* 移动端作品大图主体 */
+    .creator-lightbox-figure {
+        max-width: 92vw;
+    }
+
+    /* 移动端作品大图切换按钮 */
+    .creator-lightbox-control {
+        bottom: 10px;
+        font-size: 54px;
+        top: auto;
+        transform: none;
+    }
+}
+
+
+/* ===========================
+   37. 创作者区块设备适配
+=========================== */
+
+/* 触摸设备取消作品悬停位移 */
+@media (hover: none), (pointer: coarse) {
+    .creator-work:hover {
+        filter: none;
+        transform: none;
+    }
+
+    .creator-work:hover img {
+        transform: none;
+    }
+}
+
+/* 遵循系统减少动态效果设置 */
+@media (prefers-reduced-motion: reduce) {
+    .creator-avatar,
+    .creator-card,
+    .creator-work,
+    #creator-lightbox,
+    #creator-lightbox-image {
+        animation: none;
+        transition: none;
+    }
+
+    .creator-card,
+    .creator-card.is-entering,
+    .creator-card.is-settled {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* 创作者卡片定位动画 */
+@keyframes creator-work-target {
+    0% {
+        box-shadow:
+            0 0 0 rgba(255, 255, 255, 0);
+        transform: scale(1);
+    }
+
+    25% {
+        box-shadow:
+            0 0 0 2px rgba(255, 255, 255, 0.32),
+            0 18px 42px rgba(0, 0, 0, 0.32);
+        transform: scale(1.015);
+    }
+
+    100% {
+        box-shadow:
+            0 0 0 rgba(255, 255, 255, 0);
+        transform: scale(1);
+    }
+}
+
+/* 移动端 */
+@media (max-width: 640px) {
+    #works-section {
+        padding: 12px;
+        width: 100%;
+    }
+
+    .work-post {
+        border-radius: 8px;
+        padding: 16px;
+    }
+
+    .work-post-avatar {
+        height: 42px;
+        width: 42px;
+    }
+}

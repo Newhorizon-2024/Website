@@ -1,0 +1,97 @@
+/* ===========================
+   53. 魔君信息页
+=========================== */
+
+/* 魔君信息区块 */
+#the-ruler-info-section {
+    background-image:
+        url(
+            "../../images/nhn/worldview/the-ruler/the-ruler-from-newhorizon.png"
+        );
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: auto;
+    padding: 40px;
+    position: relative;
+    text-align: center;
+}
+
+/* 魔君信息标题 */
+#the-ruler-info-section h1 {
+    color: #EEEEEE;
+    font-size: clamp(128px, 6vw, 256px);
+    position: relative;
+    text-align: center;
+    text-shadow: 0 0 20px #000000;
+    white-space: nowrap;
+}
+
+/* 魔君标题发光重影 */
+#the-ruler-info-section h1::before {
+    animation:
+        floatGhost
+        10s
+        ease-in-out
+        infinite;
+    color: #EEEEEE;
+    content: attr(data-text);
+    filter: blur(6px);
+    opacity: 0.35;
+    position: absolute;
+    text-align: center;
+    text-shadow: 0 0 20px #000000;
+}
+
+/* 魔君标题背景标志 */
+#the-ruler-info-section h1::after {
+    background-image:
+        url(
+            "../../images/nhn/worldview/the-ruler/the-ruler-logo-white.png"
+        );
+    background-repeat: no-repeat;
+    background-size: contain;
+    content: "";
+    filter: blur(1px);
+    height: 300px;
+    left: 50%;
+    opacity: 0.25;
+    pointer-events: none;
+    position: absolute;
+    top: 60%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+}
+
+/* 魔君标题漂浮动画 */
+@keyframes floatGhost {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    25% {
+        transform: translate(10px, -5px);
+    }
+
+    50% {
+        transform: translate(0, -10px);
+    }
+
+    75% {
+        transform: translate(-10px, -5px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+/* 魔君信息预言 */
+#the-ruler-info-section h2 {
+    font-size: 15px;
+    font-weight: 300;
+    margin-bottom: 20px;
+    padding-left: 25%;
+    padding-right: 25%;
+    text-align: left;
+}

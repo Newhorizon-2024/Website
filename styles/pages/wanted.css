@@ -1,0 +1,28 @@
+/* ===========================
+   52. 悬赏令信息页
+=========================== */
+
+/* 悬赏令信息区块 */
+#wanted-info-section {
+    height: auto;
+    padding: 40px;
+    position: relative;
+    text-align: center;
+}
+
+/* 悬赏令信息标题 */
+#wanted-info-section h1 {
+    font-size: clamp(64px, 6vw, 128px);
+    white-space: nowrap;
+}
+
+/* 悬赏令信息卡片 */
+.wanted-info-card {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    margin-top: 20px;
+    padding: 20px 28px;
+}

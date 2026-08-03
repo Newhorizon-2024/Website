@@ -1,0 +1,211 @@
+/* ===========================
+   38. 悬赏令区块
+=========================== */
+
+/* 悬赏令区块 */
+#bounty-board-section {
+    -webkit-backdrop-filter: blur(0);
+    backdrop-filter: blur(0);
+    background-color: transparent;
+    border-radius: 5px;
+    color: #EEEEEE;
+    margin: 50px auto;
+    max-width: 1200px;
+    padding: 20px;
+    position: relative;
+    text-align: center;
+    width: 80%;
+}
+
+/* 悬赏令标题 */
+#bounty-board-section h1 {
+    cursor: pointer;
+    font-size: 3em;
+    font-weight: bold;
+    margin: 50px 0;
+    text-align: center;
+}
+
+/* 悬赏令标题悬停状态 */
+#bounty-board-section h1:hover {
+    text-shadow:
+        0 0 20px #000000,
+        0 0 40px #000000;
+}
+
+/* 悬赏令描述文字 */
+#bounty-board-section p {
+    cursor: pointer;
+    font-size: 3em;
+    font-weight: bold;
+    margin: 100px 0;
+    text-align: center;
+}
+
+/* 悬赏令描述文字悬停状态 */
+#bounty-board-section p:hover {
+    text-shadow:
+        0 0 20px #000000,
+        0 0 40px #000000;
+}
+
+
+/* ===========================
+   39. 悬赏令图片
+=========================== */
+
+/* 悬赏令图片容器 */
+.bounty-container {
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 50px 30px;
+    justify-content: center;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* 悬赏令图片 */
+.wanted-poster {
+    --poster-light-x: 50%;
+    --poster-light-y: 50%;
+    --poster-rotate-x: 0deg;
+    --poster-rotate-y: 0deg;
+    --poster-scale: 1;
+
+    border-radius: 0;
+    flex: 0 0 260px;
+    height: auto;
+    margin: 0;
+    max-width: 100%;
+    position: relative;
+    transform:
+        perspective(900px)
+        rotateX(var(--poster-rotate-x))
+        rotateY(var(--poster-rotate-y))
+        scale(var(--poster-scale));
+    transform-style: preserve-3d;
+    transition:
+        box-shadow 300ms ease,
+        filter 300ms ease,
+        transform 180ms ease;
+    width: 260px;
+    will-change: transform;
+}
+
+/* 悬赏令图片悬停状态 */
+.wanted-poster:hover,
+.wanted-poster.is-pointer-active {
+    --poster-scale: 1.08;
+
+    box-shadow:
+        0 0 24px rgba(255, 255, 255, 0.22);
+    filter: brightness(1.06);
+}
+
+
+/* ===========================
+   宽屏电脑
+   一行最多四张
+=========================== */
+
+@media (min-width: 1200px) {
+    .bounty-container {
+        gap: 60px 30px;
+    }
+
+    .wanted-poster {
+        flex-basis: 260px;
+        width: 260px;
+    }
+}
+
+
+/* ===========================
+   平板横屏
+   宽度足够时一行四张
+=========================== */
+
+@media
+    (min-width: 900px)
+    and (max-width: 1199px)
+    and (orientation: landscape) {
+
+    #bounty-board-section {
+        max-width: none;
+        width: 92%;
+    }
+
+    .bounty-container {
+        gap: 40px 20px;
+    }
+
+    .wanted-poster {
+        flex-basis: calc((100% - 60px) / 4);
+        width: calc((100% - 60px) / 4);
+    }
+}
+
+
+/* ===========================
+   平板竖屏及较窄窗口
+   一行两张
+=========================== */
+
+@media
+    (min-width: 601px)
+    and (max-width: 899px) {
+
+    #bounty-board-section {
+        width: 88%;
+    }
+
+    .bounty-container {
+        gap: 40px 30px;
+    }
+
+    .wanted-poster {
+        flex-basis: min(
+            250px,
+            calc((100% - 30px) / 2)
+        );
+        width: min(
+            250px,
+            calc((100% - 30px) / 2)
+        );
+    }
+}
+
+
+/* ===========================
+   移动设备
+   一行一张
+=========================== */
+
+@media (max-width: 600px) {
+    #bounty-board-section {
+        padding: 15px;
+        width: 90%;
+    }
+
+    .bounty-container {
+        gap: 40px;
+    }
+
+    .wanted-poster {
+        flex-basis: 250px;
+        width: 250px;
+    }
+}
+
+
+/* ===========================
+   超小屏幕
+=========================== */
+
+@media (max-width: 480px) {
+    .wanted-poster {
+        flex-basis: 200px;
+        width: 200px;
+    }
+}

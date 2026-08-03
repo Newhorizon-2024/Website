@@ -1,0 +1,485 @@
+/* ===========================
+   44. 时间轴区块
+=========================== */
+
+/* 时间轴 Threads 背景 */
+#timeline-threads-canvas {
+    height: 100%;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    transition:
+        opacity 0.8s ease;
+    width: 100%;
+    z-index: 0;
+}
+
+/* 时间轴出现后显示流线 */
+#timeline-section.visible
+#timeline-threads-canvas,
+#timeline-section.is-active
+#timeline-threads-canvas {
+    opacity: 1;
+}
+
+/* 保证时间轴内容位于流线之上 */
+.timeline-scroll,
+.timeline-details,
+#timeline-section > .back-to-nhn {
+    position: relative;
+    z-index: 2;
+}
+
+/*
+ * 原横线仍然保留。
+ * 它是时间轴的结构骨架，
+ * Threads 只是周围流动的历史痕迹。
+ */
+.timeline-line {
+    z-index: 1;
+}
+
+
+/* 时间轴区块 */
+#timeline-section {
+    --timeline-dot-size: 16px;
+    --timeline-line-size: 4px;
+    --timeline-padding: 60px;
+
+    align-items: center;
+    box-sizing: border-box;
+    flex-direction: column;
+    gap: 40px;
+    isolation: isolate;
+    justify-content: flex-start;
+    margin: 10vw 0;
+    overflow: hidden;
+    padding: var(--timeline-padding) 0;
+    position: relative;
+    width: 100%;
+}
+
+/* 时间轴显示状态 */
+#timeline-section.is-active,
+#timeline-section.depth-enter,
+#timeline-section.depth-leave,
+#timeline-section.slide-enter-left,
+#timeline-section.slide-enter-right,
+#timeline-section.slide-leave-left,
+#timeline-section.slide-leave-right {
+    display: flex;
+}
+
+
+/* ===========================
+   45. 时间轴轨道
+=========================== */
+
+/* 时间轴横向滚动区域 */
+.timeline-scroll {
+    overflow: visible;
+    width: 100%;
+}
+
+/* 时间轴轨道 */
+.timeline-track {
+    align-items: flex-start;
+    box-sizing: border-box;
+    display: flex;
+    gap: 80px;
+    justify-content: center;
+    margin: 0 auto;
+    max-width: 900px;
+    padding:
+        var(--timeline-padding)
+        40px;
+    position: relative;
+    width: 100%;
+}
+
+
+/* ===========================
+   46. 时间轴横线
+=========================== */
+
+/* 时间轴横线 */
+.timeline-line {
+    background:
+        linear-gradient(
+            #FFFFFF 0 0
+        ) 0 / 0% 100% no-repeat
+        #444444;
+    height: var(--timeline-line-size);
+    left: 50%;
+    position: absolute;
+    top:
+        calc(
+            var(--timeline-padding)
+            + var(--timeline-dot-size) / 2
+            - var(--timeline-line-size) / 2
+        );
+    transform: translateX(-50%);
+    width: 200vw;
+}
+
+/* 时间轴显示时播放横线动画 */
+#timeline-section.visible .timeline-line {
+    animation:
+        lineGrow
+        1.2s
+        ease
+        forwards;
+}
+
+/* 时间轴横线生长动画 */
+@keyframes lineGrow {
+    to {
+        background-size: 100% 100%;
+    }
+}
+
+
+/* ===========================
+   47. 时间轴事件节点
+=========================== */
+
+/* 单个时间轴事件 */
+.timeline-item {
+    cursor: pointer;
+    flex: 1;
+    max-width: 240px;
+    position: relative;
+    text-align: center;
+    z-index: 2;
+}
+
+/* 时间轴圆形节点 */
+.timeline-dot {
+    background: #FFFFFF;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    box-sizing: border-box;
+    height: var(--timeline-dot-size);
+    margin: 0 auto;
+    position: relative;
+    transform: scale(0);
+    transform-origin: center;
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+    width: var(--timeline-dot-size);
+    z-index: 2;
+}
+
+/* 时间轴显示时播放节点动画 */
+#timeline-section.visible .timeline-dot {
+    animation:
+        dotUp
+        0.6s
+        ease
+        forwards;
+}
+
+/* 时间轴节点出现动画 */
+@keyframes dotUp {
+    to {
+        transform: scale(1);
+    }
+}
+
+/* 时间轴节点悬停状态 */
+.timeline-item:hover .timeline-dot {
+    box-shadow:
+        0 0 12px
+        rgba(255, 255, 255, 0.8);
+    transform: scale(1.2);
+}
+
+/* 当前选中的时间轴节点 */
+.timeline-item.active .timeline-dot {
+    background: #222222;
+    border-color: #FFFFFF;
+    box-shadow:
+        0 0 14px
+        rgba(255, 255, 255, 0.9);
+    transform: scale(1.25);
+}
+
+
+/* ===========================
+   48. 时间轴事件文字
+=========================== */
+
+/* 时间轴事件文字 */
+.timeline-text {
+    color: #FFFFFF;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 12px;
+    opacity: 0;
+    overflow-wrap: anywhere;
+    transform: translateX(-20px);
+    transition:
+        opacity 0.25s ease,
+        text-shadow 0.25s ease;
+}
+
+/* 时间轴显示时播放文字动画 */
+#timeline-section.visible .timeline-text {
+    animation:
+        textIn
+        0.6s
+        ease
+        0.2s
+        forwards;
+}
+
+/* 时间轴文字进入动画 */
+@keyframes textIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* 当前选中的事件文字 */
+.timeline-item.active .timeline-text {
+    text-shadow:
+        0 0 10px
+        rgba(255, 255, 255, 0.8);
+}
+
+
+/* ===========================
+   49. 时间轴事件详情
+=========================== */
+
+/*
+ * 详情区域保留在普通文档流中。
+ * 显示详情时，容器高度会自动增加，
+ * 并将返回按钮和后续内容自然向下推。
+ */
+.timeline-details {
+    box-sizing: border-box;
+    margin: 0 auto;
+    max-width: 900px;
+    padding: 0 40px;
+    position: relative;
+    text-align: center;
+    width: 100%;
+}
+
+/*
+ * 默认移除详情占用的页面空间。
+ * 此处不能使用绝对定位。
+ */
+.timeline-detail {
+    box-sizing: border-box;
+    display: none;
+    padding: 40px;
+    position: relative;
+    text-align: center;
+    width: 100%;
+}
+
+/* 当前显示的时间轴详情 */
+.timeline-detail.active {
+    animation:
+        timelineDetailIn
+        0.35s
+        ease
+        forwards;
+    display: block;
+}
+
+/* 时间轴详情进入动画 */
+@keyframes timelineDetailIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 时间轴详情标题 */
+.timeline-detail h1 {
+    margin-top: 0;
+}
+
+/* 时间轴详情最后一个元素 */
+.timeline-detail > :last-child {
+    margin-bottom: 0;
+}
+
+
+/* ===========================
+   50. 时间轴移动端适配
+=========================== */
+
+@media (max-width: 600px) {
+    /* 时间轴区块 */
+    #timeline-section {
+        --timeline-dot-size: 14px;
+        --timeline-mobile-item-gap: 24px;
+        --timeline-mobile-item-width: 90px;
+        --timeline-mobile-side-padding: 24px;
+        --timeline-padding: 40px;
+
+        gap: 24px;
+        margin: 15vw 0;
+        padding: 36px 0;
+    }
+
+    /* 时间轴横向滚动区域 */
+    .timeline-scroll {
+        -webkit-overflow-scrolling: touch;
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        scrollbar-width: none;
+    }
+
+    /* 隐藏 WebKit 时间轴滚动条 */
+    .timeline-scroll::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* 移动端时间轴轨道 */
+    .timeline-track {
+        gap: var(--timeline-mobile-item-gap);
+        justify-content: flex-start;
+        margin: 0;
+        max-width: none;
+        min-width: 100%;
+        padding:
+            var(--timeline-padding)
+            var(--timeline-mobile-side-padding);
+        width: max-content;
+    }
+
+    /* 移动端时间轴事件 */
+    .timeline-item {
+        flex:
+            0 0
+            var(--timeline-mobile-item-width);
+        max-width:
+            var(--timeline-mobile-item-width);
+        width:
+            var(--timeline-mobile-item-width);
+    }
+
+    /* 移动端时间轴横线 */
+    .timeline-line {
+        left:
+            calc(
+                var(--timeline-mobile-side-padding)
+                + var(--timeline-mobile-item-width) / 2
+            );
+        right:
+            calc(
+                var(--timeline-mobile-side-padding)
+                + var(--timeline-mobile-item-width) / 2
+            );
+        transform: none;
+        width: auto;
+    }
+
+    /* 移动端时间轴事件文字 */
+    .timeline-text {
+        font-size: 12px;
+        line-height: 1.45;
+        margin-top: 10px;
+    }
+
+    /* 移动端时间轴详情容器 */
+    .timeline-details {
+        max-width: none;
+        padding: 0 24px;
+        width: 100%;
+    }
+
+    /* 移动端单个时间轴详情 */
+    .timeline-detail {
+        padding: 24px 0;
+    }
+
+    /* 移动端返回情报署按钮 */
+    .back-to-nhn {
+        margin-top: 24px;
+    }
+}
+
+
+/* ===========================
+   51. 情报署设备适配
+=========================== */
+
+/* 触摸设备取消悬停位移 */
+@media (hover: none), (pointer: coarse) {
+    .back-to-nhn:hover,
+    .nhn-btn:hover {
+        transform: none;
+    }
+
+    .timeline-item:hover .timeline-dot {
+        box-shadow: none;
+        transform: scale(1);
+    }
+
+    .timeline-item.active .timeline-dot {
+        box-shadow:
+            0 0 14px
+            rgba(255, 255, 255, 0.9);
+        transform: scale(1.25);
+    }
+}
+
+/* 遵循系统减少动态效果设置 */
+@media (prefers-reduced-motion: reduce) {
+    .accordion-menu-option,
+    .accordion-menu-option .text,
+    .back-to-nhn,
+    .nhn-btn,
+    .timeline-dot,
+    .timeline-text {
+        transition: none;
+    }
+
+    #timeline-section.visible,
+    #timeline-section.visible .timeline-dot,
+    #timeline-section.visible .timeline-line,
+    #timeline-section.visible .timeline-text,
+    .timeline-detail.active {
+        animation: none;
+    }
+
+    #timeline-section.visible {
+        opacity: 1;
+        transform: none;
+    }
+
+    #timeline-section.visible .timeline-dot {
+        transform: scale(1);
+    }
+
+    #timeline-section.visible .timeline-text {
+        opacity: 1;
+        transform: none;
+    }
+
+    .timeline-item.active .timeline-dot {
+        transform: scale(1.25);
+    }
+
+    .timeline-detail.active {
+        opacity: 1;
+        transform: none;
+    }
+}

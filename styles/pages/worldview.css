@@ -1,0 +1,51 @@
+/* 世界观页面 */
+#worldview-section {
+    box-sizing: border-box;
+    height: min(82vh, 920px);
+    margin: 50px auto;
+    max-width: 1600px;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+    width: 92%;
+    z-index: 1;
+}
+
+/* 世界观画布 */
+#worldview-canvas {
+    display: block;
+    height: 100%;
+    touch-action: none;
+    width: 100%;
+}
+
+/* 隐藏状态 */
+#worldview-canvas[hidden] {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    #worldview-section {
+        height: 72vh;
+        width: 96%;
+    }
+}
+
+#worldview-directory-back {
+    backdrop-filter: blur(8px);
+    background: rgba(40, 40, 40, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    bottom: 24px;
+    color: #eee;
+    cursor: pointer;
+    font: inherit;
+    left: 24px;
+    padding: 10px 16px;
+    position: absolute;
+    z-index: 3;
+}
+
+#worldview-directory-back[hidden] {
+    display: none;
+}
