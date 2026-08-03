@@ -4,6 +4,12 @@
 
 // 禁止浏览器恢复先前的滚动位置
 window.history.scrollRestoration = "manual";
+/* ===========================
+   1. 页面初始化
+=========================== */
+
+// 禁止浏览器恢复先前的滚动位置
+window.history.scrollRestoration = "manual";
 
 // Lenis 平滑滚动实例
 let lenis = null;
@@ -161,22 +167,42 @@ function startLenis() {
     }
 
     lenis = new Lenis({
-        autoResize: true,
-
+        smoothWheel: true,
         duration: 1.2,
 
-        easing: time =>
+        easing: t =>
             Math.min(
                 1,
-                1.001 - Math.pow(2, -10 * time)
+                1.001 -
+                Math.pow(
+                    2,
+                    -10 * t
+                )
             ),
 
-        gestureOrientation: "vertical",
+        orientation:
+            "vertical",
 
-        orientation: "vertical",
+        gestureOrientation:
+            "vertical",
 
-        smoothWheel: true
+        autoResize:
+            true
     });
+
+    /*
+    * 暴露给 navigation.js 等其他模块。
+    */
+    window.lenis =
+        lenis;
+
+    lenis.scrollTo(
+        0,
+        {
+            immediate:
+                true
+        }
+    );
 
     // 启动后立即回到页面顶部
     lenis.scrollTo(0, {
