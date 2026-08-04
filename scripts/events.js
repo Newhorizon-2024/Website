@@ -15,6 +15,10 @@ import {
 } from "./effects/innerworld-section.js";
 
 import {
+    initializeNewworldSection
+} from "./effects/newworld-section.js";
+
+import {
     initializeNhnLogoMagnet
 } from "./effects/nhn-logo.js";
 
@@ -31,12 +35,20 @@ import {
 } from "./effects/worldview-core.js";
 
 import {
+    initializeWorldviewOrganizations
+} from "./effects/worldview-organizations.js";
+
+import {
     initializeWorldviewTargetCursor
 } from "./effects/worldview-target-cursor.js";
 
 import {
     initializeWorldviewThings
 } from "./effects/worldview-things.js";
+
+import {
+    initializeWorldviewScenes
+} from "./effects/worldview-scenes.js";
 
 import {
     initializeWorkPostPointerEffects
@@ -68,21 +80,25 @@ import {
 =========================== */
 
 function initializeEvents() {
-    initializePanelPointerEffects();
-    initializeWantedPosterPointerEffects();
+    initializeBountyNavigation();
     initializeCountdownTooltip();
     initializeCreatorGallery();
-    initializeNhnLogoMagnet();
     initializeInnerworldSection();
-    initializeNhnTimeline();
+    initializeNewworldSection();
     initializeNhnAccordion();
+    initializeNhnLogoMagnet();
+    initializeNhnTimeline();
+    initializePanelPointerEffects();
+    initializeWantedPosterPointerEffects();
     initializeWorldviewCore();
     initializeWorldviewTargetCursor();
+    initializeWorldviewOrganizations();
     initializeWorldviewThings();
+    initializeWorldviewScenes();
     initializeWorkFeed();
     initializeWorkPostStats();
     initializeWorkPostPointerEffects();
-    initializeBountyNavigation();
+    
 }
 
 if (document.readyState === "loading") {
