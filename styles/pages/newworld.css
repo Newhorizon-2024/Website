@@ -1,0 +1,642 @@
+/* ===========================
+   1. 新世界区块
+=========================== */
+
+#newworld-section {
+    --newworld-content-width:
+        1040px;
+
+    background:
+        transparent;
+    box-sizing:
+        border-box;
+    color:
+        #EEEEEE;
+    margin:
+        0 auto;
+    min-height:
+        100vh;
+    overflow-x:
+        clip;
+    overflow-y:
+        visible;
+    padding:
+        clamp(90px, 11vw, 160px)
+        0
+        clamp(120px, 15vw, 200px);
+    position:
+        relative;
+    width:
+        100%;
+}
+
+/* 覆盖通用 Section 面板样式 */
+#newworld-section.section {
+    background:
+        transparent;
+    border:
+        0;
+    border-radius:
+        0;
+    box-shadow:
+        none;
+    max-width:
+        none;
+}
+
+
+/* ===========================
+   2. Scroll Reveal
+=========================== */
+
+#newworld-section
+[data-newworld-reveal] {
+    filter:
+        blur(14px);
+    opacity:
+        0;
+    transform:
+        translateY(54px);
+    transition:
+        filter 0.95s ease,
+        opacity 0.95s ease,
+        transform 1.05s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        );
+    will-change:
+        filter,
+        opacity,
+        transform;
+}
+
+/* 显示状态 */
+#newworld-section
+[data-newworld-reveal].is-revealed {
+    filter:
+        blur(0);
+    opacity:
+        1;
+    transform:
+        translateY(0);
+}
+
+
+/* ===========================
+   3. 页首
+=========================== */
+
+.newworld-hero {
+    box-sizing:
+        border-box;
+    margin:
+        0 auto
+        clamp(100px, 13vw, 170px);
+    max-width:
+        960px;
+    padding:
+        0 24px;
+    position:
+        relative;
+    text-align:
+        center;
+}
+
+.newworld-eyebrow {
+    color:
+        rgba(238, 238, 238, 0.3);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        11px;
+    letter-spacing:
+        0.28em;
+    margin:
+        0 0 22px;
+}
+
+.newworld-hero h1 {
+    color:
+        #F4F4F4;
+    font-size:
+        clamp(54px, 9vw, 116px);
+    font-weight:
+        400;
+    letter-spacing:
+        0.12em;
+    line-height:
+        1.05;
+    margin:
+        0;
+    text-indent:
+        0.12em;
+}
+
+.newworld-subtitle {
+    color:
+        rgba(238, 238, 238, 0.38);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        clamp(14px, 1.7vw, 20px);
+    letter-spacing:
+        0.2em;
+    margin:
+        24px 0 0;
+}
+
+.newworld-hero-line {
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.22),
+            transparent
+        );
+    height:
+        1px;
+    margin:
+        46px auto 0;
+    max-width:
+        420px;
+    width:
+        60%;
+}
+
+
+/* ===========================
+   4. 普通正文
+=========================== */
+
+.newworld-copy {
+    box-sizing:
+        border-box;
+    margin-left:
+        auto;
+    margin-right:
+        auto;
+    max-width:
+        var(--newworld-content-width);
+    padding-left:
+        32px;
+    padding-right:
+        32px;
+    position:
+        relative;
+    width:
+        100%;
+    z-index:
+        3;
+}
+
+.newworld-copy p {
+    color:
+        rgba(238, 238, 238, 0.76);
+    font-size:
+        clamp(16px, 1.55vw, 20px);
+    letter-spacing:
+        0.025em;
+    line-height:
+        2.05;
+    margin:
+        0;
+}
+
+.newworld-copy p + p {
+    margin-top:
+        clamp(26px, 4vw, 46px);
+}
+
+
+/* ===========================
+   5. 图片上方正文
+=========================== */
+
+/*
+ * 文字仍在正常文档流中。
+ * 仅让最后一行轻微进入图片顶部。
+ */
+.newworld-copy-before-gallery {
+    margin-bottom:
+        -6em;
+}
+
+.newworld-copy-before-gallery
+p:last-child {
+    position:
+        relative;
+    text-shadow:
+        0 2px 7px
+        rgba(0, 0, 0, 0.68),
+        0 0 18px
+        rgba(0, 0, 0, 0.32);
+}
+
+
+/* ===========================
+   6. 黑色遮蔽
+=========================== */
+
+.newworld-redacted {
+    background:
+        #030303;
+    border-radius:
+        1px;
+    box-decoration-break:
+        clone;
+    color:
+        transparent;
+    display:
+        inline-block;
+    line-height:
+        1.28;
+    margin:
+        0 0.14em;
+    min-width:
+        3.8em;
+    overflow:
+        hidden;
+    padding:
+        0.04em 0.34em;
+    position:
+        relative;
+    user-select:
+        none;
+    vertical-align:
+        -0.06em;
+}
+
+
+/* ===========================
+   7. 全宽主视觉
+=========================== */
+
+.newworld-gallery {
+    box-sizing:
+        border-box;
+    left:
+        50%;
+    isolation: 
+        isolate;
+    margin:
+        0 0
+        clamp(90px, 12vw, 160px);
+    margin-left:
+        -50vw;
+    max-width:
+        none;
+    padding:
+        0;
+    position:
+        relative;
+    width:
+        100vw;
+}
+
+/* 图片框架 */
+.newworld-gallery-frame {
+    aspect-ratio:
+        16 / 9;
+    background:
+        #080808;
+    overflow:
+        hidden;
+    position:
+        relative;
+    width:
+        100%;
+}
+
+/* 主视觉图片 */
+.newworld-gallery-frame > img {
+    display:
+        block;
+    height:
+        100%;
+    object-fit:
+        cover;
+    object-position:
+        center;
+    pointer-events:
+        none;
+    position:
+        relative;
+    transform:
+        translate3d(
+            0,
+            0,
+            0
+        )
+        scale(1.075);
+    transform-origin:
+        center;
+    transition:
+        transform 1.8s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        );
+    width:
+        100%;
+    will-change:
+        transform;
+}
+
+/* 图片进入视口后恢复尺寸 */
+.newworld-gallery.is-revealed
+.newworld-gallery-frame > img {
+    transform:
+        translate3d(
+            0,
+            0,
+            0
+        )
+        scale(1);
+}
+
+
+/* ===========================
+   8. 图片说明
+=========================== */
+
+.newworld-gallery figcaption {
+    box-sizing:
+        border-box;
+    color:
+        rgba(238, 238, 238, 0.28);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        10px;
+    letter-spacing:
+        0.18em;
+    margin:
+        18px auto 0;
+    max-width:
+        var(--newworld-content-width);
+    padding:
+        0 24px;
+    text-align:
+        right;
+}
+
+
+/* ===========================
+   9. 图片下方正文
+=========================== */
+
+/* 图片下方文字向画廊内部延伸 */
+.newworld-copy-after-gallery {
+    margin-bottom: clamp(120px, 16vw, 210px);
+    margin-top: -2.4em;
+    padding-top: 24px;
+    position: relative;
+}
+
+
+/* ===========================
+   10. 后续内容容器
+=========================== */
+
+.newworld-content {
+    box-sizing:
+        border-box;
+    margin:
+        0 auto;
+    max-width:
+        var(--newworld-content-width);
+    padding:
+        0 32px;
+    position:
+        relative;
+    width:
+        100%;
+}
+
+
+/* ===========================
+   11. 补充陈述
+=========================== */
+
+.newworld-statement {
+    align-items:
+        flex-start;
+    border-left:
+        1px solid
+        rgba(255, 255, 255, 0.14);
+    display:
+        grid;
+    gap:
+        clamp(24px, 4vw, 54px);
+    grid-template-columns:
+        auto
+        minmax(0, 1fr);
+    margin:
+        0 auto;
+    max-width:
+        880px;
+    padding:
+        12px 0
+        12px
+        clamp(22px, 4vw, 54px);
+}
+
+.newworld-statement-index {
+    color:
+        rgba(238, 238, 238, 0.24);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        11px;
+    letter-spacing:
+        0.18em;
+    padding-top:
+        0.55em;
+}
+
+.newworld-statement p {
+    color:
+        rgba(238, 238, 238, 0.72);
+    font-size:
+        clamp(16px, 1.6vw, 21px);
+    letter-spacing:
+        0.025em;
+    line-height:
+        2.05;
+    margin:
+        0;
+}
+
+
+/* ===========================
+   12. 返回按钮
+=========================== */
+
+.newworld-back-button {
+    display:
+        flex;
+    margin:
+        clamp(110px, 15vw, 190px)
+        auto
+        0;
+}
+
+
+/* ===========================
+   13. 手机适配
+=========================== */
+
+@media (max-width: 700px) {
+    #newworld-section {
+        padding-top:
+            90px;
+    }
+
+    .newworld-hero {
+        margin-bottom:
+            90px;
+        padding:
+            0 20px;
+    }
+
+    .newworld-copy {
+        padding-left:
+            22px;
+        padding-right:
+            22px;
+    }
+
+    .newworld-copy p {
+        line-height:
+            1.92;
+    }
+
+    .newworld-copy-before-gallery {
+        margin-bottom:
+            -0.75em;
+    }
+
+    /*
+     * 保持原始 16:9 比例，
+     * 不再改成竖向容器。
+     */
+    .newworld-gallery-frame {
+        aspect-ratio:
+            16 / 9;
+        overflow:
+            hidden;
+    }
+
+    /*
+     * 移动端完整显示原图。
+     * 不使用 cover 裁切。
+     */
+    .newworld-gallery-frame > img,
+    .newworld-gallery.is-revealed
+    .newworld-gallery-frame > img {
+        height:
+            100%;
+        object-fit:
+            contain;
+        object-position:
+            center;
+        transform:
+            none !important;
+        width:
+            100%;
+    }
+
+    .newworld-gallery figcaption {
+        padding:
+            0 16px;
+    }
+
+    .newworld-copy-after-gallery {
+        margin-bottom:
+            110px;
+        margin-top:
+            -0.5em;
+        padding-top:
+            66px;
+    }
+
+    .newworld-content {
+        padding:
+            0 22px;
+    }
+
+    .newworld-statement {
+        gap:
+            18px;
+        grid-template-columns:
+            1fr;
+        padding-left:
+            22px;
+    }
+
+    .newworld-statement-index {
+        padding-top:
+            0;
+    }
+
+    .newworld-statement p {
+        line-height:
+            1.9;
+    }
+}
+
+
+/* ===========================
+   14. 极窄屏幕
+=========================== */
+
+@media (max-width: 430px) {
+    .newworld-copy-before-gallery {
+        margin-bottom:
+            -0.55em;
+    }
+
+    .newworld-copy-after-gallery {
+        padding-top:
+            56px;
+    }
+}
+
+
+/* ===========================
+   15. 减少动态效果
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    #newworld-section
+    [data-newworld-reveal] {
+        filter:
+            none;
+        opacity:
+            1;
+        transform:
+            none;
+        transition:
+            none;
+    }
+
+    .newworld-gallery-frame > img {
+        transform:
+            none !important;
+        transition:
+            none;
+    }
+}

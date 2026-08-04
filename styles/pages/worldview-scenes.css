@@ -1,0 +1,809 @@
+/* ===========================
+   1. 场景区块
+=========================== */
+
+#worldview-scenes-section {
+    --scenes-globe-size:
+        min(76vw, 760px);
+
+    background:
+        transparent;
+    box-sizing:
+        border-box;
+    color:
+        #EEEEEE;
+    margin:
+        0 auto;
+    min-height:
+        100vh;
+    overflow:
+        hidden;
+    padding:
+        clamp(80px, 10vw, 140px)
+        24px
+        clamp(100px, 13vw, 170px);
+    position:
+        relative;
+    width:
+        100%;
+}
+
+/* 覆盖通用 Section 面板 */
+#worldview-scenes-section.section {
+    background:
+        transparent;
+    border:
+        0;
+    border-radius:
+        0;
+    box-shadow:
+        none;
+    max-width:
+        none;
+}
+
+
+/* ===========================
+   2. 页首
+=========================== */
+
+.scenes-header {
+    margin:
+        0 auto
+        clamp(50px, 7vw, 90px);
+    max-width:
+        760px;
+    text-align:
+        center;
+}
+
+.scenes-eyebrow {
+    color:
+        rgba(238, 238, 238, 0.34);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        11px;
+    letter-spacing:
+        0.26em;
+    margin:
+        0 0 18px;
+}
+
+.scenes-header h1 {
+    color:
+        #F2F2F2;
+    font-size:
+        clamp(38px, 6vw, 74px);
+    font-weight:
+        400;
+    letter-spacing:
+        0.08em;
+    line-height:
+        1.25;
+    margin:
+        0;
+}
+
+.scenes-description {
+    color:
+        rgba(238, 238, 238, 0.52);
+    font-size:
+        clamp(14px, 1.4vw, 18px);
+    line-height:
+        1.9;
+    margin:
+        28px auto 0;
+    max-width:
+        640px;
+}
+
+
+/* ===========================
+   3. 三维球体容器
+=========================== */
+
+.scenes-globe {
+    -webkit-touch-callout:
+        none;
+    -webkit-user-select:
+        none;
+    cursor:
+        grab;
+    height:
+        var(--scenes-globe-size);
+    isolation:
+        isolate;
+    margin:
+        0 auto;
+    outline:
+        none;
+    overflow:
+        visible;
+    position:
+        relative;
+    touch-action:
+        none;
+    user-select:
+        none;
+    width:
+        var(--scenes-globe-size);
+}
+
+/* 拖动状态 */
+.scenes-globe.is-dragging {
+    cursor:
+        grabbing;
+}
+
+/* 键盘焦点 */
+.scenes-globe:focus-visible {
+    outline:
+        1px solid
+        rgba(255, 255, 255, 0.15);
+    outline-offset:
+        14px;
+}
+
+
+/* ===========================
+   4. 球体 Canvas
+=========================== */
+
+.scenes-globe-canvas {
+    height:
+        100%;
+    inset:
+        0;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    width:
+        100%;
+    z-index:
+        0;
+}
+
+
+/* ===========================
+   5. 外部准星
+=========================== */
+
+.scenes-globe-reticle {
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.035);
+    border-radius:
+        50%;
+    inset:
+        9%;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    z-index:
+        1;
+}
+
+/* 横向轴 */
+.scenes-reticle-horizontal {
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.08),
+            transparent
+        );
+    height:
+        1px;
+    left:
+        3%;
+    position:
+        absolute;
+    right:
+        3%;
+    top:
+        50%;
+}
+
+/* 纵向轴 */
+.scenes-reticle-vertical {
+    background:
+        linear-gradient(
+            transparent,
+            rgba(255, 255, 255, 0.08),
+            transparent
+        );
+    bottom:
+        3%;
+    left:
+        50%;
+    position:
+        absolute;
+    top:
+        3%;
+    width:
+        1px;
+}
+
+/* 中心点 */
+.scenes-reticle-center {
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.2);
+    border-radius:
+        50%;
+    height:
+        8px;
+    left:
+        50%;
+    position:
+        absolute;
+    top:
+        50%;
+    transform:
+        translate(-50%, -50%);
+    width:
+        8px;
+}
+
+
+/* ===========================
+   6. 场景节点层
+=========================== */
+
+.scenes-node-layer {
+    inset:
+        0;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    z-index:
+        4;
+}
+
+
+/* ===========================
+   7. 场景节点
+=========================== */
+
+.scene-node {
+    --scene-depth:
+        1;
+
+    --scene-opacity:
+        1;
+
+    --scene-scale:
+        1;
+
+    --scene-x:
+        50%;
+
+    --scene-y:
+        50%;
+
+    -webkit-tap-highlight-color:
+        transparent;
+    -webkit-user-drag:
+        none;
+    -webkit-user-select:
+        none;
+    appearance:
+        none;
+    background:
+        none;
+    border:
+        0;
+    color:
+        #EEEEEE;
+    cursor:
+        pointer;
+    left:
+        0;
+    margin:
+        0;
+    opacity:
+        var(--scene-opacity);
+    padding:
+        0;
+    pointer-events:
+        auto;
+    position:
+        absolute;
+    top:
+        0;
+    transform:
+        translate3d(
+            var(--scene-x),
+            var(--scene-y),
+            0
+        )
+        translate(-50%, -50%)
+        scale(
+            var(--scene-scale)
+        );
+    transform-origin:
+        center;
+    transition:
+        filter 0.22s ease,
+        opacity 0.22s ease;
+    user-select:
+        none;
+    width:
+        clamp(90px, 12vw, 128px);
+    will-change:
+        filter,
+        opacity,
+        transform;
+}
+
+/* 球体背面的节点 */
+.scene-node.is-behind {
+    filter:
+        blur(3px)
+        brightness(0.6);
+    pointer-events:
+        none;
+}
+
+/* 聚焦节点 */
+.scene-node.is-selected {
+    z-index:
+        10;
+}
+
+/* 节点悬停 */
+.scene-node:hover,
+.scene-node:focus-visible {
+    filter:
+        brightness(1.12);
+    outline:
+        none;
+}
+
+
+/* ===========================
+   8. 场景图像
+=========================== */
+
+.scene-node-marker {
+    background:
+        rgba(24, 24, 24, 0.74);
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.12);
+    border-radius:
+        8px;
+    box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, 0.24);
+    display:
+        block;
+    overflow:
+        hidden;
+    position:
+        relative;
+    transition:
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        transform 0.3s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        );
+    width:
+        100%;
+}
+
+/* 固定图像比例 */
+.scene-node-marker::before {
+    content:
+        "";
+    display:
+        block;
+    padding-top:
+        66.6667%;
+}
+
+/* 场景图片 */
+.scene-node-marker img {
+    display:
+        block;
+    height:
+        100%;
+    inset:
+        0;
+    object-fit:
+        cover;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    transition:
+        filter 0.35s ease,
+        transform 0.45s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        );
+    width:
+        100%;
+}
+
+/* 默认轻度去色 */
+.scene-node:not(.is-selected)
+.scene-node-marker img {
+    filter:
+        grayscale(72%)
+        brightness(0.72);
+}
+
+/* 悬停恢复部分颜色 */
+.scene-node:hover
+.scene-node-marker img,
+.scene-node:focus-visible
+.scene-node-marker img,
+.scene-node.is-selected
+.scene-node-marker img {
+    filter:
+        grayscale(0%)
+        brightness(1);
+    transform:
+        scale(1.045);
+}
+
+/* 悬停边框 */
+.scene-node:hover
+.scene-node-marker,
+.scene-node:focus-visible
+.scene-node-marker {
+    border-color:
+        rgba(255, 255, 255, 0.32);
+    box-shadow:
+        0 16px 36px
+        rgba(0, 0, 0, 0.32);
+}
+
+/* 选中边框 */
+.scene-node.is-selected
+.scene-node-marker {
+    border-color:
+        rgba(255, 255, 255, 0.48);
+    box-shadow:
+        0 0 0 1px
+        rgba(255, 255, 255, 0.08),
+        0 18px 42px
+        rgba(0, 0, 0, 0.34);
+}
+
+
+/* ===========================
+   9. 场景名称
+=========================== */
+
+.scene-node-name {
+    color:
+        rgba(238, 238, 238, 0.68);
+    display:
+        block;
+    font-size:
+        clamp(11px, 1.2vw, 14px);
+    letter-spacing:
+        0.08em;
+    margin-top:
+        9px;
+    overflow:
+        hidden;
+    pointer-events:
+        none;
+    text-align:
+        center;
+    text-overflow:
+        ellipsis;
+    transition:
+        color 0.3s ease,
+        text-shadow 0.3s ease;
+    white-space:
+        nowrap;
+}
+
+.scene-node:hover
+.scene-node-name,
+.scene-node:focus-visible
+.scene-node-name,
+.scene-node.is-selected
+.scene-node-name {
+    color:
+        #FFFFFF;
+    text-shadow:
+        0 0 12px
+        rgba(255, 255, 255, 0.14);
+}
+
+
+/* ===========================
+   10. 当前场景信息
+=========================== */
+
+.scenes-current {
+    -webkit-tap-highlight-color:
+        transparent;
+    appearance:
+        none;
+    background:
+        rgba(16, 16, 16, 0.62);
+    backdrop-filter:
+        blur(10px);
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+    border-radius:
+        8px;
+    bottom:
+        8%;
+    color:
+        #EEEEEE;
+    cursor:
+        pointer;
+    display:
+        flex;
+    flex-direction:
+        column;
+    left:
+        50%;
+    min-width:
+        min(72%, 320px);
+    padding:
+        14px 22px;
+    position:
+        absolute;
+    text-align:
+        center;
+    transform:
+        translateX(-50%);
+    transition:
+        background-color 0.3s ease,
+        border-color 0.3s ease,
+        opacity 0.3s ease,
+        transform 0.3s ease;
+    z-index:
+        20;
+}
+
+/* 当前信息悬停 */
+.scenes-current:hover,
+.scenes-current:focus-visible {
+    background:
+        rgba(26, 26, 26, 0.78);
+    border-color:
+        rgba(255, 255, 255, 0.18);
+    outline:
+        none;
+    transform:
+        translateX(-50%)
+        translateY(-2px);
+}
+
+/* 尚未开放 */
+.scenes-current.is-unavailable {
+    cursor:
+        default;
+}
+
+/* 编号 */
+.scenes-current-index {
+    color:
+        rgba(238, 238, 238, 0.3);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        10px;
+    letter-spacing:
+        0.2em;
+}
+
+/* 名称 */
+.scenes-current-name {
+    color:
+        #F2F2F2;
+    font-size:
+        clamp(20px, 3vw, 32px);
+    font-weight:
+        400;
+    letter-spacing:
+        0.08em;
+    margin-top:
+        6px;
+}
+
+/* 坐标 */
+.scenes-current-coordinate {
+    color:
+        rgba(238, 238, 238, 0.38);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        10px;
+    letter-spacing:
+        0.08em;
+    margin-top:
+        7px;
+}
+
+/* 状态 */
+.scenes-current-status {
+    color:
+        rgba(238, 238, 238, 0.42);
+    font-size:
+        11px;
+    letter-spacing:
+        0.12em;
+    margin-top:
+        7px;
+}
+
+
+/* ===========================
+   11. 操作提示
+=========================== */
+
+.scenes-globe-hint {
+    color:
+        rgba(238, 238, 238, 0.22);
+    display:
+        flex;
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        9px;
+    justify-content:
+        space-between;
+    left:
+        13%;
+    letter-spacing:
+        0.14em;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    right:
+        13%;
+    top:
+        8%;
+    z-index:
+        2;
+}
+
+
+/* ===========================
+   12. 返回按钮
+=========================== */
+
+.scenes-back-button {
+    display:
+        flex;
+    margin:
+        clamp(70px, 9vw, 120px)
+        auto
+        0;
+}
+
+
+/* ===========================
+   13. 拖动保护
+=========================== */
+
+.scenes-globe *,
+.scene-node,
+.scene-node * {
+    -webkit-touch-callout:
+        none;
+    -webkit-user-drag:
+        none;
+    -webkit-user-select:
+        none;
+    user-select:
+        none;
+}
+
+body.is-scenes-globe-dragging,
+body.is-scenes-globe-dragging * {
+    -webkit-user-select:
+        none !important;
+    user-select:
+        none !important;
+}
+
+
+/* ===========================
+   14. 移动端
+=========================== */
+
+@media (max-width: 600px) {
+    #worldview-scenes-section {
+        --scenes-globe-size:
+            min(96vw, 560px);
+
+        padding-left:
+            8px;
+        padding-right:
+            8px;
+    }
+
+    .scenes-header {
+        margin-bottom:
+            44px;
+        padding:
+            0 16px;
+    }
+
+    .scene-node {
+        width:
+            clamp(72px, 22vw, 100px);
+    }
+
+    .scenes-current {
+        bottom:
+            5%;
+        min-width:
+            72%;
+        padding:
+            12px 16px;
+    }
+
+    .scenes-globe-hint {
+        display:
+            none;
+    }
+}
+
+
+/* ===========================
+   15. 触摸设备
+=========================== */
+
+@media (hover: none), (pointer: coarse) {
+    .scene-node:not(.is-selected)
+    .scene-node-marker img {
+        filter:
+            grayscale(0%)
+            brightness(0.88);
+    }
+
+    .scene-node:hover
+    .scene-node-marker img {
+        transform:
+            none;
+    }
+}
+
+
+/* ===========================
+   16. 减少动态效果
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .scene-node,
+    .scene-node-marker,
+    .scene-node-marker img,
+    .scene-node-name,
+    .scenes-current {
+        transition:
+            none;
+    }
+}
