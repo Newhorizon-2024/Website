@@ -2212,10 +2212,6 @@
                     它们像一簇烛火，融于血肉之中，化作生命驱动的动力。
                 </p>
 
-                <p>
-                    因此，里世界中的角色既不是现实人物的简单复制，也不是与现实毫无联系的虚构生命。
-                </p>
-
                 <p class="innerworld-emphasis">
                     它们更像是现实经过意识折射后，形成的人格化投影。
                 </p>
@@ -2295,7 +2291,7 @@
             </h1>
 
             <p class="things-description">
-                某些事物无法仅以人物、事件或组织定义。
+                万物归一。
             </p>
         </header>
 
@@ -2432,6 +2428,926 @@
             class="back-to-parent things-back-button"
         >
             <span>返回上一级</span>
+        </button>
+    </section>
+
+    <!-- ===========================
+        世界观 · 场景
+    =========================== -->
+
+    <section
+        id="worldview-scenes-section"
+        class="section worldview-scenes-section"
+        aria-labelledby="worldview-scenes-title"
+    >
+        <!-- ===========================
+            场景页首
+        =========================== -->
+
+        <header class="scenes-header">
+            <p class="scenes-eyebrow">
+                WORLDVIEW ARCHIVE · LOCATIONS
+            </p>
+
+            <h1 id="worldview-scenes-title">
+                场景
+            </h1>
+
+            <p class="scenes-description">
+                地点并非静止的背景。
+                它们保存事件、意识与世界留下的空间痕迹。
+            </p>
+        </header>
+
+
+        <!-- ===========================
+            三维场景球体
+        =========================== -->
+
+        <div
+            id="scenes-globe"
+            class="scenes-globe"
+            tabindex="0"
+            role="application"
+            aria-label="可拖动的三维场景目录"
+        >
+            <!-- 网格球体 -->
+            <canvas
+                id="scenes-globe-canvas"
+                class="scenes-globe-canvas"
+                aria-hidden="true"
+            ></canvas>
+
+            <!-- 球体外部刻度 -->
+            <div
+                class="scenes-globe-reticle"
+                aria-hidden="true"
+            >
+                <span class="scenes-reticle-horizontal"></span>
+                <span class="scenes-reticle-vertical"></span>
+                <span class="scenes-reticle-center"></span>
+            </div>
+
+            <!-- 场景节点 -->
+            <div class="scenes-node-layer">
+                <!-- 罗马斗兽场 -->
+                <button
+                    type="button"
+                    class="scene-node"
+                    data-scene-id="colosseum"
+                    data-scene-name="“罗马斗兽场”"
+                    data-latitude="41.8902"
+                    data-longitude="12.4922"
+                    data-section-id=""
+                    aria-label="选择罗马斗兽场"
+                >
+                    <span class="scene-node-marker">
+                        <img
+                            src="images/nhn/characters/unknown/unknown-not-found.png"
+                            alt=""
+                            draggable="false"
+                        >
+                    </span>
+
+                    <span class="scene-node-name">
+                        “罗马斗兽场”
+                    </span>
+                </button>
+
+                <!-- 柏林墙 -->
+                <button
+                    type="button"
+                    class="scene-node"
+                    data-scene-id="berlin-wall"
+                    data-scene-name="“柏林墙”"
+                    data-latitude="52.5163"
+                    data-longitude="13.3777"
+                    data-section-id=""
+                    aria-label="选择柏林墙"
+                >
+                    <span class="scene-node-marker">
+                        <img
+                            src="images/nhn/characters/unknown/unknown-not-found.png"
+                            alt=""
+                            draggable="false"
+                        >
+                    </span>
+
+                    <span class="scene-node-name">
+                        “柏林墙”
+                    </span>
+                </button>
+
+                <!-- 新世界 -->
+                <button
+                    type="button"
+                    class="scene-node"
+                    data-scene-id="new-world"
+                    data-scene-name="“新世界”"
+                    data-latitude="24"
+                    data-longitude="118"
+                    data-section-id="newworld-section"
+                    aria-label="选择新世界"
+                >
+                    <span class="scene-node-marker">
+                        <img
+                            src="images/nhn/worldview/newworld/newworld-featured-image.png"
+                            alt=""
+                            draggable="false"
+                        >
+                    </span>
+
+                    <span class="scene-node-name">
+                        “新世界”
+                    </span>
+                </button>
+
+                <!-- 洄游 -->
+                <button
+                    type="button"
+                    class="scene-node"
+                    data-scene-id="migration"
+                    data-scene-name="“洄游”"
+                    data-latitude="-32"
+                    data-longitude="-74"
+                    data-section-id=""
+                    aria-label="选择洄游"
+                >
+                    <span class="scene-node-marker">
+                        <img
+                            src="images/nhn/characters/unknown/unknown-not-found.png"
+                            alt=""
+                            draggable="false"
+                        >
+                    </span>
+
+                    <span class="scene-node-name">
+                        “洄游”
+                    </span>
+                </button>
+
+                <!-- 大都会 -->
+                <button
+                    type="button"
+                    class="scene-node"
+                    data-scene-id="metropolis"
+                    data-scene-name="“大都会”"
+                    data-latitude="7"
+                    data-longitude="-138"
+                    data-section-id=""
+                    aria-label="选择大都会"
+                >
+                    <span class="scene-node-marker">
+                        <img
+                            src="images/nhn/characters/unknown/unknown-not-found.png"
+                            alt=""
+                            draggable="false"
+                        >
+                    </span>
+
+                    <span class="scene-node-name">
+                        “大都会”
+                    </span>
+                </button>
+
+                <!-- 大航路 -->
+                <button
+                    type="button"
+                    class="scene-node"
+                    data-scene-id="metropolis"
+                    data-scene-name="“大航路”"
+                    data-latitude="0"
+                    data-longitude="160"
+                    data-section-id=""
+                    aria-label="选择大航路"
+                >
+                    <span class="scene-node-marker">
+                        <img
+                            src="images/nhn/characters/unknown/unknown-not-found.png"
+                            alt=""
+                            draggable="false"
+                        >
+                    </span>
+
+                    <span class="scene-node-name">
+                        “大航路”
+                    </span>
+                </button>
+            </div>
+
+
+            <!-- ===========================
+                当前场景信息
+            =========================== -->
+
+            <button
+                type="button"
+                class="scenes-current"
+                aria-label="打开当前场景"
+            >
+                <span class="scenes-current-index">
+                    01 / 05
+                </span>
+
+                <span class="scenes-current-name">
+                    “罗马斗兽场”
+                </span>
+
+                <span class="scenes-current-coordinate">
+                    41.8902° N · 12.4922° E
+                </span>
+
+                <span class="scenes-current-status">
+                    尚未开放
+                </span>
+            </button>
+
+
+            <!-- ===========================
+                操作提示
+            =========================== -->
+
+            <div
+                class="scenes-globe-hint"
+                aria-hidden="true"
+            >
+                <span>DRAG TO ROTATE</span>
+                <span>CLICK TO FOCUS</span>
+            </div>
+        </div>
+
+
+        <!-- ===========================
+            返回上一级
+        =========================== -->
+
+        <button
+            type="button"
+            class="back-to-parent scenes-back-button"
+        >
+            <span>返回上一级</span>
+        </button>
+    </section>
+
+    <!-- ===========================
+        世界观 · 组织
+    =========================== -->
+
+    <section
+        id="worldview-organizations-section"
+        class="section worldview-organizations-section"
+        aria-labelledby="worldview-organizations-title"
+    >
+        <!-- ===========================
+            页首
+        =========================== -->
+
+        <header class="organizations-header">
+            <p class="organizations-eyebrow">
+                WORLDVIEW ARCHIVE · ORGANIZATIONS
+            </p>
+
+            <h1 id="worldview-organizations-title">
+                组织
+            </h1>
+
+            <p class="organizations-description">
+                个体因共同意志而汇聚。
+            </p>
+        </header>
+
+
+        <!-- ===========================
+            组织三维轨道
+        =========================== -->
+
+        <div
+            id="organizations-orbit"
+            class="organizations-orbit"
+            role="listbox"
+            aria-label="世界观组织目录"
+            tabindex="0"
+        >
+            <!-- ===========================
+                轨道背景
+            =========================== -->
+
+            <div
+                class="organizations-orbit-stage"
+                aria-hidden="true"
+            >
+                <div class="organizations-orbit-glow"></div>
+
+                <div class="organizations-orbit-ring">
+                    <span
+                        class="
+                            organizations-orbit-ring-line
+                            organizations-orbit-ring-line-outer
+                        "
+                    ></span>
+
+                    <span
+                        class="
+                            organizations-orbit-ring-line
+                            organizations-orbit-ring-line-inner
+                        "
+                    ></span>
+                </div>
+
+                <div class="organizations-orbit-axis">
+                    <span class="organizations-axis-horizontal"></span>
+                    <span class="organizations-axis-center"></span>
+                </div>
+
+                <div class="organizations-orbit-depth">
+                    <span class="organizations-depth-front">
+                        FRONT
+                    </span>
+
+                    <span class="organizations-depth-back">
+                        REAR
+                    </span>
+                </div>
+            </div>
+
+
+            <!-- ===========================
+                组织卡牌层
+            =========================== -->
+
+            <div class="organizations-orbit-items">
+                <!-- ===========================
+                    Grays
+                =========================== -->
+
+                <button
+                    type="button"
+                    class="
+                        organization-orbit-item
+                        is-selected
+                    "
+                    data-organization-id="grays"
+                    data-organization-name="Grays"
+                    data-section-id=""
+                    role="option"
+                    aria-selected="true"
+                    tabindex="0"
+                >
+                    <span class="organization-card-shell">
+                        <!-- 卡牌实体 -->
+                        <span class="organization-card-object">
+                            <!-- 正面 -->
+                            <span
+                                class="
+                                    organization-card-face
+                                    organization-card-front
+                                "
+                            >
+                                <span class="organization-card-media">
+                                    <img
+                                        src="images/nhn/characters/unknown/unknown-not-found.png"
+                                        alt=""
+                                        draggable="false"
+                                    >
+                                </span>
+
+                                <span
+                                    class="organization-card-reflection"
+                                    aria-hidden="true"
+                                ></span>
+
+                                <span
+                                    class="organization-card-front-shade"
+                                    aria-hidden="true"
+                                ></span>
+                            </span>
+
+                            <!-- 背面 -->
+                            <span
+                                class="
+                                    organization-card-face
+                                    organization-card-back
+                                "
+                            >
+                                <span
+                                    class="organization-card-back-grid"
+                                    aria-hidden="true"
+                                ></span>
+
+                                <span class="organization-card-back-content">
+                                    <span class="organization-card-back-symbol">
+                                        G
+                                    </span>
+
+                                    <span class="organization-card-back-name">
+                                        GRAYS
+                                    </span>
+
+                                    <span class="organization-card-back-index">
+                                        ORGANIZATION · 001
+                                    </span>
+                                </span>
+
+                                <span
+                                    class="organization-card-back-light"
+                                    aria-hidden="true"
+                                ></span>
+                            </span>
+
+                            <!-- 卡牌厚度 -->
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-left
+                                "
+                                aria-hidden="true"
+                            ></span>
+
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-right
+                                "
+                                aria-hidden="true"
+                            ></span>
+
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-top
+                                "
+                                aria-hidden="true"
+                            ></span>
+
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-bottom
+                                "
+                                aria-hidden="true"
+                            ></span>
+                        </span>
+
+                        <!-- 外部编号 -->
+                        <span class="organization-card-code">
+                            ORG / 001
+                        </span>
+                    </span>
+                </button>
+
+
+                <!-- ===========================
+                    魔君残党
+                =========================== -->
+
+                <button
+                    type="button"
+                    class="organization-orbit-item"
+                    data-organization-id="demon-remnants"
+                    data-organization-name="魔君残党"
+                    data-section-id=""
+                    role="option"
+                    aria-selected="false"
+                    tabindex="-1"
+                >
+                    <span class="organization-card-shell">
+                        <span class="organization-card-object">
+                            <!-- 正面 -->
+                            <span
+                                class="
+                                    organization-card-face
+                                    organization-card-front
+                                "
+                            >
+                                <span class="organization-card-media">
+                                    <img
+                                        src="images/nhn/characters/unknown/unknown-not-found.png"
+                                        alt=""
+                                        draggable="false"
+                                    >
+                                </span>
+
+                                <span
+                                    class="organization-card-reflection"
+                                    aria-hidden="true"
+                                ></span>
+
+                                <span
+                                    class="organization-card-front-shade"
+                                    aria-hidden="true"
+                                ></span>
+                            </span>
+
+                            <!-- 背面 -->
+                            <span
+                                class="
+                                    organization-card-face
+                                    organization-card-back
+                                "
+                            >
+                                <span
+                                    class="organization-card-back-grid"
+                                    aria-hidden="true"
+                                ></span>
+
+                                <span class="organization-card-back-content">
+                                    <span class="organization-card-back-symbol">
+                                        残
+                                    </span>
+
+                                    <span class="organization-card-back-name">
+                                        魔君残党
+                                    </span>
+
+                                    <span class="organization-card-back-index">
+                                        ORGANIZATION · 002
+                                    </span>
+                                </span>
+
+                                <span
+                                    class="organization-card-back-light"
+                                    aria-hidden="true"
+                                ></span>
+                            </span>
+
+                            <!-- 卡牌厚度 -->
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-left
+                                "
+                                aria-hidden="true"
+                            ></span>
+
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-right
+                                "
+                                aria-hidden="true"
+                            ></span>
+
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-top
+                                "
+                                aria-hidden="true"
+                            ></span>
+
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-bottom
+                                "
+                                aria-hidden="true"
+                            ></span>
+                        </span>
+
+                        <span class="organization-card-code">
+                            ORG / 002
+                        </span>
+                    </span>
+                </button>
+
+
+                <!-- ===========================
+                    SEASON
+                =========================== -->
+
+                <button
+                    type="button"
+                    class="organization-orbit-item"
+                    data-organization-id="season"
+                    data-organization-name="SEASON"
+                    data-section-id=""
+                    role="option"
+                    aria-selected="false"
+                    tabindex="-1"
+                >
+                    <span class="organization-card-shell">
+                        <span class="organization-card-object">
+                            <!-- 正面 -->
+                            <span
+                                class="
+                                    organization-card-face
+                                    organization-card-front
+                                "
+                            >
+                                <span class="organization-card-media">
+                                    <img
+                                        src="images/nhn/characters/unknown/unknown-not-found.png"
+                                        alt=""
+                                        draggable="false"
+                                    >
+                                </span>
+
+                                <span
+                                    class="organization-card-reflection"
+                                    aria-hidden="true"
+                                ></span>
+
+                                <span
+                                    class="organization-card-front-shade"
+                                    aria-hidden="true"
+                                ></span>
+                            </span>
+
+                            <!-- 背面 -->
+                            <span
+                                class="
+                                    organization-card-face
+                                    organization-card-back
+                                "
+                            >
+                                <span
+                                    class="organization-card-back-grid"
+                                    aria-hidden="true"
+                                ></span>
+
+                                <span class="organization-card-back-content">
+                                    <span class="organization-card-back-symbol">
+                                        S
+                                    </span>
+
+                                    <span class="organization-card-back-name">
+                                        SEASON
+                                    </span>
+
+                                    <span class="organization-card-back-index">
+                                        ORGANIZATION · 003
+                                    </span>
+                                </span>
+
+                                <span
+                                    class="organization-card-back-light"
+                                    aria-hidden="true"
+                                ></span>
+                            </span>
+
+                            <!-- 卡牌厚度 -->
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-left
+                                "
+                                aria-hidden="true"
+                            ></span>
+
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-right
+                                "
+                                aria-hidden="true"
+                            ></span>
+
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-top
+                                "
+                                aria-hidden="true"
+                            ></span>
+
+                            <span
+                                class="
+                                    organization-card-edge
+                                    organization-card-edge-bottom
+                                "
+                                aria-hidden="true"
+                            ></span>
+                        </span>
+
+                        <span class="organization-card-code">
+                            ORG / 003
+                        </span>
+                    </span>
+                </button>
+            </div>
+
+
+            <!-- ===========================
+                当前组织信息
+            =========================== -->
+
+            <button
+                type="button"
+                class="organizations-current is-unavailable"
+                aria-label="Grays 尚未开放"
+            >
+                <span class="organizations-current-index">
+                    01 / 03
+                </span>
+
+                <span class="organizations-current-name">
+                    Grays
+                </span>
+
+                <span class="organizations-current-status">
+                    尚未开放
+                </span>
+            </button>
+
+
+            <!-- ===========================
+                操作提示
+            =========================== -->
+
+            <div
+                class="organizations-orbit-hint"
+                aria-hidden="true"
+            >
+                <span>
+                    DRAG TO ROTATE
+                </span>
+
+                <span>
+                    CLICK TO FOCUS
+                </span>
+            </div>
+        </div>
+
+
+        <!-- ===========================
+            返回上一级
+        =========================== -->
+
+        <button
+            type="button"
+            class="back-to-parent organizations-back-button"
+        >
+            <span>
+                返回上一级
+            </span>
+        </button>
+    </section>
+
+    <!-- ===========================
+        世界观 · 新世界
+    =========================== -->
+
+    <section
+        id="newworld-section"
+        class="section newworld-section"
+        aria-labelledby="newworld-title"
+    >
+        <!-- ===========================
+            页首
+        =========================== -->
+
+        <header
+            class="newworld-hero"
+            data-newworld-reveal
+        >
+            <p class="newworld-eyebrow">
+                WORLDVIEW ARCHIVE · LOCATION
+            </p>
+
+            <h1 id="newworld-title">
+                新世界
+            </h1>
+
+            <p class="newworld-subtitle">
+                Newworld
+            </p>
+
+            <div
+                class="newworld-hero-line"
+                aria-hidden="true"
+            ></div>
+        </header>
+
+
+        <!-- ===========================
+            图片上方介绍
+        =========================== -->
+
+        <div
+            class="
+                newworld-copy
+                newworld-copy-before-gallery
+            "
+            data-newworld-reveal
+        >
+            <p>
+                这个世界由 Grays 的一名领袖所造，
+                网站与之连接的风格也是承接于此。
+            </p>
+
+            <p>
+                不知为何，创造者将这里设计为与里世界相近的样子，
+                又或者是
+                <span
+                    class="newworld-redacted"
+                    role="img"
+                    aria-label="部分内容已被遮蔽"
+                >
+                    自己
+                </span>
+                自己并无其它的想法？
+            </p>
+        </div>
+
+
+        <!-- ===========================
+            全宽主视觉
+        =========================== -->
+
+        <figure
+            class="newworld-gallery"
+            data-newworld-reveal
+        >
+            <div class="newworld-gallery-frame">
+                <img
+                    src="images/nhn/worldview/newworld/newworld.png"
+                    alt="新世界的整体景象"
+                    draggable="false"
+                >
+            </div>
+
+            <figcaption>
+                NEW WORLD · VISUAL RECORD 001
+            </figcaption>
+        </figure>
+
+
+        <!-- ===========================
+            图片下方介绍
+        =========================== -->
+
+        <div
+            class="
+                newworld-copy
+                newworld-copy-after-gallery
+            "
+            data-newworld-reveal
+        >
+            <p>
+                目前这里聚集了部分与众不同的意识，
+                是角色们相互联系的公共之处。
+            </p>
+
+            <p>
+                里世界少有的强者也守护在这里，
+                魔君残党们因而不敢贸然来犯。
+            </p>
+        </div>
+
+
+        <!-- ===========================
+            补充内容
+        =========================== -->
+
+        <article class="newworld-content">
+            <div
+                class="newworld-statement"
+                data-newworld-reveal
+            >
+                <span
+                    class="newworld-statement-index"
+                    aria-hidden="true"
+                >
+                    “
+                </span>
+
+                <p>
+                    这里曾经废弃了很长一段时间，
+                    一阵接一阵，
+                    不知为何总是在遗忘的路上做相反的事情。
+                </p>
+            </div>
+
+
+            <!-- ===========================
+                世界档案
+            =========================== -->
+
+            <section
+                class="newworld-archive-section"
+                aria-labelledby="newworld-archive-title"
+                data-newworld-reveal
+            >
+                <header>
+                    <p>
+                        SOMETHING DATA...
+                    </p>
+                </header>
+            </section>
+        </article>
+
+
+        <!-- ===========================
+            返回上一级
+        =========================== -->
+
+        <button
+            type="button"
+            class="back-to-parent newworld-back-button"
+        >
+            <span>
+                返回上一级
+            </span>
         </button>
     </section>
 
@@ -3220,7 +4136,11 @@
         </p>
 
         <p>
-            换句话说，悬赏令最初不是为了“通缉”，而是为了强调角色在世界中的存在感与影响力。
+            但是据情报署社长所述……他本人只是参考了货币而不负责真的会发放它们。
+        </p>
+
+        <p>
+            总的来说，悬赏令最初不是为了“通缉”，而是为了强调角色在世界中的存在感与影响力。
         </p>
 
         <p>&nbsp;</p>
