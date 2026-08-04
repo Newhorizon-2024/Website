@@ -45,7 +45,7 @@ const WORLDVIEW_CATEGORIES = [
             "scene",
 
         sectionId:
-            null
+            "worldview-scenes-section"
     },
 
     {
@@ -78,7 +78,7 @@ const WORLDVIEW_CATEGORIES = [
             "organizations",
 
         sectionId:
-            null
+            "worldview-organizations-section"
     },
 
     {
