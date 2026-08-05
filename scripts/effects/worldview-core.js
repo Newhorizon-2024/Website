@@ -100,7 +100,7 @@ const WORLDVIEW_CATEGORIES = [
             "power",
 
         sectionId:
-            null
+            "power-system-section"
     }
 ];
 
