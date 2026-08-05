@@ -15,6 +15,10 @@ import {
 } from "./effects/innerworld-section.js";
 
 import {
+    initializePowerSystemSection
+} from "./effects/power-system-section.js";
+
+import {
     initializeNewworldSection
 } from "./effects/newworld-section.js";
 
@@ -89,6 +93,7 @@ function initializeEvents() {
     initializeNhnLogoMagnet();
     initializeNhnTimeline();
     initializePanelPointerEffects();
+    initializePowerSystemSection();
     initializeWantedPosterPointerEffects();
     initializeWorldviewCore();
     initializeWorldviewTargetCursor();
