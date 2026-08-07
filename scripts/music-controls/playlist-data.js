@@ -627,6 +627,13 @@ export const playlist = [
 
     {
         path:
+            "media/LiMing_利明 - 艾志恒Asen、GALI、堵琳Caroline - 落幕 (Sunset Explicit) 伴奏.mp3",
+        description:
+            "分享自 佚名"
+    },
+
+    {
+        path:
             "media/Lo-Fight (Remastered) - Whitty、Jean Magglio Gonzaga Contreras.mp3",
         description:
             "分享自 佚名"
@@ -826,6 +833,13 @@ export const playlist = [
             "media/鲜花 - 回春丹乐队.mp3",
         description:
             "分享自 佚名"
+    },
+
+    {
+        path:
+            "media/修罗 (Prod.4Harry) - SASI.mp3",
+        description:
+            "分享自 星羽AsT3R"
     },
 
     {
