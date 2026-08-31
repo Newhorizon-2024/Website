@@ -676,7 +676,7 @@ export const playlist = [
 
     {
         path:
-            "media/Past Lives - Martin Arteta、11#11 Music Group、creamy、Jasper.mp3",
+            "media/Past Lives - Martin Arteta、1111 Music Group、creamy、Jasper.mp3",
         description:
             "分享自 佚名"
     },
