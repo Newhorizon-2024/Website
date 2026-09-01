@@ -2,6 +2,88 @@
    26. 新闻区块
 =========================== */
 
+/* 网站更新记录 */
+.website-update-log {
+    margin: 0 auto 28px;
+    max-width: 900px;
+    position: relative;
+    text-align: left;
+}
+
+/* 时间线 */
+.website-update-log::before {
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.38),
+        rgba(255, 255, 255, 0.06)
+    );
+    bottom: 8px;
+    content: "";
+    left: 5px;
+    position: absolute;
+    top: 8px;
+    width: 1px;
+}
+
+/* 单次更新 */
+.website-update-entry {
+    padding: 0 0 28px 30px;
+    position: relative;
+}
+
+.website-update-entry:last-child {
+    padding-bottom: 0;
+}
+
+.website-update-entry::before {
+    background: #d8d8d8;
+    border: 3px solid rgba(24, 24, 24, 0.96);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+    content: "";
+    height: 9px;
+    left: 0;
+    position: absolute;
+    top: 5px;
+    width: 9px;
+}
+
+/* 更新时间 */
+.website-update-entry time {
+    color: rgba(255, 255, 255, 0.58);
+    display: block;
+    font-family: Consolas, "SFMono-Regular", monospace;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+    margin-bottom: 9px;
+}
+
+/* 更新条目 */
+.website-update-entry ul {
+    color: rgba(255, 255, 255, 0.82);
+    line-height: 1.75;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.website-update-entry li {
+    padding-left: 1.15em;
+    position: relative;
+}
+
+.website-update-entry li + li {
+    margin-top: 5px;
+}
+
+.website-update-entry li::before {
+    color: rgba(255, 255, 255, 0.4);
+    content: "—";
+    left: 0;
+    position: absolute;
+}
+
 /* 新闻图片 */
 #news {
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -25,6 +107,24 @@
 
 /* 新闻图片手机适配 */
 @media (max-width: 600px) {
+    .website-update-log {
+        margin-bottom: 22px;
+    }
+
+    .website-update-entry {
+        padding-bottom: 24px;
+        padding-left: 24px;
+    }
+
+    .website-update-entry time {
+        font-size: 12px;
+    }
+
+    .website-update-entry ul {
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
     #news:hover {
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         transform: none;
