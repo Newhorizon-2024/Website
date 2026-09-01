@@ -507,6 +507,10 @@
         filter 90ms linear,
         opacity 90ms linear,
         transform 90ms linear;
+    will-change: auto;
+}
+
+.innerworld-reveal-word.is-word-animating {
     will-change:
         filter,
         opacity,

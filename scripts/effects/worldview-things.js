@@ -96,6 +96,14 @@ export function initializeWorldviewThings() {
     let selectedIndex =
         0;
 
+    /*
+     * 与循环后的 selectedIndex 分离，持续记录转轮实际走过的步数。
+     * 这样从末项进入首项时，视觉角度仍只前进一格，
+     * 不会因为索引从最大值跳回 0 而反向旋转一整圈。
+     */
+    let visualSelectedIndex =
+        0;
+
     let dragging =
         false;
 
@@ -362,10 +370,40 @@ export function initializeWorldviewThings() {
         nextIndex,
         animateCenter = true
     ) {
-        selectedIndex =
+        const normalizedNextIndex =
             normalizeIndex(
                 nextIndex
             );
+
+        let indexDifference =
+            nextIndex -
+            selectedIndex;
+
+        /*
+         * 点击非相邻选项时选择最短方向；滚轮、拖动和方向键
+         * 传入的 +1 / -1（包括越过首尾）则会自然保持原方向。
+         */
+        while (
+            indexDifference >
+            optionCount / 2
+        ) {
+            indexDifference -=
+                optionCount;
+        }
+
+        while (
+            indexDifference <
+            -optionCount / 2
+        ) {
+            indexDifference +=
+                optionCount;
+        }
+
+        visualSelectedIndex +=
+            indexDifference;
+
+        selectedIndex =
+            normalizedNextIndex;
 
         options.forEach(
             (
@@ -374,7 +412,7 @@ export function initializeWorldviewThings() {
             ) => {
                 const relativeIndex =
                     index -
-                    selectedIndex;
+                    visualSelectedIndex;
 
                 const angle =
                     relativeIndex *

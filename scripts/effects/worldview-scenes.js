@@ -512,12 +512,20 @@ export function initializeWorldviewScenes() {
     =========================== */
 
     function resizeCanvas() {
-        const rect =
-            globe.getBoundingClientRect();
+        /*
+         * clientWidth / clientHeight 读取未受 CSS transform 影响的布局尺寸。
+         * Section 入场时存在 scale(0.98)，若使用 getBoundingClientRect()，
+         * Canvas 会先按缩小后的尺寸绘制，再在转场结束后突然放大。
+         */
+        const layoutWidth =
+            globe.clientWidth;
+
+        const layoutHeight =
+            globe.clientHeight;
 
         if (
-            rect.width <= 0 ||
-            rect.height <= 0
+            layoutWidth <= 0 ||
+            layoutHeight <= 0
         ) {
             return;
         }
@@ -530,10 +538,10 @@ export function initializeWorldviewScenes() {
             );
 
         canvasWidth =
-            rect.width;
+            layoutWidth;
 
         canvasHeight =
-            rect.height;
+            layoutHeight;
 
         globeRadius =
             Math.min(

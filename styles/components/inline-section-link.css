@@ -1,0 +1,26 @@
+/* 正文内 Section 导航链接 */
+
+.inline-section-link {
+    color: inherit;
+    cursor: pointer;
+    text-decoration-color: rgba(238, 238, 238, 0.32);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+    transition: color 0.22s ease, text-decoration-color 0.22s ease;
+}
+
+.inline-section-link:hover {
+    color: #ffffff;
+    text-decoration-color: rgba(255, 255, 255, 0.78);
+}
+
+.inline-section-link:focus-visible {
+    border-radius: 2px;
+    outline: 1px solid rgba(238, 238, 238, 0.72);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .inline-section-link { transition: none; }
+}

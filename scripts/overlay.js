@@ -4,12 +4,6 @@
 
 // 禁止浏览器恢复先前的滚动位置
 window.history.scrollRestoration = "manual";
-/* ===========================
-   1. 页面初始化
-=========================== */
-
-// 禁止浏览器恢复先前的滚动位置
-window.history.scrollRestoration = "manual";
 
 // Lenis 平滑滚动实例
 let lenis = null;
@@ -195,6 +189,21 @@ function startLenis() {
     */
     window.lenis =
         lenis;
+
+    /*
+     * 通知延迟初始化的页面模块，
+     * Lenis 实例现在已经可以安全访问。
+     */
+    window.dispatchEvent(
+        new CustomEvent(
+            "lenis-ready",
+            {
+                detail: {
+                    lenis
+                }
+            }
+        )
+    );
 
     lenis.scrollTo(
         0,

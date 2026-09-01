@@ -26,3 +26,34 @@
     text-shadow: 0 0 20px #000000;
     white-space: nowrap;
 }
+
+/* 君主英文副标题 */
+#the-monarch-info-section .monarch-title-en {
+    color: rgba(238, 238, 238, 0.58);
+    font-size: clamp(13px, 1.2vw, 18px);
+    font-weight: 300;
+    letter-spacing: 0.28em;
+    margin: 8px auto 0;
+    position: relative;
+    text-shadow: 0 0 14px rgba(0, 0, 0, 0.9);
+    width: fit-content;
+    z-index: 1;
+}
+
+@media (max-width: 768px) {
+    #the-monarch-info-section {
+        background-position: center 30%;
+        background-size: min(92vw, 560px) auto;
+        padding: 32px 18px;
+    }
+
+    #the-monarch-info-section h1 {
+        font-size: clamp(64px, 24vw, 112px);
+        white-space: normal;
+    }
+
+    #the-monarch-info-section .monarch-title-en {
+        font-size: 12px;
+        letter-spacing: 0.2em;
+    }
+}

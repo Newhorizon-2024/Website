@@ -1,0 +1,152 @@
+/* 世界观 · 内域 */
+
+#inner-domain-section {
+    background: transparent;
+    box-sizing: border-box;
+    color: #eeeeee;
+    isolation: isolate;
+    margin: 0 auto;
+    max-width: none;
+    min-height: 100vh;
+    overflow-x: clip;
+    padding: clamp(110px, 14vw, 190px) 24px clamp(130px, 17vw, 230px);
+    position: relative;
+    width: 100%;
+}
+
+#inner-domain-section.section {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: none;
+}
+
+#inner-domain-section [data-inner-domain-reveal] {
+    filter: blur(9px);
+    opacity: 0;
+    transform: translateY(44px);
+    transition: filter 0.95s ease, opacity 0.95s ease, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#inner-domain-section [data-inner-domain-reveal].is-revealed {
+    filter: none;
+    opacity: 1;
+    transform: none;
+}
+
+.inner-domain-header {
+    margin: 0 auto clamp(130px, 17vw, 230px);
+    max-width: 900px;
+    text-align: center;
+}
+
+.inner-domain-eyebrow,
+.inner-domain-heading > span {
+    color: rgba(238, 238, 238, 0.28);
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 9px;
+    letter-spacing: 0.24em;
+}
+
+.inner-domain-header h1 {
+    color: #f3f3f3;
+    font-size: clamp(58px, 9vw, 122px);
+    font-weight: 300;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    margin: 24px 0 0;
+    text-indent: 0.16em;
+}
+
+.inner-domain-title-en {
+    color: rgba(238, 238, 238, 0.48);
+    font-family: "Times New Roman", serif;
+    font-size: clamp(18px, 2vw, 28px);
+    font-style: italic;
+    letter-spacing: 0.12em;
+    margin: 22px 0 0;
+}
+
+.inner-domain-content {
+    margin: 0 auto;
+    max-width: 1080px;
+}
+
+.inner-domain-lead,
+.inner-domain-copy,
+.inner-domain-closing {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 900px;
+}
+
+.inner-domain-lead {
+    margin-bottom: clamp(130px, 17vw, 220px);
+    text-align: center;
+}
+
+.inner-domain-lead p {
+    color: rgba(245, 245, 245, 0.88);
+    font-size: clamp(19px, 2vw, 27px);
+    line-height: 2;
+    margin: 0;
+}
+
+.inner-domain-copy p,
+.inner-domain-closing p {
+    color: rgba(238, 238, 238, 0.72);
+    font-size: clamp(16px, 1.55vw, 20px);
+    letter-spacing: 0.015em;
+    line-height: 2.08;
+    margin: 0;
+}
+
+.inner-domain-copy p + p,
+.inner-domain-closing p + p { margin-top: 34px; }
+
+.inner-domain-principle {
+    margin: clamp(170px, 21vw, 290px) auto;
+}
+
+.inner-domain-heading {
+    margin: 0 auto clamp(70px, 9vw, 115px);
+    max-width: 900px;
+}
+
+.inner-domain-heading h2 {
+    color: #f1f1f1;
+    font-size: clamp(38px, 5.5vw, 70px);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    margin: 16px 0 0;
+}
+
+.inner-domain-closing {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    padding: clamp(60px, 8vw, 100px) 0;
+}
+
+.inner-domain-back-button {
+    display: flex;
+    margin: clamp(120px, 16vw, 210px) auto 0;
+    width: fit-content;
+}
+
+@media (max-width: 700px) {
+    #inner-domain-section { padding-left: 20px; padding-right: 20px; }
+    .inner-domain-header { text-align: left; }
+    .inner-domain-header h1 { text-indent: 0; }
+    .inner-domain-lead { text-align: left; }
+    .inner-domain-closing { padding-left: 2px; padding-right: 2px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #inner-domain-section [data-inner-domain-reveal] {
+        filter: none;
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}

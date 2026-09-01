@@ -63,6 +63,19 @@
     width: 300px;
 }
 
+/* 魔君英文副标题 */
+#the-ruler-info-section .ruler-title-en {
+    color: rgba(238, 238, 238, 0.58);
+    font-size: clamp(13px, 1.2vw, 18px);
+    font-weight: 300;
+    letter-spacing: 0.28em;
+    margin: 8px auto 0;
+    position: relative;
+    text-shadow: 0 0 14px rgba(0, 0, 0, 0.9);
+    width: fit-content;
+    z-index: 1;
+}
+
 /* 魔君标题漂浮动画 */
 @keyframes floatGhost {
     0% {
@@ -94,4 +107,31 @@
     padding-left: 25%;
     padding-right: 25%;
     text-align: left;
+}
+
+@media (max-width: 768px) {
+    #the-ruler-info-section {
+        background-position: center top;
+        padding: 32px 18px;
+    }
+
+    #the-ruler-info-section h1 {
+        font-size: clamp(64px, 24vw, 112px);
+        white-space: normal;
+    }
+
+    #the-ruler-info-section h1::after {
+        height: min(58vw, 220px);
+        width: min(58vw, 220px);
+    }
+
+    #the-ruler-info-section .ruler-title-en {
+        font-size: 12px;
+        letter-spacing: 0.2em;
+    }
+
+    #the-ruler-info-section h2 {
+        padding-left: 4%;
+        padding-right: 4%;
+    }
 }

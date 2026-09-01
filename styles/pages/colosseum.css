@@ -1,0 +1,1114 @@
+/* ===========================
+   1. 罗马斗兽场 Section
+=========================== */
+
+#colosseum-section {
+    --colosseum-content-width:
+        980px;
+
+    --colosseum-wide-width:
+        1440px;
+
+    background:
+        transparent;
+    box-sizing:
+        border-box;
+    color:
+        #EEEEEE;
+    isolation:
+        isolate;
+    margin:
+        0;
+    max-width:
+        none;
+    min-height:
+        100vh;
+    overflow-x:
+        clip;
+    overflow-y:
+        visible;
+    padding:
+        0 0
+        clamp(130px, 16vw, 220px);
+    position:
+        relative;
+    width:
+        100%;
+}
+
+#colosseum-section.section {
+    background:
+        transparent;
+    border:
+        0;
+    border-radius:
+        0;
+    box-shadow:
+        none;
+    max-width:
+        none;
+}
+
+
+/* ===========================
+   2. Scroll Reveal
+=========================== */
+
+#colosseum-section
+[data-colosseum-reveal] {
+    filter:
+        blur(12px);
+    opacity:
+        0;
+    transform:
+        translate3d(
+            0,
+            50px,
+            0
+        );
+    transition:
+        filter 1s ease,
+        opacity 1s ease,
+        transform 1.15s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        );
+    will-change:
+        filter,
+        opacity,
+        transform;
+}
+
+#colosseum-section
+[data-colosseum-reveal="left"] {
+    transform:
+        translate3d(
+            -80px,
+            36px,
+            0
+        );
+}
+
+#colosseum-section
+[data-colosseum-reveal="right"] {
+    transform:
+        translate3d(
+            80px,
+            36px,
+            0
+        );
+}
+
+#colosseum-section
+[data-colosseum-reveal].is-revealed {
+    filter:
+        blur(0);
+    opacity:
+        1;
+    transform:
+        translate3d(
+            0,
+            0,
+            0
+        );
+}
+
+
+/* ===========================
+   3. 大型图片 Reveal
+=========================== */
+
+#colosseum-section
+[data-colosseum-image-reveal] {
+    filter:
+        blur(10px)
+        brightness(0.58);
+    opacity:
+        0;
+    transform:
+        translateY(46px)
+        scale(0.985);
+    transition:
+        filter 1.3s ease,
+        opacity 1.25s ease,
+        transform 1.45s
+        cubic-bezier(
+            0.22,
+            1,
+            0.36,
+            1
+        );
+}
+
+#colosseum-section
+[data-colosseum-image-reveal].is-revealed {
+    filter:
+        blur(0)
+        brightness(1);
+    opacity:
+        1;
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+.colosseum-hero[data-colosseum-image-reveal] {
+    filter:
+        blur(10px);
+}
+
+.colosseum-hero[data-colosseum-image-reveal].is-revealed {
+    filter:
+        blur(0);
+}
+
+
+/* ===========================
+   4. 全宽头图
+=========================== */
+
+.colosseum-hero {
+    aspect-ratio:
+        16 / 9;
+    height:
+        auto;
+    margin:
+        0;
+    overflow:
+        hidden;
+    position:
+        relative;
+    width:
+        100%;
+    z-index:
+        2;
+}
+
+.colosseum-hero img {
+    display:
+        block;
+    height:
+        auto;
+    object-fit:
+        contain;
+    object-position:
+        center;
+    width:
+        100%;
+}
+
+.colosseum-hero-fade {
+    display:
+        none;
+}
+
+
+/* ===========================
+   5. 标题
+=========================== */
+
+.colosseum-header {
+    align-items:
+        center;
+    display:
+        flex;
+    justify-content:
+        center;
+    margin:
+        clamp(-570px, -30vw, -270px)
+        auto
+        clamp(100px, 13vw, 180px);
+    min-height:
+        clamp(260px, 32vw, 440px);
+    overflow:
+        hidden;
+    padding:
+        40px 24px;
+    position:
+        relative;
+    text-align:
+        center;
+    width:
+        100%;
+    z-index:
+        4;
+}
+
+.colosseum-title-logo {
+    height:
+        auto;
+    left:
+        50%;
+    max-width:
+        min(500px, 46vw);
+    opacity:
+        0.055;
+    pointer-events:
+        none;
+    position:
+        absolute;
+    top:
+        50%;
+    transform:
+        translate(-50%, -50%)
+        scale(1.08);
+    user-select:
+        none;
+    width:
+        39%;
+}
+
+.colosseum-title-content {
+    position:
+        relative;
+    z-index:
+        2;
+}
+
+.colosseum-eyebrow {
+    color:
+        rgba(238, 238, 238, 0.3);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        10px;
+    letter-spacing:
+        0.28em;
+    margin:
+        0 0 20px;
+}
+
+.colosseum-header h1 {
+    color:
+        #F3F3F3;
+    font-size:
+        clamp(48px, 7.5vw, 104px);
+    font-weight:
+        400;
+    letter-spacing:
+        0.1em;
+    line-height:
+        1.1;
+    margin:
+        0;
+    text-indent:
+        0.1em;
+}
+
+.colosseum-title-en {
+    color:
+        rgba(238, 238, 238, 0.52);
+    font-family:
+        "Times New Roman",
+        serif;
+    font-size:
+        clamp(18px, 2.1vw, 30px);
+    font-style:
+        italic;
+    letter-spacing:
+        0.12em;
+    margin:
+        18px 0 0;
+}
+
+
+/* ===========================
+   6. 通用正文
+=========================== */
+
+.colosseum-text-block {
+    box-sizing:
+        border-box;
+    margin:
+        0 auto
+        clamp(90px, 12vw, 160px);
+    max-width:
+        var(--colosseum-content-width);
+    padding:
+        0 30px;
+}
+
+.colosseum-text-block p {
+    color:
+        rgba(238, 238, 238, 0.75);
+    font-size:
+        clamp(16px, 1.55vw, 20px);
+    letter-spacing:
+        0.02em;
+    line-height:
+        2.05;
+    margin:
+        0;
+}
+
+.colosseum-text-block p + p {
+    margin-top:
+        30px;
+}
+
+.colosseum-text-block strong {
+    color:
+        rgba(255, 255, 255, 0.96);
+    font-weight:
+        500;
+}
+
+
+/* ===========================
+   7. 第一段
+=========================== */
+
+.colosseum-intro {
+    max-width:
+        900px;
+    text-align:
+        center;
+}
+
+.colosseum-intro p {
+    font-size:
+        clamp(18px, 2vw, 25px);
+}
+
+
+/* ===========================
+   8. 1080P 横向展示
+=========================== */
+
+.colosseum-wide-display {
+    margin:
+        0 auto
+        clamp(110px, 15vw, 210px);
+    max-width:
+        var(--colosseum-wide-width);
+    padding:
+        0 clamp(18px, 3vw, 42px);
+    position:
+        relative;
+    width:
+        100%;
+}
+
+.colosseum-main-display,
+.colosseum-structure-display,
+.colosseum-arena-display {
+    max-width:
+        1080px;
+    width:
+        75%;
+}
+
+.colosseum-wide-display img {
+    display:
+        block;
+    height:
+        auto;
+    margin:
+        0 auto;
+    max-width:
+        100%;
+    object-fit:
+        contain;
+    width:
+        100%;
+}
+
+.colosseum-wide-display figcaption,
+.colosseum-three-views figcaption {
+    color:
+        rgba(238, 238, 238, 0.2);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        9px;
+    letter-spacing:
+        0.19em;
+    margin-top:
+        16px;
+}
+
+
+/* ===========================
+   9. 历史
+=========================== */
+
+.colosseum-history {
+    margin:
+        0 auto;
+}
+
+.colosseum-history
+.colosseum-text-block:last-child {
+    margin-bottom:
+        clamp(120px, 16vw, 210px);
+}
+
+
+/* ===========================
+   10. 三视图
+=========================== */
+
+.colosseum-three-views {
+    margin:
+        0 auto
+        clamp(130px, 17vw, 230px);
+    max-width:
+        1280px;
+    padding:
+        0 28px;
+    width:
+        100%;
+}
+
+.colosseum-three-views img {
+    display:
+        block;
+    height:
+        auto;
+    margin:
+        0 auto;
+    max-height:
+        850px;
+    max-width:
+        100%;
+    object-fit:
+        contain;
+}
+
+
+/* ===========================
+   11. 通用章节标题
+=========================== */
+
+.colosseum-section-heading {
+    margin:
+        0 auto
+        clamp(65px, 8vw, 100px);
+    max-width:
+        var(--colosseum-content-width);
+    padding:
+        0 30px;
+}
+
+.colosseum-section-heading > span {
+    color:
+        rgba(238, 238, 238, 0.24);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        10px;
+    letter-spacing:
+        0.22em;
+}
+
+.colosseum-section-heading h2 {
+    color:
+        #F0F0F0;
+    font-size:
+        clamp(35px, 5vw, 65px);
+    font-weight:
+        400;
+    letter-spacing:
+        0.07em;
+    line-height:
+        1.2;
+    margin:
+        15px 0 0;
+}
+
+.colosseum-section-heading > p {
+    color:
+        rgba(238, 238, 238, 0.5);
+    font-size:
+        15px;
+    line-height:
+        1.9;
+    margin:
+        25px 0 0;
+}
+
+
+/* ===========================
+   12. 上下双环结构
+=========================== */
+
+.colosseum-structure {
+    margin:
+        0 auto
+        clamp(120px, 16vw, 220px);
+}
+
+.colosseum-levels {
+    display:
+        grid;
+    gap:
+        clamp(40px, 7vw, 100px);
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    margin:
+        0 auto;
+    max-width:
+        1120px;
+    padding:
+        0 30px;
+}
+
+.colosseum-level {
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.1);
+    padding:
+        30px 0 0;
+}
+
+.colosseum-level-index {
+    color:
+        rgba(238, 238, 238, 0.2);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        9px;
+    letter-spacing:
+        0.2em;
+}
+
+.colosseum-level h3 {
+    color:
+        rgba(245, 245, 245, 0.94);
+    font-size:
+        clamp(24px, 3vw, 38px);
+    font-weight:
+        400;
+    margin:
+        14px 0 24px;
+}
+
+.colosseum-level p {
+    color:
+        rgba(238, 238, 238, 0.66);
+    font-size:
+        clamp(15px, 1.45vw, 18px);
+    line-height:
+        2;
+    margin:
+        0;
+}
+
+.colosseum-level p + p {
+    margin-top:
+        22px;
+}
+
+
+/* ===========================
+   13. 接入说明
+=========================== */
+
+.colosseum-access-copy {
+    margin-bottom:
+        clamp(150px, 19vw, 250px);
+}
+
+
+/* ===========================
+   14. 竞技场
+=========================== */
+
+.colosseum-arena {
+    margin:
+        0 auto
+        clamp(80px, 10vw, 140px);
+}
+
+
+/* ===========================
+   15. 区服
+=========================== */
+
+.colosseum-server-section {
+    box-sizing:
+        border-box;
+    margin:
+        clamp(170px, 21vw, 290px)
+        calc(50% - 50vw);
+    min-height:
+        clamp(760px, 88vh, 1100px);
+    overflow:
+        hidden;
+    padding:
+        clamp(140px, 17vw, 230px)
+        30px;
+    position:
+        relative;
+    width:
+        100vw;
+}
+
+.colosseum-server-background {
+    background-image:
+        url("../../images/nhn/worldview/colosseum/colosseum-background.png");
+    background-position:
+        center top;
+    background-repeat:
+        no-repeat;
+    background-size:
+        100% auto;
+    inset:
+        0;
+    position:
+        absolute;
+    transform:
+        none;
+    z-index:
+        0;
+}
+
+/* 不再叠加黑色蒙版，直接显示原始背景。 */
+.colosseum-server-section::after {
+    display:
+        none;
+}
+
+.colosseum-server-content {
+    margin:
+        0 auto;
+    max-width:
+        1100px;
+    position:
+        relative;
+    z-index:
+        2;
+}
+
+.colosseum-server-heading {
+    margin-bottom:
+        clamp(70px, 9vw, 120px);
+    padding:
+        0;
+}
+
+.colosseum-server-heading h2 {
+    font-size:
+        clamp(52px, 8vw, 100px);
+}
+
+.colosseum-server-copy {
+    max-width:
+        850px;
+}
+
+.colosseum-server-copy p {
+    color:
+        rgba(245, 245, 245, 0.82);
+    font-size:
+        clamp(16px, 1.55vw, 20px);
+    line-height:
+        2.05;
+    margin:
+        0;
+}
+
+.colosseum-server-copy p + p {
+    margin-top:
+        32px;
+}
+
+
+/* ===========================
+   16. 游戏项目
+=========================== */
+
+.colosseum-games {
+    margin:
+        clamp(150px, 19vw, 260px)
+        auto
+        0;
+    max-width:
+        1120px;
+    padding:
+        0 30px;
+}
+
+.colosseum-games
+.colosseum-section-heading {
+    margin-left:
+        0;
+    padding:
+        0;
+}
+
+
+/* ===========================
+   17. 单个游戏项目
+=========================== */
+
+.colosseum-game {
+    align-items:
+        start;
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.085);
+    display:
+        grid;
+    gap:
+        clamp(28px, 5vw, 80px);
+    grid-template-columns:
+        90px minmax(0, 1fr);
+    padding:
+        clamp(55px, 7vw, 90px)
+        0;
+}
+
+.colosseum-game:last-child {
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.085);
+}
+
+.colosseum-game-index {
+    color:
+        rgba(238, 238, 238, 0.16);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        clamp(26px, 4vw, 52px);
+    font-weight:
+        300;
+    line-height:
+        1;
+}
+
+.colosseum-game-content {
+    max-width:
+        760px;
+}
+
+.colosseum-game-content h3 {
+    color:
+        #F1F1F1;
+    font-size:
+        clamp(31px, 4.2vw, 56px);
+    font-weight:
+        400;
+    letter-spacing:
+        0.05em;
+    line-height:
+        1.2;
+    margin:
+        0;
+}
+
+.colosseum-game-en {
+    color:
+        rgba(238, 238, 238, 0.34);
+    font-family:
+        "Times New Roman",
+        serif;
+    font-size:
+        clamp(16px, 1.7vw, 22px);
+    font-style:
+        italic;
+    letter-spacing:
+        0.08em;
+    margin:
+        10px 0 35px;
+}
+
+.colosseum-game-description {
+    color:
+        rgba(238, 238, 238, 0.68);
+    font-size:
+        clamp(15px, 1.45vw, 18px);
+    line-height:
+        2;
+    margin:
+        0;
+}
+
+.colosseum-game-description
++
+.colosseum-game-description {
+    margin-top:
+        18px;
+}
+
+
+/* ===========================
+   18. 赛事与经济
+=========================== */
+
+.colosseum-economy {
+    margin:
+        clamp(170px, 21vw, 290px)
+        auto 0;
+}
+
+.colosseum-currency {
+    border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+    border-top:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+    margin:
+        0 auto;
+    max-width:
+        900px;
+    padding:
+        clamp(50px, 7vw, 85px)
+        30px;
+    text-align:
+        center;
+}
+
+.colosseum-currency > span {
+    color:
+        rgba(238, 238, 238, 0.2);
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size:
+        9px;
+    letter-spacing:
+        0.22em;
+}
+
+.colosseum-currency p {
+    color:
+        rgba(238, 238, 238, 0.73);
+    font-size:
+        clamp(17px, 1.8vw, 23px);
+    line-height:
+        2;
+    margin:
+        20px 0 0;
+}
+
+.colosseum-currency strong {
+    color:
+        #F5F5F5;
+    font-weight:
+        500;
+}
+
+
+/* ===========================
+   19. 返回按钮
+=========================== */
+
+.colosseum-back-button {
+    display:
+        flex;
+    margin:
+        clamp(120px, 16vw, 210px)
+        auto 0;
+    width:
+        fit-content;
+}
+
+
+/* ===========================
+   20. 平板
+=========================== */
+
+@media (max-width: 900px) {
+    .colosseum-hero {
+        height:
+            auto;
+    }
+
+    .colosseum-levels {
+        gap:
+            55px;
+    }
+
+    .colosseum-server-section {
+        min-height:
+            auto;
+    }
+}
+
+
+/* ===========================
+   21. 手机
+=========================== */
+
+@media (max-width: 700px) {
+    .colosseum-main-display,
+    .colosseum-structure-display,
+    .colosseum-arena-display {
+        max-width:
+            var(--colosseum-wide-width);
+        width:
+            100%;
+    }
+
+    .colosseum-hero {
+        height:
+            auto;
+        min-height:
+            0;
+    }
+
+    .colosseum-hero img {
+        height:
+            auto;
+        object-fit:
+            contain;
+        width:
+            100%;
+    }
+
+    .colosseum-header {
+        margin-top:
+            calc(-21.09375vw - 97.5px);
+        min-height:
+            260px;
+        padding:
+            50px 18px;
+    }
+
+    .colosseum-title-logo {
+        opacity:
+            0.07;
+        width:
+            57.5%;
+    }
+
+    #colosseum-section
+    [data-colosseum-reveal="left"] {
+        transform:
+            translate3d(
+                -45px,
+                28px,
+                0
+            );
+    }
+
+    #colosseum-section
+    [data-colosseum-reveal="right"] {
+        transform:
+            translate3d(
+                45px,
+                28px,
+                0
+            );
+    }
+
+    #colosseum-section
+    [data-colosseum-reveal].is-revealed {
+        transform:
+            none;
+    }
+
+    .colosseum-text-block,
+    .colosseum-section-heading {
+        padding-left:
+            22px;
+        padding-right:
+            22px;
+    }
+
+    .colosseum-wide-display {
+        padding:
+            0;
+    }
+
+    .colosseum-wide-display figcaption {
+        padding:
+            0 18px;
+    }
+
+    .colosseum-three-views {
+        padding:
+            0 12px;
+    }
+
+    .colosseum-levels {
+        display:
+            block;
+        padding:
+            0 22px;
+    }
+
+    .colosseum-level
+    +
+    .colosseum-level {
+        margin-top:
+            75px;
+    }
+
+    .colosseum-server-section {
+        padding:
+            110px 22px;
+    }
+
+    .colosseum-server-copy p {
+        line-height:
+            1.92;
+    }
+
+    .colosseum-games {
+        padding:
+            0 22px;
+    }
+
+    .colosseum-game {
+        gap:
+            22px;
+        grid-template-columns:
+            45px minmax(0, 1fr);
+        padding:
+            55px 0;
+    }
+
+    .colosseum-game-index {
+        font-size:
+            22px;
+    }
+
+    .colosseum-game-en {
+        margin-bottom:
+            27px;
+    }
+
+    .colosseum-game-description {
+        line-height:
+            1.9;
+    }
+}
+
+
+/* ===========================
+   22. 减少动画
+=========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    #colosseum-section
+    [data-colosseum-reveal],
+    #colosseum-section
+    [data-colosseum-image-reveal] {
+        filter:
+            none;
+        opacity:
+            1;
+        transform:
+            none;
+        transition:
+            none;
+    }
+}

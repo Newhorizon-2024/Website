@@ -1681,13 +1681,64 @@ window.addEventListener(
    16. 窗口尺寸适配
 =========================== */
 
+let previousViewportWidth =
+    window.innerWidth;
+
+let previousViewportHeight =
+    window.innerHeight;
+
 /**
- * 更新相机比例和渲染尺寸。
+ * 更新相机比例、渲染尺寸和现有方块位置。
+ *
+ * resize 时先按新旧视口比例映射坐标，避免边界突然
+ * 收缩后让大量方块在同一帧被集中 resetCube()。
  */
 function handleWindowResize() {
+    const nextViewportWidth =
+        Math.max(
+            1,
+            window.innerWidth
+        );
+
+    const nextViewportHeight =
+        Math.max(
+            1,
+            window.innerHeight
+        );
+
+    const widthRatio =
+        nextViewportWidth /
+        Math.max(
+            1,
+            previousViewportWidth
+        );
+
+    const heightRatio =
+        nextViewportHeight /
+        Math.max(
+            1,
+            previousViewportHeight
+        );
+
+    cubes.forEach(
+        cube => {
+            cube.position.x *=
+                widthRatio;
+
+            cube.position.y *=
+                heightRatio;
+        }
+    );
+
+    previousViewportWidth =
+        nextViewportWidth;
+
+    previousViewportHeight =
+        nextViewportHeight;
+
     camera.aspect =
-        window.innerWidth /
-        window.innerHeight;
+        nextViewportWidth /
+        nextViewportHeight;
 
     camera.updateProjectionMatrix();
 
@@ -1699,8 +1750,8 @@ function handleWindowResize() {
     );
 
     renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
+        nextViewportWidth,
+        nextViewportHeight
     );
 }
 

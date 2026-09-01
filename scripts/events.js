@@ -11,8 +11,24 @@ import {
 } from "./effects/countdown-tooltip.js";
 
 import {
+    initializeColosseumSection
+} from "./effects/colosseum-section.js";
+
+import {
+    initializeBossrushSection
+} from "./effects/bossrush-section.js";
+
+import {
     initializeInnerworldSection
 } from "./effects/innerworld-section.js";
+
+import {
+    initializeInnerDomainSection
+} from "./effects/inner-domain-section.js";
+
+import {
+    initializeMineashSection
+} from "./effects/mineash-section.js";
 
 import {
     initializePowerSystemSection
@@ -63,6 +79,10 @@ import {
 } from "./navigation/bounty-navigation.js";
 
 import {
+    initializeInlineSectionLinks
+} from "./navigation/inline-section-links.js";
+
+import {
     initializeNhnAccordion
 } from "./navigation/nhn-accordion.js";
 
@@ -85,9 +105,14 @@ import {
 
 function initializeEvents() {
     initializeBountyNavigation();
+    initializeBossrushSection();
+    initializeColosseumSection();
     initializeCountdownTooltip();
     initializeCreatorGallery();
+    initializeInnerDomainSection();
     initializeInnerworldSection();
+    initializeInlineSectionLinks();
+    initializeMineashSection();
     initializeNewworldSection();
     initializeNhnAccordion();
     initializeNhnLogoMagnet();

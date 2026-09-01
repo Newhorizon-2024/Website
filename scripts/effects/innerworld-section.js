@@ -50,6 +50,9 @@ export function initializeInnerworldSection() {
             )
         );
 
+    const imageFrameRects =
+        new WeakMap();
+
     const reducedMotionQuery =
         window.matchMedia(
             "(prefers-reduced-motion: reduce)"
@@ -66,6 +69,12 @@ export function initializeInnerworldSection() {
     let revealWords =
         [];
 
+    let revealGroups =
+        [];
+
+    let revealLayoutDirty =
+        true;
+
     let scrollRevealFrameId =
         null;
 
@@ -75,26 +84,8 @@ export function initializeInnerworldSection() {
     let mutationObserver =
         null;
 
-    let animationFrameId =
+    let subscribedLenis =
         null;
-
-    let previousFrameTime =
-        performance.now();
-
-    let elapsedTime =
-        0;
-
-    let currentPointerX =
-        0;
-
-    let currentPointerY =
-        0;
-
-    let targetPointerX =
-        0;
-
-    let targetPointerY =
-        0;
 
 
     /* ===========================
@@ -114,20 +105,6 @@ export function initializeInnerworldSection() {
             )
         );
     }
-
-    function lerp(
-        start,
-        end,
-        amount
-    ) {
-        return start +
-            (
-                end -
-                start
-            ) *
-            amount;
-    }
-
 
     /* ===========================
        判断区块状态
@@ -191,8 +168,8 @@ export function initializeInnerworldSection() {
                     "is-innerworld-ready"
                 );
 
+                revealLayoutDirty = true;
                 requestScrollRevealUpdate();
-                startAnimation();
             }
         );
     }
@@ -206,8 +183,6 @@ export function initializeInnerworldSection() {
         section.classList.remove(
             "is-innerworld-ready"
         );
-
-        stopAnimation();
 
         if (
             scrollRevealFrameId !==
@@ -251,6 +226,37 @@ export function initializeInnerworldSection() {
                     ".innerworld-reveal-word"
                 )
             );
+
+        let globalIndex = 0;
+
+        revealGroups = revealTextElements.map(
+            element => {
+                const words = Array.from(
+                    element.querySelectorAll(
+                        ".innerworld-reveal-word"
+                    )
+                ).map(word => ({
+                    element: word,
+                    globalIndex: globalIndex++,
+                    documentTop: 0,
+                    lastBlur: null,
+                    lastOpacity: null,
+                    lastShift: null,
+                    lastRevealed: null,
+                    lastAnimating: null
+                }));
+
+                return {
+                    element,
+                    words,
+                    documentTop: 0,
+                    documentBottom: 0,
+                    terminalState: null
+                };
+            }
+        );
+
+        revealLayoutDirty = true;
 
         updateScrollReveal();
     }
@@ -411,7 +417,7 @@ export function initializeInnerworldSection() {
         if (
             !sectionActive ||
             reducedMotionQuery.matches ||
-            revealWords.length ===
+            revealGroups.length ===
                 0
         ) {
             return;
@@ -419,6 +425,47 @@ export function initializeInnerworldSection() {
 
         const viewportHeight =
             window.innerHeight;
+
+        const scrollTop =
+            window.scrollY;
+
+        if (revealLayoutDirty) {
+            /*
+             * 先完成全部布局读取，再开始任何样式写入，
+             * 避免逐字读写交错造成强制同步布局。
+             */
+            revealGroups.forEach(
+                group => {
+                    const groupRect =
+                        group.element
+                            .getBoundingClientRect();
+
+                    group.documentTop =
+                        groupRect.top +
+                        scrollTop;
+
+                    group.documentBottom =
+                        groupRect.bottom +
+                        scrollTop;
+
+                    group.words.forEach(
+                        word => {
+                            word.documentTop =
+                                word.element
+                                    .getBoundingClientRect()
+                                    .top +
+                                scrollTop;
+                        }
+                    );
+
+                    group.terminalState =
+                        null;
+                }
+            );
+
+            revealLayoutDirty =
+                false;
+        }
 
         /*
         * 显现区间：
@@ -433,13 +480,135 @@ export function initializeInnerworldSection() {
             viewportHeight *
             0.4;
 
-        revealWords.forEach(
-            (
-                word,
-                index
-            ) => {
-                const rect =
-                    word.getBoundingClientRect();
+        function applyWordState(
+            word,
+            progress
+        ) {
+            const easedProgress =
+                progress *
+                progress *
+                (
+                    3 -
+                    2 *
+                    progress
+                );
+
+            const blur =
+                (
+                    1 -
+                    easedProgress
+                ) *
+                10;
+
+            const opacity =
+                0.08 +
+                easedProgress *
+                0.92;
+
+            const shift =
+                (
+                    1 -
+                    easedProgress
+                ) *
+                10;
+
+            const blurValue =
+                `${blur.toFixed(2)}px`;
+
+            const opacityValue =
+                opacity.toFixed(3);
+
+            const shiftValue =
+                `${shift.toFixed(2)}px`;
+
+            if (word.lastBlur !== blurValue) {
+                word.element.style.setProperty(
+                    "--innerworld-word-blur",
+                    blurValue
+                );
+                word.lastBlur = blurValue;
+            }
+
+            if (word.lastOpacity !== opacityValue) {
+                word.element.style.setProperty(
+                    "--innerworld-word-opacity",
+                    opacityValue
+                );
+                word.lastOpacity = opacityValue;
+            }
+
+            if (word.lastShift !== shiftValue) {
+                word.element.style.setProperty(
+                    "--innerworld-word-shift",
+                    shiftValue
+                );
+                word.lastShift = shiftValue;
+            }
+
+            const revealed =
+                progress >= 0.995;
+
+            const animating =
+                progress > 0 &&
+                progress < 0.995;
+
+            if (word.lastRevealed !== revealed) {
+                word.element.classList.toggle(
+                    "is-word-revealed",
+                    revealed
+                );
+                word.lastRevealed = revealed;
+            }
+
+            if (word.lastAnimating !== animating) {
+                word.element.classList.toggle(
+                    "is-word-animating",
+                    animating
+                );
+                word.lastAnimating = animating;
+            }
+        }
+
+        revealGroups.forEach(
+            group => {
+                const groupTop =
+                    group.documentTop -
+                    scrollTop;
+
+                const groupBottom =
+                    group.documentBottom -
+                    scrollTop;
+
+                let terminalState =
+                    null;
+
+                if (groupBottom < revealEnd - 80) {
+                    terminalState = 1;
+                } else if (groupTop > revealStart + 80) {
+                    terminalState = 0;
+                }
+
+                if (terminalState !== null) {
+                    if (group.terminalState !== terminalState) {
+                        group.words.forEach(
+                            word => applyWordState(
+                                word,
+                                terminalState
+                            )
+                        );
+                        group.terminalState = terminalState;
+                    }
+
+                    return;
+                }
+
+                group.terminalState = null;
+
+                group.words.forEach(
+                    word => {
+                const wordTop =
+                    word.documentTop -
+                    scrollTop;
 
                 /*
                 * 同一行中的词加入少量顺序偏移，
@@ -447,13 +616,13 @@ export function initializeInnerworldSection() {
                 */
                 const stagger =
                     (
-                        index %
+                        word.globalIndex %
                         18
                     ) *
                     2.4;
 
                 const adjustedTop =
-                    rect.top +
+                    wordTop +
                     stagger;
 
                 const progress =
@@ -470,56 +639,11 @@ export function initializeInnerworldSection() {
                         1
                     );
 
-                /*
-                * 使用平滑曲线，而不是线性突变。
-                */
-                const easedProgress =
-                    progress *
-                    progress *
-                    (
-                        3 -
-                        2 *
-                        progress
-                    );
-
-                const blur =
-                    (
-                        1 -
-                        easedProgress
-                    ) *
-                    10;
-
-                const opacity =
-                    0.08 +
-                    easedProgress *
-                    0.92;
-
-                const shift =
-                    (
-                        1 -
-                        easedProgress
-                    ) *
-                    10;
-
-                word.style.setProperty(
-                    "--innerworld-word-blur",
-                    `${blur.toFixed(2)}px`
+                applyWordState(
+                    word,
+                    progress
                 );
-
-                word.style.setProperty(
-                    "--innerworld-word-opacity",
-                    opacity.toFixed(3)
-                );
-
-                word.style.setProperty(
-                    "--innerworld-word-shift",
-                    `${shift.toFixed(2)}px`
-                );
-
-                word.classList.toggle(
-                    "is-word-revealed",
-                    progress >=
-                        0.995
+                    }
                 );
             }
         );
@@ -561,6 +685,11 @@ export function initializeInnerworldSection() {
                 frame.addEventListener(
                     "pointerenter",
                     () => {
+                        imageFrameRects.set(
+                            frame,
+                            frame.getBoundingClientRect()
+                        );
+
                         frame.classList.add(
                             "is-innerworld-image-active"
                         );
@@ -601,6 +730,9 @@ export function initializeInnerworldSection() {
         }
 
         const rect =
+            imageFrameRects.get(
+                frame
+            ) ||
             frame.getBoundingClientRect();
 
         if (
@@ -684,6 +816,10 @@ export function initializeInnerworldSection() {
             "is-innerworld-image-active"
         );
 
+        imageFrameRects.delete(
+            frame
+        );
+
         frame.style.setProperty(
             "--innerworld-image-x",
             "0px"
@@ -712,165 +848,8 @@ export function initializeInnerworldSection() {
     }
 
 
-    /* ===========================
-       页面指针输入
-    =========================== */
-
-    function handleSectionPointerMove(
-        event
-    ) {
-        if (
-            !sectionActive ||
-            !finePointerQuery.matches ||
-            reducedMotionQuery.matches
-        ) {
-            return;
-        }
-
-        const rect =
-            section.getBoundingClientRect();
-
-        if (
-            rect.width <= 0 ||
-            rect.height <= 0
-        ) {
-            return;
-        }
-
-        targetPointerX =
-            clamp(
-                (
-                    event.clientX -
-                    rect.left
-                ) /
-                rect.width,
-                0,
-                1
-            ) -
-            0.5;
-
-        targetPointerY =
-            clamp(
-                (
-                    event.clientY -
-                    rect.top
-                ) /
-                Math.min(
-                    rect.height,
-                    window.innerHeight
-                ),
-                0,
-                1
-            ) -
-            0.5;
-    }
-
-    function handleSectionPointerLeave() {
-        targetPointerX =
-            0;
-
-        targetPointerY =
-            0;
-    }
-
     function resetPointerState() {
-        currentPointerX =
-            0;
-
-        currentPointerY =
-            0;
-
-        targetPointerX =
-            0;
-
-        targetPointerY =
-            0;
-    }
-
-
-    /* ===========================
-       每帧动画
-    =========================== */
-
-    function animate(
-        currentTime
-    ) {
-        if (
-            !sectionActive ||
-            reducedMotionQuery.matches
-        ) {
-            animationFrameId =
-                null;
-
-            return;
-        }
-
-        const deltaTime =
-            Math.min(
-                32,
-                currentTime -
-                previousFrameTime
-            );
-
-        previousFrameTime =
-            currentTime;
-
-        elapsedTime +=
-            deltaTime *
-            0.001;
-
-        currentPointerX =
-            lerp(
-                currentPointerX,
-                targetPointerX,
-                0.055
-            );
-
-        currentPointerY =
-            lerp(
-                currentPointerY,
-                targetPointerY,
-                0.055
-            );
-
-        animationFrameId =
-            window.requestAnimationFrame(
-                animate
-            );
-    }
-
-    function startAnimation() {
-        if (
-            reducedMotionQuery.matches ||
-            animationFrameId !==
-                null
-        ) {
-            return;
-        }
-
-        previousFrameTime =
-            performance.now();
-
-        animationFrameId =
-            window.requestAnimationFrame(
-                animate
-            );
-    }
-
-    function stopAnimation() {
-        if (
-            animationFrameId ===
-            null
-        ) {
-            return;
-        }
-
-        window.cancelAnimationFrame(
-            animationFrameId
-        );
-
-        animationFrameId =
-            null;
+        /* 页面级指针 RAF 已移除；保留入口兼容状态切换。 */
     }
 
 
@@ -882,8 +861,6 @@ export function initializeInnerworldSection() {
         event
     ) {
         if (event.matches) {
-            stopAnimation();
-
             revealWords.forEach(
                 word => {
                     word.style.setProperty(
@@ -921,7 +898,6 @@ export function initializeInnerworldSection() {
         }
 
         if (sectionActive) {
-            startAnimation();
             requestScrollRevealUpdate();
         }
     }
@@ -939,16 +915,6 @@ export function initializeInnerworldSection() {
     /* ===========================
        事件监听
     =========================== */
-
-    section.addEventListener(
-        "pointermove",
-        handleSectionPointerMove
-    );
-
-    section.addEventListener(
-        "pointerleave",
-        handleSectionPointerLeave
-    );
 
     reducedMotionQuery
         .addEventListener?.(
@@ -973,13 +939,75 @@ export function initializeInnerworldSection() {
 
     window.addEventListener(
         "resize",
-        requestScrollRevealUpdate
+        () => {
+            revealLayoutDirty = true;
+            imageFrames.forEach(
+                frame => imageFrameRects.delete(
+                    frame
+                )
+            );
+            requestScrollRevealUpdate();
+        }
     );
 
-    window.lenis?.on?.(
-        "scroll",
-        requestScrollRevealUpdate
+    imageFrames.forEach(
+        frame => {
+            const image =
+                frame.querySelector("img");
+
+            if (image && !image.complete) {
+                image.addEventListener(
+                    "load",
+                    () => {
+                        revealLayoutDirty = true;
+                        requestScrollRevealUpdate();
+                    },
+                    { once: true }
+                );
+            }
+        }
     );
+
+    document.fonts?.ready.then(
+        () => {
+            revealLayoutDirty = true;
+            requestScrollRevealUpdate();
+        }
+    );
+
+    function subscribeToLenis(
+        lenisInstance =
+            window.lenis
+    ) {
+        if (
+            !lenisInstance ||
+            subscribedLenis ===
+                lenisInstance ||
+            typeof lenisInstance.on !==
+                "function"
+        ) {
+            return;
+        }
+
+        lenisInstance.on(
+            "scroll",
+            requestScrollRevealUpdate
+        );
+
+        subscribedLenis =
+            lenisInstance;
+    }
+
+    window.addEventListener(
+        "lenis-ready",
+        event => {
+            subscribeToLenis(
+                event.detail?.lenis
+            );
+        }
+    );
+
+    subscribeToLenis();
 
 
     /* ===========================
@@ -1019,15 +1047,13 @@ export function initializeInnerworldSection() {
                     !entry ||
                     !entry.isIntersecting
                 ) {
-                    stopAnimation();
                     return;
                 }
 
                 updateSectionState();
 
                 if (sectionActive) {
-                    startAnimation();
-                    refreshRevealStates();
+                    requestScrollRevealUpdate();
                 }
             },
             {

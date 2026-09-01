@@ -43,9 +43,9 @@ export const playlist = [
 
     {
         path:
-            "media/Am I Dreaming - Metro Boomin、A$AP Rocky.mp3",
+            "media/Am I Dreaming of Sunflowers [Spider-Verse Soundtrack Mashup].mp3",
         description:
-            `电影《蜘蛛侠：纵横宇宙》"Spider-Man:Across The Spider-Verse"`
+            `电影《蜘蛛侠：平行宇宙》《蜘蛛侠：纵横宇宙》"Spider-Verse" Soundtrack Mashup`
     },
 
     {
@@ -85,14 +85,14 @@ export const playlist = [
 
     {
         path:
-            "media/Do I Matter To Me - 赵寒.mp3",
+            "media/F1 - Hans Zimmer.mp3",
         description:
-            "动画《刺客五六七》"
+            '电影"F1"'
     },
 
     {
         path:
-            "media/F1 - Hans Zimmer.mp3",
+            "media/F1 (Symphonic Version)(Live) - Imperial Orchestra.mp3",
         description:
             '电影"F1"'
     },
@@ -120,6 +120,27 @@ export const playlist = [
 
     {
         path:
+            "media/Hope - 安室奈美恵.mp3",
+        description:
+            `动漫《海贼王》"ONE PIECE"`
+    },
+
+    {
+        path:
+            "media/I Really Want to Stay at Your House - Samuel Kim、Lorien.mp3",
+        description:
+            `动画《赛博朋克：边缘行者》"Cyberpunk: Edgerunners"`
+    },
+
+    {
+        path:
+            "media/Infinite Future (DRAGON BALL 40th Anniversary Special Video - Theme) - Hans Zimmer.mp3",
+        description:
+            `动画《龙珠》40周年特别视频 "Dragon Ball 40th Anniversary Special Video"`
+    },
+
+    {
+        path:
             "media/Kung Fu Fighting (Celebration Time) - Shanghai Roxi Musical Studio Choirs、Metro Voices London.mp3",
         description:
             `电影《功夫熊猫3》"Kung Fu Panda 3"`
@@ -134,9 +155,16 @@ export const playlist = [
 
     {
         path:
-            "media/Self Love - Metro Boomin、Coi Leray.mp3",
+            "media/Marvel Studios Fanfare - Matheus Pereira.mp3",
         description:
-            `电影《蜘蛛侠：纵横宇宙》"Spider-Man:Across The Spider-Verse"`
+            `漫威影业片头曲 "Marvel Studios Fanfare"`
+    },
+
+    {
+        path:
+            "media/Spider-Man Epic Suite (No Way Home Tribute) - Samuel Kim.mp3",
+        description:
+            `电影《蜘蛛侠：英雄无归》"Spider-Man: No Way Home"致敬组曲`
     },
 
     {
@@ -151,13 +179,6 @@ export const playlist = [
             "media/Suite New Day (from Spider-Man Brand New Day Soundtrack) - Michael Giacchino.mp3",
         description:
             `电影《蜘蛛侠：崭新之日》"Spider-Man:Brand New Day"`
-    },
-
-    {
-        path:
-            "media/Sunflower (Spider-Man Into the Spider-Verse) - Post Malone、Swae Lee.mp3",
-        description:
-            `电影《蜘蛛侠：平行宇宙》"Spider-Man: Into the Spider-Verse"`
     },
 
     {
@@ -183,30 +204,9 @@ export const playlist = [
 
     {
         path:
-            "media/阿七 - 发条月亮.mp3",
-        description:
-            "动画《刺客五六七》"
-    },
-
-    {
-        path:
             "media/怀抱的温柔并不属于我 - 牛奶咖啡.mp3",
         description:
             "动画《刺客五六七》"
-    },
-
-    {
-        path:
-            "media/记忆碎片 - 发条月亮、啊哈、伍六七.mp3",
-        description:
-            "动画《刺客伍六七》"
-    },
-
-    {
-        path:
-            "media/开篇蒙太奇 - 幻想动漫音乐.mp3",
-        description:
-            `电影《罗小黑战记2》"`
     },
 
     {
@@ -300,6 +300,13 @@ export const playlist = [
 
     {
         path:
+            "media/Forest Mixtape - Christina Kuong.mp3",
+        description:
+            `游戏《月兔漫游》"Tsuki's Odyssey"`
+    },
+
+    {
+        path:
             "media/In Full Swing (游戏内录) - John Paesano.mp3",
         description:
             `游戏《漫威蜘蛛侠2》"Marvel Spider-Man 2"`
@@ -307,9 +314,16 @@ export const playlist = [
 
     {
         path:
-            "media/Mutation - C418.mp3",
+            "media/Lo-Fight (Remastered) - Whitty、Jean Magglio Gonzaga Contreras.mp3",
         description:
-            `游戏《我的世界》"Minecraft"`
+            `游戏《Friday Night Funkin'》Mod "FNF Vs. Whitty"`
+    },
+
+    {
+        path:
+            "media/Monster - STARSET.mp3",
+        description:
+            `游戏《明日方舟》"Arknights"概念宣传PV`
     },
 
     {
@@ -324,6 +338,13 @@ export const playlist = [
             "media/New World - 幻塔、钱润玉Runyu.mp3",
         description:
             `游戏《幻塔》"Tower of Fantasy"`
+    },
+
+    {
+        path:
+            "media/Pokemon - Dr Pez - VGM.mp3",
+        description:
+            `游戏《宝可梦》"Pokémon"音乐改编`
     },
 
     {
@@ -377,21 +398,7 @@ export const playlist = [
 
     {
         path:
-            "media/The Earth Color Remix - Cheetah Mobile.mp3",
-        description:
-            `游戏《跳舞的线》"Dancing Line"`
-    },
-
-    {
-        path:
             "media/The Piano - Cheetah Mobile.mp3",
-        description:
-            `游戏《跳舞的线》"Dancing Line"`
-    },
-
-    {
-        path:
-            "media/The Space - Cheetah Mobile.mp3",
         description:
             `游戏《跳舞的线》"Dancing Line"`
     },
@@ -405,16 +412,16 @@ export const playlist = [
 
     {
         path:
-            "media/The Ugly Duckling - Cheetah Mobile.mp3",
+            "media/The West - Cheetah Mobile.mp3",
         description:
             `游戏《跳舞的线》"Dancing Line"`
     },
 
     {
         path:
-            "media/The West - Cheetah Mobile.mp3",
+            "media/UNDERTALE三周年纪念·传说之下16首BGM四手联弹无缝串烧 - Kyle Xian.mp3",
         description:
-            `游戏《跳舞的线》"Dancing Line"`
+            `游戏《传说之下》"UNDERTALE"三周年纪念BGM串烧`
     },
 
     {
@@ -433,16 +440,9 @@ export const playlist = [
 
     {
         path:
-            "media/罗德行进曲 - BaoUner.mp3",
-        description:
-            `游戏《明日方舟》"Arknights"`
-    },
-
-    {
-        path:
             "media/她 - 郎朗.mp3",
         description:
-            `游戏《第五人格》"Identity_V"`
+            `游戏《第五人格》"Identity V"`
     },
 
     {
@@ -457,13 +457,6 @@ export const playlist = [
             "media/协议流 (游戏内录) - 铁痕电台-MSR、Mike Truman、Lottie Truman.mp3",
         description:
             `游戏《明日方舟：终末地》"Arknights:Endfield"`
-    },
-
-    {
-        path:
-            "media/众怒 - 塞壬唱片-MSR、Angry5JaR、EUROPA木卫二.mp3",
-        description:
-            `游戏《明日方舟》"Arknights"`
     },
 
     {
@@ -501,13 +494,6 @@ export const playlist = [
 
     {
         path:
-            "media/Diamond King (REMIX) - MC Jams.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
             "media/Earth Song - Michael Jackson.mp3",
         description:
             "分享自 佚名"
@@ -522,23 +508,9 @@ export const playlist = [
 
     {
         path:
-            "media/F1 (Symphonic Version)(Live) - Imperial Orchestra.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
             "media/Fathers Land - Jordan Critz.mp3",
         description:
             "分享自 Mortal"
-    },
-
-    {
-        path:
-            "media/Forest Mixtape - Christina Kuong.mp3",
-        description:
-            "分享自 Roastedfish"
     },
 
     {
@@ -564,13 +536,6 @@ export const playlist = [
 
     {
         path:
-            "media/Hope - 安室奈美恵.mp3",
-        description:
-            "分享自 Laniary"
-    },
-
-    {
-        path:
             "media/How Do I Craft This again - WoodenToaster.mp3",
         description:
             "分享自 佚名"
@@ -578,28 +543,7 @@ export const playlist = [
 
     {
         path:
-            "media/I Really Want to Stay at Your House - Samuel Kim、Lorien.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/Infinite Future (DRAGON BALL 40th Anniversary Special Video - Theme) - Hans Zimmer.mp3",
-        description:
-            "分享自 Arashi"
-    },
-
-    {
-        path:
             "media/Infinitely Falling - Fly By Midnight.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/Invincible (like u) - Dream.mp3",
         description:
             "分享自 佚名"
     },
@@ -629,28 +573,7 @@ export const playlist = [
         path:
             "media/LiMing_利明 - 艾志恒Asen、GALI、堵琳Caroline - 落幕 (Sunset Explicit) 伴奏.mp3",
         description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/Lo-Fight (Remastered) - Whitty、Jean Magglio Gonzaga Contreras.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/Marvel Studios Fanfare - Matheus Pereira.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/Monster - STARSET.mp3",
-        description:
-            `游戏《明日方舟》"Arknights"概念宣传PV`
+            "分享自 星羽AsT3R"
     },
 
     {
@@ -683,20 +606,6 @@ export const playlist = [
 
     {
         path:
-            "media/Pokemon - Dr Pez - VGM.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/Roadtrip - PmBata、Dream.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
             "media/Roadtrip (Dreams Version) - Dream、PmBata.mp3",
         description:
             "分享自 佚名"
@@ -704,14 +613,28 @@ export const playlist = [
 
     {
         path:
-            "media/STAY (Explicit) - The Kid LAROI、Justin Bieber.mp3",
+            "media/Save Your Tears (Explicit) - The Weeknd.mp3",
         description:
             "分享自 佚名"
     },
 
     {
         path:
-            "media/Spider-Man Epic Suite (No Way Home Tribute) - Samuel Kim.mp3",
+            "media/Sleep Well - CG5、Kathy-chan、Cami-Cat、Chi-chi.mp3",
+        description:
+            "分享自 佚名"
+    },
+
+    {
+        path:
+            "media/Something Else - Pajaro Sunrise.mp3",
+        description:
+            "分享自 佚名"
+    },
+
+    {
+        path:
+            "media/STAY (Explicit) - The Kid LAROI、Justin Bieber.mp3",
         description:
             "分享自 佚名"
     },
@@ -740,20 +663,6 @@ export const playlist = [
     {
         path:
             "media/Toes - Glass Animals.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/UNDERTALE三周年纪念·传说之下16首BGM四手联弹无缝串烧 - Kyle Xian.mp3",
-        description:
-            "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/Waiting For Superman - Daughtry.mp3",
         description:
             "分享自 佚名"
     },
@@ -805,13 +714,6 @@ export const playlist = [
             "media/给你寄的信 - 小潮院长、杜海皇、小杨Johnson.mp3",
         description:
             "分享自 佚名"
-    },
-
-    {
-        path:
-            "media/即将到达 - 小杨Johnson.mp3",
-        description:
-            "分享自 小潮tEam"
     },
 
     {

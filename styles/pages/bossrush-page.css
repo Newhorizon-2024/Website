@@ -1,0 +1,203 @@
+/* 世界观 · Bossrush */
+
+#bossrush-section {
+    background: transparent;
+    box-sizing: border-box;
+    color: #eeeeee;
+    isolation: isolate;
+    margin: 0 auto;
+    max-width: none;
+    min-height: 100vh;
+    overflow-x: clip;
+    padding: clamp(90px, 11vw, 150px) 24px clamp(130px, 16vw, 220px);
+    position: relative;
+    width: 100%;
+}
+
+#bossrush-section.section {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: none;
+}
+
+#bossrush-section [data-bossrush-reveal],
+#bossrush-section [data-bossrush-image-reveal] {
+    opacity: 0;
+    transform: translateY(42px);
+    transition: opacity 0.9s ease, transform 1.05s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#bossrush-section [data-bossrush-image-reveal] {
+    filter: blur(9px);
+    transition: filter 1.05s ease, opacity 1s ease, transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#bossrush-section .is-revealed {
+    filter: none;
+    opacity: 1;
+    transform: none;
+}
+
+.bossrush-page-header {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin: 0 auto clamp(110px, 14vw, 190px);
+    min-height: clamp(330px, 46vw, 610px);
+    overflow: hidden;
+    position: relative;
+    text-align: center;
+}
+
+.bossrush-page-title-image {
+    filter: blur(18px);
+    left: 50%;
+    max-width: 720px;
+    opacity: 0.18;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1.08);
+    width: min(64vw, 720px);
+}
+
+.bossrush-page-title-content {
+    position: relative;
+    z-index: 2;
+}
+
+.bossrush-page-eyebrow,
+.bossrush-page-heading > span,
+.bossrush-page-summon figcaption,
+.bossrush-page-scene figcaption {
+    color: rgba(238, 238, 238, 0.28);
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+}
+
+.bossrush-page-header h1 {
+    color: #f4f4f4;
+    font-size: clamp(58px, 10vw, 142px);
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    margin: 22px 0 0;
+}
+
+.bossrush-page-content {
+    margin: 0 auto;
+    max-width: 1380px;
+}
+
+.bossrush-page-copy {
+    margin: 0 auto clamp(110px, 14vw, 190px);
+    max-width: 900px;
+}
+
+.bossrush-page-copy p {
+    color: rgba(238, 238, 238, 0.73);
+    font-size: clamp(16px, 1.55vw, 20px);
+    letter-spacing: 0.015em;
+    line-height: 2.05;
+    margin: 0;
+}
+
+.bossrush-page-copy p + p { margin-top: 30px; }
+.bossrush-page-intro { text-align: center; }
+
+.bossrush-page-summon,
+.bossrush-page-scene,
+.bossrush-page-poster {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.bossrush-page-summon {
+    margin-bottom: clamp(120px, 15vw, 200px);
+    max-width: 860px;
+    width: 62%;
+}
+
+.bossrush-page-scene {
+    margin-bottom: clamp(110px, 14vw, 190px);
+    max-width: 1080px;
+    width: 75%;
+}
+
+.bossrush-page-summon img,
+.bossrush-page-scene img,
+.bossrush-page-poster img {
+    display: block;
+    height: auto;
+    object-fit: contain;
+    width: 100%;
+}
+
+.bossrush-page-summon figcaption,
+.bossrush-page-scene figcaption { margin-top: 15px; }
+
+.bossrush-page-challenged {
+    margin: clamp(160px, 20vw, 280px) auto;
+}
+
+.bossrush-page-heading {
+    margin: 0 auto clamp(70px, 9vw, 120px);
+    max-width: 1040px;
+}
+
+.bossrush-page-heading h2 {
+    color: #f1f1f1;
+    font-size: clamp(40px, 6vw, 78px);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    margin: 16px 0 0;
+}
+
+.bossrush-page-poster-layout {
+    align-items: center;
+    display: grid;
+    gap: clamp(50px, 8vw, 120px);
+    grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1fr);
+    margin: 0 auto;
+    max-width: 1180px;
+}
+
+.bossrush-page-poster { width: 100%; }
+.bossrush-page-poster-copy { margin: 0; }
+
+.bossrush-page-rules {
+    margin: clamp(170px, 21vw, 290px) auto 0;
+}
+
+.bossrush-page-rules .bossrush-page-copy { margin-bottom: 0; }
+
+.bossrush-page-back-button {
+    display: flex;
+    margin: clamp(120px, 16vw, 210px) auto 0;
+    width: fit-content;
+}
+
+@media (max-width: 760px) {
+    #bossrush-section { padding-left: 18px; padding-right: 18px; }
+    .bossrush-page-header { min-height: 300px; }
+    .bossrush-page-title-image { filter: blur(13px); opacity: 0.2; width: 110vw; }
+    .bossrush-page-intro { text-align: left; }
+    .bossrush-page-summon,
+    .bossrush-page-scene { width: 100%; }
+    .bossrush-page-poster-layout { display: block; }
+    .bossrush-page-poster { margin-bottom: 70px; max-width: 520px; width: 86%; }
+    .bossrush-page-heading { padding: 0 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #bossrush-section [data-bossrush-reveal],
+    #bossrush-section [data-bossrush-image-reveal] {
+        filter: none;
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
