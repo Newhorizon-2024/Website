@@ -1,0 +1,162 @@
+/* ===========================
+   世界观未开放档案反馈
+=========================== */
+
+.worldview-unavailable-signal {
+    align-items: center;
+    color: rgba(238, 238, 238, 0.86);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    opacity: 0;
+    pointer-events: none;
+    position: fixed;
+    text-align: center;
+    transform:
+        translate(-50%, calc(-100% - 24px))
+        scale(0.96);
+    transition:
+        opacity 120ms ease,
+        transform 280ms
+        cubic-bezier(0.22, 1, 0.36, 1);
+    white-space: nowrap;
+    z-index: 10030;
+}
+
+.worldview-unavailable-signal.is-visible {
+    animation:
+        worldview-unavailable-dismiss
+        900ms ease both;
+    opacity: 1;
+    transform:
+        translate(-50%, calc(-100% - 30px))
+        scale(1);
+}
+
+.worldview-unavailable-signal.is-scene-signal.is-visible {
+    animation-duration: 650ms;
+    transform:
+        translate(-50%, calc(-100% - 27px))
+        scale(1);
+}
+
+.worldview-unavailable-english {
+    font-family:
+        "Consolas",
+        "Courier New",
+        monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+}
+
+.worldview-unavailable-chinese {
+    color: rgba(238, 238, 238, 0.46);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+}
+
+.is-worldview-unavailable-source {
+    animation:
+        worldview-unavailable-source
+        900ms
+        cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.worldview-scenes-section.has-worldview-unavailable-signal
+    .scene-node:not(.is-worldview-unavailable-source),
+.worldview-things-section.has-worldview-unavailable-signal
+    .things-wheel-option:not(.is-worldview-unavailable-source),
+.worldview-organizations-section.has-worldview-unavailable-signal
+    .organization-orbit-item:not(.is-worldview-unavailable-source) {
+    filter: brightness(0.82);
+}
+
+.worldview-scenes-section.has-worldview-scene-unavailable-signal
+    .scene-node:not(.is-worldview-unavailable-source) {
+    filter: brightness(0.9);
+    opacity:
+        calc(var(--scene-opacity) * 0.82);
+    transition:
+        filter 250ms ease,
+        opacity 250ms ease;
+}
+
+.worldview-scenes-section
+    .scene-node.is-worldview-unavailable-source {
+    animation:
+        worldview-scene-unavailable-source
+        650ms
+        cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes worldview-unavailable-source {
+    0%, 100% {
+        filter: blur(0) brightness(1);
+        scale: 1;
+    }
+
+    20% {
+        filter: blur(0) brightness(1.14);
+        scale: 1.015;
+    }
+
+    48% {
+        filter: blur(1.8px) brightness(0.68);
+        scale: 0.92;
+    }
+
+    72% {
+        filter: blur(0.4px) brightness(0.88);
+        scale: 0.98;
+    }
+}
+
+@keyframes worldview-unavailable-dismiss {
+    0%, 14% {
+        opacity: 0;
+    }
+
+    24%, 66% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes worldview-scene-unavailable-source {
+    0%, 100% {
+        filter: brightness(1);
+        scale: 1;
+    }
+
+    28% {
+        filter: brightness(1.1);
+        scale: 0.98;
+    }
+
+    62% {
+        filter: brightness(1.04);
+        scale: 0.992;
+    }
+}
+
+@media (max-width: 600px) {
+    .worldview-unavailable-signal {
+        max-width: calc(100vw - 32px);
+        white-space: normal;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .worldview-unavailable-signal.is-visible {
+        animation: none;
+        opacity: 1;
+    }
+
+    .is-worldview-unavailable-source {
+        animation: none;
+        filter: brightness(0.78);
+    }
+}

@@ -262,6 +262,34 @@ let interactionEnabled =
 
 
 /* ===========================
+   12. 档案空间建立状态
+=========================== */
+
+const reducedMotionQuery =
+    window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    );
+
+let hasCompletedInitialReveal =
+    false;
+
+let revealProgress =
+    1;
+
+let revealStartProgress =
+    0;
+
+let revealStartedAt =
+    0;
+
+let revealDuration =
+    1100;
+
+let unavailableSignalUntil =
+    0;
+
+
+/* ===========================
    12. 通用工具
 =========================== */
 
@@ -295,6 +323,34 @@ function easeInOutCubic(
                 3
             ) /
             2;
+}
+
+function smoothstep(
+    minimum,
+    maximum,
+    value
+) {
+    const normalized =
+        clamp(
+            (
+                value -
+                minimum
+            ) /
+            (
+                maximum -
+                minimum
+            ),
+            0,
+            1
+        );
+
+    return normalized *
+        normalized *
+        (
+            3 -
+            2 *
+            normalized
+        );
 }
 
 
@@ -1700,13 +1756,55 @@ function openWorldviewOrbiter(
         orbiter.userData;
 
     if (!sectionId) {
+        unavailableSignalUntil =
+            performance.now() +
+            900;
+
+        orbiter.userData
+            .unavailablePulseStartedAt =
+            performance.now();
+
+        const canvasRect =
+            canvas.getBoundingClientRect();
+
+        const worldPosition =
+            new THREE.Vector3();
+
+        orbiter.getWorldPosition(
+            worldPosition
+        );
+
+        worldPosition.project(
+            camera
+        );
+
         window.dispatchEvent(
             new CustomEvent(
                 "worldview-orbiter-unavailable",
                 {
                     detail: {
                         name,
-                        target
+                        target,
+                        category:
+                            "directory",
+                        anchor: {
+                            x:
+                                canvasRect.left +
+                                (
+                                    worldPosition.x +
+                                    1
+                                ) /
+                                2 *
+                                canvasRect.width,
+                            y:
+                                canvasRect.top +
+                                (
+                                    1 -
+                                    worldPosition.y
+                                ) /
+                                2 *
+                                canvasRect.height
+                        }
                     }
                 }
             )
@@ -2061,6 +2159,85 @@ function animate() {
     const time =
         clock.getElapsedTime();
 
+    if (revealProgress < 1) {
+        const elapsed =
+            performance.now() -
+            revealStartedAt;
+
+        revealProgress =
+            revealStartProgress +
+            (
+                1 -
+                revealStartProgress
+            ) *
+            clamp(
+                elapsed /
+                revealDuration,
+                0,
+                1
+            );
+
+        if (revealProgress >= 1) {
+            revealProgress =
+                1;
+            interactionEnabled =
+                true;
+            container?.classList.remove(
+                "is-core-establishing",
+                "is-core-restoring"
+            );
+        }
+    }
+
+    const easedReveal =
+        easeInOutCubic(
+            revealProgress
+        );
+
+    const coreReveal =
+        smoothstep(
+            0.06,
+            0.56,
+            easedReveal
+        );
+
+    const orbitReveal =
+        smoothstep(
+            0.4,
+            0.86,
+            easedReveal
+        );
+
+    const labelReveal =
+        smoothstep(
+            0.68,
+            1,
+            easedReveal
+        );
+
+    coreRoot.scale.setScalar(
+        WORLDVIEW_CORE_CONFIG.coreScale *
+        (
+            0.92 +
+            coreReveal *
+            0.08
+        )
+    );
+
+    orbitRoot.scale.setScalar(
+        0.82 +
+        orbitReveal *
+            0.18
+    );
+
+    coreRoot.visible =
+        coreReveal >
+        0.004;
+
+    orbitRoot.visible =
+        orbitReveal >
+        0.004;
+
 
     /* ===========================
        拖动缓动
@@ -2259,8 +2436,11 @@ function animate() {
             data.solidMesh
                 .material
                 .opacity =
-                1 -
-                eased;
+                (
+                    1 -
+                    eased
+                ) *
+                coreReveal;
 
             data.solidMesh
                 .material
@@ -2272,7 +2452,8 @@ function animate() {
                 .material
                 .opacity =
                 eased *
-                0.68;
+                0.68 *
+                coreReveal;
 
             data.glassMesh
                 .material
@@ -2294,6 +2475,11 @@ function animate() {
 
                         eased
                     );
+
+            data.edges
+                .material
+                .opacity *=
+                coreReveal;
 
             data.glowGroup
                 .children
@@ -2323,7 +2509,8 @@ function animate() {
                                         .maximumOpacity,
 
                                     pulse
-                                );
+                                ) *
+                            coreReveal;
 
                         glow.scale.setScalar(
                             0.94 +
@@ -2384,7 +2571,8 @@ function animate() {
             wire.material.opacity =
                 wire.userData
                     .baseOpacity *
-                visibility;
+                visibility *
+                coreReveal;
         }
     );
 
@@ -2411,7 +2599,7 @@ function animate() {
         );
 
         singularity.material.opacity =
-            1;
+            coreReveal;
     }
 
 
@@ -2427,21 +2615,58 @@ function animate() {
             const data =
                 group.userData;
 
+            const unavailableSpeed =
+                performance.now() <
+                    unavailableSignalUntil
+                    ? 0.25
+                    : 1;
+
+            const unavailableElapsed =
+                performance.now() -
+                (
+                    data.unavailablePulseStartedAt ||
+                    -1000
+                );
+
+            const unavailableProgress =
+                clamp(
+                    unavailableElapsed /
+                    900,
+                    0,
+                    1
+                );
+
+            const unavailableScale =
+                unavailableElapsed >= 0 &&
+                unavailableElapsed < 900
+                    ? 1 -
+                        Math.sin(
+                            unavailableProgress *
+                            Math.PI
+                        ) *
+                        0.08
+                    : 1;
+
             pivot.rotation.y +=
                 data.orbitSpeed *
-                0.01;
+                0.01 *
+                unavailableSpeed *
+                orbitReveal;
 
             group.rotation.x +=
                 data.spinX *
-                0.01;
+                0.01 *
+                orbitReveal;
 
             group.rotation.y +=
                 data.spinY *
-                0.01;
+                0.01 *
+                orbitReveal;
 
             group.rotation.z +=
                 data.spinZ *
-                0.01;
+                0.01 *
+                orbitReveal;
 
             group.position.y =
                 Math.sin(
@@ -2452,13 +2677,16 @@ function animate() {
                 0.34;
 
             data.cube.material.opacity =
-                1;
+                orbitReveal;
 
             data.edges.material.opacity =
-                hoveredOrbiter ===
-                group
-                    ? 0.42
-                    : 0.16;
+                (
+                    hoveredOrbiter ===
+                    group
+                        ? 0.42
+                        : 0.16
+                ) *
+                orbitReveal;
 
             const labelTargetOpacity =
                 hoveredOrbiter ===
@@ -2471,14 +2699,16 @@ function animate() {
             data.label.material.opacity =
                 THREE.MathUtils.lerp(
                     data.label.material.opacity,
-                    labelTargetOpacity,
+                    labelTargetOpacity *
+                        labelReveal,
                     0.12
                 );
 
             const nextScale =
                 THREE.MathUtils.lerp(
                     group.scale.x,
-                    data.targetScale,
+                    data.targetScale *
+                        unavailableScale,
                     0.1
                 );
 
@@ -2597,7 +2827,57 @@ export function showWorldviewCore() {
         true;
 
     interactionEnabled =
+        false;
+
+    const returning =
+        hasCompletedInitialReveal;
+
+    revealStartProgress =
+        reducedMotionQuery.matches
+            ? 1
+            : returning
+                ? 0.34
+                : 0;
+
+    revealProgress =
+        revealStartProgress;
+
+    revealDuration =
+        returning
+            ? 460
+            : 1100;
+
+    revealStartedAt =
+        performance.now();
+
+    hasCompletedInitialReveal =
         true;
+
+    if (reducedMotionQuery.matches) {
+        interactionEnabled =
+            true;
+    }
+
+    container.classList.remove(
+        "is-core-establishing",
+        "is-core-restoring"
+    );
+
+    if (!reducedMotionQuery.matches) {
+        container.classList.add(
+            returning
+                ? "is-core-restoring"
+                : "is-core-establishing"
+        );
+    }
+
+    coreRoot.visible =
+        false;
+
+    orbitRoot.visible =
+        false;
+
+    renderer.clear();
 
     canvas.hidden =
         false;
@@ -2664,6 +2944,11 @@ export function hideWorldviewCore() {
 
     interactionEnabled =
         false;
+
+    container?.classList.remove(
+        "is-core-establishing",
+        "is-core-restoring"
+    );
 
     dragging =
         false;

@@ -17,6 +17,7 @@
 @import url("./components/site-panel.css");
 @import url("./components/timeline.css");
 @import url("./components/worldview-target-cursor.css");
+@import url("./components/worldview-unavailable-signal.css");
 
 @import url("./pages/bounty-board.css");
 @import url("./pages/creators.css");

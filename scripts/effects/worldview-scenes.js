@@ -181,6 +181,10 @@ export function initializeWorldviewScenes() {
     let globeRadius =
         0;
 
+    /* 昼夜交界缓慢绕球体移动，避免与球体旋转完全同步。 */
+    let lightingPhase =
+        -0.72;
+
     let selectedIndex =
         0;
 
@@ -232,6 +236,12 @@ export function initializeWorldviewScenes() {
 
     let previousFrameTime =
         performance.now();
+
+    let unavailableFeedbackStartedAt =
+        -Infinity;
+
+    const unavailableFeedbackDuration =
+        650;
 
     let animationFrameId =
         null;
@@ -832,6 +842,148 @@ export function initializeWorldviewScenes() {
 
 
     /* ===========================
+       昼夜光照与大气边缘
+    =========================== */
+
+    function drawGlobeLighting() {
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+        const lightX = Math.cos(lightingPhase);
+        const lightY = Math.sin(lightingPhase) * 0.62;
+
+        context.save();
+        context.beginPath();
+        context.arc(
+            centerX,
+            centerY,
+            globeRadius,
+            0,
+            Math.PI * 2
+        );
+        context.clip();
+
+        const dayNightGradient =
+            context.createLinearGradient(
+                centerX - lightX * globeRadius,
+                centerY - lightY * globeRadius,
+                centerX + lightX * globeRadius,
+                centerY + lightY * globeRadius
+            );
+
+        dayNightGradient.addColorStop(
+            0,
+            "rgba(0, 0, 0, 0.52)"
+        );
+        dayNightGradient.addColorStop(
+            0.42,
+            "rgba(4, 7, 12, 0.25)"
+        );
+        dayNightGradient.addColorStop(
+            0.57,
+            "rgba(150, 182, 215, 0.018)"
+        );
+        dayNightGradient.addColorStop(
+            1,
+            "rgba(210, 228, 244, 0.075)"
+        );
+
+        context.fillStyle =
+            dayNightGradient;
+        context.fillRect(
+            centerX - globeRadius,
+            centerY - globeRadius,
+            globeRadius * 2,
+            globeRadius * 2
+        );
+
+        const daylightGlow =
+            context.createRadialGradient(
+                centerX + lightX * globeRadius * 0.42,
+                centerY + lightY * globeRadius * 0.42,
+                0,
+                centerX + lightX * globeRadius * 0.42,
+                centerY + lightY * globeRadius * 0.42,
+                globeRadius * 0.95
+            );
+
+        daylightGlow.addColorStop(
+            0,
+            "rgba(211, 231, 248, 0.07)"
+        );
+        daylightGlow.addColorStop(
+            0.58,
+            "rgba(112, 151, 188, 0.025)"
+        );
+        daylightGlow.addColorStop(
+            1,
+            "rgba(0, 0, 0, 0)"
+        );
+
+        context.fillStyle =
+            daylightGlow;
+        context.fillRect(
+            centerX - globeRadius,
+            centerY - globeRadius,
+            globeRadius * 2,
+            globeRadius * 2
+        );
+        context.restore();
+    }
+
+    function drawAtmosphereRim() {
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+
+        const rimGradient =
+            context.createLinearGradient(
+                centerX - globeRadius,
+                centerY,
+                centerX + globeRadius,
+                centerY
+            );
+
+        rimGradient.addColorStop(
+            0,
+            "rgba(92, 126, 158, 0.025)"
+        );
+        rimGradient.addColorStop(
+            0.5,
+            "rgba(190, 219, 242, 0.12)"
+        );
+        rimGradient.addColorStop(
+            1,
+            "rgba(116, 164, 202, 0.045)"
+        );
+
+        context.save();
+        context.beginPath();
+        context.arc(
+            centerX,
+            centerY,
+            globeRadius + 0.75,
+            0,
+            Math.PI * 2
+        );
+        context.strokeStyle =
+            rimGradient;
+        context.lineWidth =
+            Math.max(
+                1.5,
+                globeRadius * 0.012
+            );
+        context.shadowBlur =
+            Math.max(
+                5,
+                globeRadius * 0.035
+            );
+        context.shadowColor =
+            "rgba(120, 174, 214, 0.16)";
+        context.stroke();
+        context.restore();
+    }
+
+
+    /* ===========================
        更新节点位置
     =========================== */
 
@@ -962,8 +1114,10 @@ export function initializeWorldviewScenes() {
             1;
 
         drawGlobeOutline();
+        drawGlobeLighting();
         drawLongitudeLines();
         drawLatitudeLines();
+        drawAtmosphereRim();
         updateSceneNodes();
     }
 
@@ -1124,6 +1278,9 @@ export function initializeWorldviewScenes() {
         }
 
         if (!scene.sectionId) {
+            unavailableFeedbackStartedAt =
+                performance.now();
+
             console.info(
                 `场景“${scene.name}”暂未开放。`
             );
@@ -1137,7 +1294,13 @@ export function initializeWorldviewScenes() {
                                 scene.id,
 
                             name:
-                                scene.name
+                                scene.name,
+
+                            category:
+                                "scene",
+
+                            sourceElement:
+                                scene.element
                         }
                     }
                 )
@@ -1221,6 +1384,52 @@ export function initializeWorldviewScenes() {
         previousFrameTime =
             currentTime;
 
+        const unavailableProgress =
+            clamp(
+                (
+                    currentTime -
+                    unavailableFeedbackStartedAt
+                ) /
+                    unavailableFeedbackDuration,
+                0,
+                1
+            );
+
+        const unavailableEnvelope =
+            unavailableProgress < 0.42
+                ? 1 -
+                    Math.pow(
+                        1 -
+                            unavailableProgress /
+                                0.42,
+                        3
+                    )
+                : 1 -
+                    Math.pow(
+                        (
+                            unavailableProgress -
+                            0.42
+                        ) /
+                            0.58,
+                        2
+                    );
+
+        const unavailableSpeed =
+            1 -
+            Math.max(
+                0,
+                unavailableEnvelope
+            ) *
+                0.75;
+
+        if (!reducedMotionQuery.matches) {
+            lightingPhase =
+                normalizeAngle(
+                    lightingPhase +
+                    deltaTime * 0.000018
+                );
+        }
+
         if (focusActive) {
             const yawDifference =
                 shortestAngleDifference(
@@ -1265,7 +1474,8 @@ export function initializeWorldviewScenes() {
             ) {
                 rotationYaw +=
                     autoRotationSpeed *
-                    deltaTime;
+                    deltaTime *
+                    unavailableSpeed;
             }
 
             rotationYaw +=

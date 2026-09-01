@@ -626,7 +626,13 @@ export function initializeWorldviewThings() {
                             id:
                                 itemId,
 
-                            label
+                            label,
+
+                            category:
+                                "things",
+
+                            sourceElement:
+                                centerButton
                         }
                     }
                 )

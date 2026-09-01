@@ -63,6 +63,10 @@ import {
 } from "./effects/worldview-target-cursor.js";
 
 import {
+    initializeWorldviewUnavailableSignal
+} from "./effects/worldview-unavailable-signal.js";
+
+import {
     initializeWorldviewThings
 } from "./effects/worldview-things.js";
 
@@ -122,6 +126,7 @@ function initializeEvents() {
     initializeWantedPosterPointerEffects();
     initializeWorldviewCore();
     initializeWorldviewTargetCursor();
+    initializeWorldviewUnavailableSignal();
     initializeWorldviewOrganizations();
     initializeWorldviewThings();
     initializeWorldviewScenes();

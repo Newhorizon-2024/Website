@@ -111,7 +111,12 @@ export function initializeWorldviewOrganizations() {
         if (!organization) return false;
         if (!organization.sectionId) {
             window.dispatchEvent(new CustomEvent("worldview-organization-unavailable", {
-                detail: { id: organization.id, name: organization.name }
+                detail: {
+                    id: organization.id,
+                    name: organization.name,
+                    category: "organization",
+                    sourceElement: organization.element
+                }
             }));
             return false;
         }

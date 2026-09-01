@@ -24,6 +24,71 @@
     display: none;
 }
 
+/* 首次进入时建立空间中心 */
+#worldview-section.is-core-establishing::before,
+#worldview-section.is-core-restoring::before {
+    background: rgba(238, 238, 238, 0.88);
+    border-radius: 50%;
+    box-shadow:
+        0 0 12px rgba(208, 226, 242, 0.42),
+        0 0 34px rgba(150, 188, 220, 0.16);
+    content: "";
+    height: 4px;
+    left: 50%;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    z-index: 2;
+}
+
+#worldview-section.is-core-establishing::before {
+    animation:
+        worldview-core-origin
+        620ms ease-out both;
+}
+
+#worldview-section.is-core-restoring::before {
+    animation:
+        worldview-core-origin-return
+        360ms ease-out both;
+}
+
+#worldview-section.is-core-establishing #worldview-canvas,
+#worldview-section.is-core-restoring #worldview-canvas {
+    cursor: wait !important;
+}
+
+@keyframes worldview-core-origin {
+    0% {
+        opacity: 0;
+        scale: 0.2;
+    }
+
+    35% {
+        opacity: 1;
+        scale: 1;
+    }
+
+    100% {
+        opacity: 0;
+        scale: 4.5;
+    }
+}
+
+@keyframes worldview-core-origin-return {
+    0% {
+        opacity: 0.8;
+        scale: 0.8;
+    }
+
+    100% {
+        opacity: 0;
+        scale: 3;
+    }
+}
+
 @media (max-width: 768px) {
     #worldview-section {
         height: 72vh;
@@ -48,4 +113,12 @@
 
 #worldview-directory-back[hidden] {
     display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #worldview-section.is-core-establishing::before,
+    #worldview-section.is-core-restoring::before {
+        animation: none;
+        display: none;
+    }
 }

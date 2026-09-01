@@ -549,6 +549,29 @@
         cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* 打开或关闭转场期间由临时图片接管画面 */
+#creator-lightbox-image.is-gallery-transition-hidden,
+.creator-work img.is-gallery-transition-hidden {
+    opacity: 0;
+}
+
+/* 在缩略图和大图之间移动的临时图片 */
+.creator-gallery-transition-image {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.72);
+    object-fit: cover;
+    pointer-events: none;
+    position: fixed;
+    transform-origin: left top;
+    will-change: border-radius, opacity, transform;
+    z-index: 6;
+}
+
+/* 查看器内连续切图 */
+#creator-lightbox-image.is-gallery-switching {
+    will-change: opacity, transform;
+}
+
 /* 作品大图出现状态 */
 #creator-lightbox.active #creator-lightbox-image {
     transform: scale(1);
@@ -758,6 +781,10 @@ body.creator-lightbox-open {
     .creator-card.is-settled {
         opacity: 1;
         transform: none;
+    }
+
+    .creator-gallery-transition-image {
+        display: none;
     }
 }
 

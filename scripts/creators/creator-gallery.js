@@ -55,7 +55,13 @@ export function initializeCreatorGallery() {
             ".creator-lightbox-figure"
         );
 
+    const reducedMotionQuery =
+        window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+        );
+
     let activeWorkIndex = 0;
+    let transitionInProgress = false;
 
     function createRandomRotation(
         minimum,
@@ -252,44 +258,285 @@ export function initializeCreatorGallery() {
         );
     }
 
-    function openLightbox(index) {
+    function setLightboxOpen(open) {
+        lightbox?.classList.toggle(
+            "active",
+            open
+        );
+
+        lightbox?.setAttribute(
+            "aria-hidden",
+            open
+                ? "false"
+                : "true"
+        );
+
+        document.body.classList.toggle(
+            "creator-lightbox-open",
+            open
+        );
+    }
+
+    function nextPaint() {
+        return new Promise(resolve => {
+            window.requestAnimationFrame(
+                () => {
+                    window.requestAnimationFrame(
+                        resolve
+                    );
+                }
+            );
+        });
+    }
+
+    function waitForLightboxImage() {
+        if (
+            !lightboxImage ||
+            (
+                lightboxImage.complete &&
+                lightboxImage.naturalWidth > 0
+            )
+        ) {
+            return Promise.resolve();
+        }
+
+        return new Promise(resolve => {
+            let settled = false;
+
+            const finish = () => {
+                if (settled) {
+                    return;
+                }
+
+                settled = true;
+                resolve();
+            };
+
+            lightboxImage.addEventListener(
+                "load",
+                finish,
+                { once: true }
+            );
+
+            lightboxImage.addEventListener(
+                "error",
+                finish,
+                { once: true }
+            );
+
+            window.setTimeout(
+                finish,
+                1200
+            );
+        });
+    }
+
+    function isUsableRect(rect) {
+        return Boolean(
+            rect &&
+            rect.width > 2 &&
+            rect.height > 2 &&
+            rect.bottom > 0 &&
+            rect.top < window.innerHeight
+        );
+    }
+
+    async function animateBetweenImages(
+        sourceImage,
+        targetImage,
+        imageSource,
+        reverse = false
+    ) {
+        if (
+            reducedMotionQuery.matches ||
+            typeof Element.prototype.animate !==
+                "function" ||
+            !sourceImage ||
+            !targetImage ||
+            !imageSource
+        ) {
+            return false;
+        }
+
+        const sourceRect =
+            sourceImage.getBoundingClientRect();
+
+        const targetRect =
+            targetImage.getBoundingClientRect();
+
+        if (
+            !isUsableRect(sourceRect) ||
+            !isUsableRect(targetRect)
+        ) {
+            return false;
+        }
+
+        const transitionImage =
+            document.createElement("img");
+
+        transitionImage.className =
+            "creator-gallery-transition-image";
+        transitionImage.src =
+            imageSource;
+        transitionImage.alt =
+            "";
+        transitionImage.draggable =
+            false;
+        transitionImage.style.left =
+            `${sourceRect.left}px`;
+        transitionImage.style.top =
+            `${sourceRect.top}px`;
+        transitionImage.style.width =
+            `${sourceRect.width}px`;
+        transitionImage.style.height =
+            `${sourceRect.height}px`;
+
+        document.body.append(
+            transitionImage
+        );
+
+        sourceImage.classList.add(
+            "is-gallery-transition-hidden"
+        );
+        targetImage.classList.add(
+            "is-gallery-transition-hidden"
+        );
+
+        const translateX =
+            targetRect.left -
+            sourceRect.left;
+        const translateY =
+            targetRect.top -
+            sourceRect.top;
+        const scaleX =
+            targetRect.width /
+            sourceRect.width;
+        const scaleY =
+            targetRect.height /
+            sourceRect.height;
+
+        const animation =
+            transitionImage.animate(
+                [
+                    {
+                        borderRadius:
+                            reverse
+                                ? "0px"
+                                : "2px",
+                        transform:
+                            "translate3d(0, 0, 0) scale(1)"
+                    },
+                    {
+                        borderRadius:
+                            reverse
+                                ? "2px"
+                                : "0px",
+                        transform:
+                            `translate3d(${translateX}px, ${translateY}px, 0) scale(${scaleX}, ${scaleY})`
+                    }
+                ],
+                {
+                    duration:
+                        window.innerWidth <= 600
+                            ? 380
+                            : 480,
+                    easing:
+                        "cubic-bezier(0.22, 1, 0.36, 1)",
+                    fill:
+                        "forwards"
+                }
+            );
+
+        await animation.finished.catch(
+            () => undefined
+        );
+
+        transitionImage.remove();
+        sourceImage.classList.remove(
+            "is-gallery-transition-hidden"
+        );
+        targetImage.classList.remove(
+            "is-gallery-transition-hidden"
+        );
+
+        return true;
+    }
+
+    async function openLightbox(index) {
         if (
             !lightbox ||
-            creatorWorks.length === 0
+            creatorWorks.length === 0 ||
+            transitionInProgress
         ) {
             return;
         }
 
+        transitionInProgress = true;
+
+        const sourceImage =
+            creatorWorks[index]
+                ?.querySelector("img");
+
         updateLightbox(index);
 
-        lightbox.classList.add(
-            "active"
+        await waitForLightboxImage();
+
+        lightboxImage?.classList.add(
+            "is-gallery-transition-hidden"
         );
 
-        lightbox.setAttribute(
-            "aria-hidden",
-            "false"
+        setLightboxOpen(true);
+        await nextPaint();
+
+        await animateBetweenImages(
+            sourceImage,
+            lightboxImage,
+            sourceImage?.currentSrc ||
+                lightboxImage?.currentSrc ||
+                lightboxImage?.src
         );
 
-        document.body.classList.add(
-            "creator-lightbox-open"
+        lightboxImage?.classList.remove(
+            "is-gallery-transition-hidden"
         );
 
         lightboxCloseButton?.focus();
+        transitionInProgress = false;
     }
 
-    function closeLightbox() {
-        if (!lightbox) {
+    async function closeLightbox() {
+        if (
+            !lightbox ||
+            transitionInProgress
+        ) {
             return;
         }
+
+        transitionInProgress = true;
+
+        const targetImage =
+            creatorWorks[
+                activeWorkIndex
+            ]?.querySelector("img");
+
+        const imageSource =
+            lightboxImage?.currentSrc ||
+            lightboxImage?.src ||
+            targetImage?.currentSrc;
 
         lightbox.classList.remove(
             "active"
         );
-
         lightbox.setAttribute(
             "aria-hidden",
             "true"
+        );
+
+        await animateBetweenImages(
+            lightboxImage,
+            targetImage,
+            imageSource,
+            true
         );
 
         document.body.classList.remove(
@@ -299,14 +546,67 @@ export function initializeCreatorGallery() {
         creatorWorks[
             activeWorkIndex
         ]?.focus();
+
+        transitionInProgress = false;
     }
 
-    function changeLightbox(direction) {
+    async function changeLightbox(direction) {
         if (
-            creatorWorks.length === 0
+            creatorWorks.length === 0 ||
+            transitionInProgress
         ) {
             return;
         }
+
+        transitionInProgress = true;
+
+        if (
+            reducedMotionQuery.matches ||
+            !lightboxImage ||
+            typeof lightboxImage.animate !==
+                "function"
+        ) {
+            activeWorkIndex =
+                (
+                    activeWorkIndex +
+                    direction +
+                    creatorWorks.length
+                ) %
+                creatorWorks.length;
+
+            updateLightbox(
+                activeWorkIndex
+            );
+
+            transitionInProgress = false;
+            return;
+        }
+
+        lightboxImage.classList.add(
+            "is-gallery-switching"
+        );
+
+        await lightboxImage.animate(
+            [
+                {
+                    opacity: 1,
+                    transform:
+                        "translateX(0) scale(1)"
+                },
+                {
+                    opacity: 0,
+                    transform:
+                        `translateX(${direction > 0 ? -28 : 28}px) scale(0.985)`
+                }
+            ],
+            {
+                duration: 170,
+                easing: "ease-in",
+                fill: "forwards"
+            }
+        ).finished.catch(
+            () => undefined
+        );
 
         activeWorkIndex =
             (
@@ -319,6 +619,36 @@ export function initializeCreatorGallery() {
         updateLightbox(
             activeWorkIndex
         );
+
+        await waitForLightboxImage();
+
+        await lightboxImage.animate(
+            [
+                {
+                    opacity: 0,
+                    transform:
+                        `translateX(${direction > 0 ? 28 : -28}px) scale(0.985)`
+                },
+                {
+                    opacity: 1,
+                    transform:
+                        "translateX(0) scale(1)"
+                }
+            ],
+            {
+                duration: 230,
+                easing:
+                    "cubic-bezier(0.22, 1, 0.36, 1)",
+                fill: "forwards"
+            }
+        ).finished.catch(
+            () => undefined
+        );
+
+        lightboxImage.classList.remove(
+            "is-gallery-switching"
+        );
+        transitionInProgress = false;
     }
 
     initializeCardRotations();
