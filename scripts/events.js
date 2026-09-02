@@ -64,7 +64,7 @@ import {
 
 import {
     initializeWorldviewUnavailableSignal
-} from "./effects/worldview-unavailable-signal.js";
+} from "./effects/worldview-unavailable-signal.js?v=26.9.2.1";
 
 import {
     initializeWorldviewThings
@@ -72,7 +72,7 @@ import {
 
 import {
     initializeWorldviewScenes
-} from "./effects/worldview-scenes.js";
+} from "./effects/worldview-scenes.js?v=26.9.2.1";
 
 import {
     initializeWorkPostPointerEffects

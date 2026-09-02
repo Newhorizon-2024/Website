@@ -17,7 +17,7 @@
 @import url("./components/site-panel.css");
 @import url("./components/timeline.css");
 @import url("./components/worldview-target-cursor.css");
-@import url("./components/worldview-unavailable-signal.css");
+@import url("./components/worldview-unavailable-signal.css?v=26.9.2.1");
 
 @import url("./pages/bounty-board.css");
 @import url("./pages/creators.css");
@@ -31,7 +31,7 @@
 @import url("./pages/bossrush-page.css");
 @import url("./pages/inner-domain.css");
 @import url("./pages/mineash.css");
-@import url("./pages/worldview-scenes.css");
+@import url("./pages/worldview-scenes.css?v=26.9.2.1");
 @import url("./pages/colosseum.css");
 @import url("./pages/ruler.css");
 @import url("./pages/monarch.css");
