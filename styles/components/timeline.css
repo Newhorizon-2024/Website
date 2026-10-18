@@ -31,20 +31,12 @@
     z-index: 2;
 }
 
-/*
- * 原横线仍然保留。
- * 它是时间轴的结构骨架，
- * Threads 只是周围流动的历史痕迹。
- */
-.timeline-line {
-    z-index: 1;
-}
 
 
 /* 时间轴区块 */
 #timeline-section {
     --timeline-dot-size: 16px;
-    --timeline-line-size: 4px;
+    --timeline-line-size: 1.6px;
     --timeline-padding: 60px;
 
     align-items: center;
@@ -91,52 +83,59 @@
     justify-content: center;
     margin: 0 auto;
     max-width: 900px;
+    opacity: 0;
     padding:
         var(--timeline-padding)
         40px;
     position: relative;
+    visibility: hidden;
     width: 100%;
+}
+
+/* 导航完成前整体隐藏，主曲线、节点和文字只使用这一条入场时序。 */
+#timeline-section.visible .timeline-track {
+    animation: timelineTrackIn 0.9s ease backwards;
+    opacity: 1;
+    visibility: visible;
+}
+
+@keyframes timelineTrackIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 
 /* ===========================
-   46. 时间轴横线
+   46. 时间轴主曲线
 =========================== */
 
-/* 时间轴横线 */
+/* SVG 与事件轨道共享坐标，线条不参与点击命中。 */
 .timeline-line {
-    background:
-        linear-gradient(
-            #FFFFFF 0 0
-        ) 0 / 0% 100% no-repeat
-        #444444;
-    height: var(--timeline-line-size);
+    height: 100%;
     left: 50%;
+    pointer-events: none;
     position: absolute;
-    top:
-        calc(
-            var(--timeline-padding)
-            + var(--timeline-dot-size) / 2
-            - var(--timeline-line-size) / 2
-        );
+    top: 0;
     transform: translateX(-50%);
-    width: 200vw;
+    width: 100vw;
+    z-index: 1;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
 }
 
-/* 时间轴显示时播放横线动画 */
-#timeline-section.visible .timeline-line {
-    animation:
-        lineGrow
-        1.2s
-        ease
-        forwards;
+.timeline-main-curve {
+    display: block;
+    height: 100%;
+    overflow: visible;
+    width: 100%;
 }
 
-/* 时间轴横线生长动画 */
-@keyframes lineGrow {
-    to {
-        background-size: 100% 100%;
-    }
+.timeline-main-path {
+    stroke: rgba(238, 238, 238, 0.72);
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    stroke-width: var(--timeline-line-size);
 }
 
 
@@ -163,7 +162,7 @@
     height: var(--timeline-dot-size);
     margin: 0 auto;
     position: relative;
-    transform: scale(0);
+    transform: scale(1);
     transform-origin: center;
     transition:
         background 0.25s ease,
@@ -172,22 +171,6 @@
         transform 0.25s ease;
     width: var(--timeline-dot-size);
     z-index: 2;
-}
-
-/* 时间轴显示时播放节点动画 */
-#timeline-section.visible .timeline-dot {
-    animation:
-        dotUp
-        0.6s
-        ease
-        forwards;
-}
-
-/* 时间轴节点出现动画 */
-@keyframes dotUp {
-    to {
-        transform: scale(1);
-    }
 }
 
 /* 时间轴节点悬停状态 */
@@ -219,30 +202,12 @@
     font-size: 14px;
     line-height: 1.5;
     margin-top: 12px;
-    opacity: 0;
+    opacity: 1;
     overflow-wrap: anywhere;
-    transform: translateX(-20px);
+    transform: translateX(0);
     transition:
         opacity 0.25s ease,
         text-shadow 0.25s ease;
-}
-
-/* 时间轴显示时播放文字动画 */
-#timeline-section.visible .timeline-text {
-    animation:
-        textIn
-        0.6s
-        ease
-        0.2s
-        forwards;
-}
-
-/* 时间轴文字进入动画 */
-@keyframes textIn {
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
 }
 
 /* 当前选中的事件文字 */
@@ -375,20 +340,11 @@
             var(--timeline-mobile-item-width);
     }
 
-    /* 移动端时间轴横线 */
+    /* 移动端主曲线随整个事件轨道一起横向滚动 */
     .timeline-line {
-        left:
-            calc(
-                var(--timeline-mobile-side-padding)
-                + var(--timeline-mobile-item-width) / 2
-            );
-        right:
-            calc(
-                var(--timeline-mobile-side-padding)
-                + var(--timeline-mobile-item-width) / 2
-            );
+        left: 0;
         transform: none;
-        width: auto;
+        width: 100%;
     }
 
     /* 移动端时间轴事件文字 */
@@ -453,8 +409,10 @@
     }
 
     #timeline-section.visible,
+    #timeline-section.visible .timeline-track,
     #timeline-section.visible .timeline-dot,
     #timeline-section.visible .timeline-line,
+    #timeline-section.visible .timeline-main-path,
     #timeline-section.visible .timeline-text,
     .timeline-detail.active {
         animation: none;

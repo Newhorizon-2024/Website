@@ -18,6 +18,8 @@
     padding: 0 20px;
     pointer-events: none;
     position: relative;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
     transform:
         translateY(-12px)
         scale(0.985);

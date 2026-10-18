@@ -1,0 +1,26 @@
+/* 黑色通过 screen 混合消失，保留网站原有灰黑渐变。 */
+#shadowflame-background {
+    height: 100vh;
+    height: 100dvh;
+    inset: 0;
+    isolation: isolate;
+    mix-blend-mode: screen;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    position: fixed;
+    transition: opacity 500ms ease;
+    width: 100%;
+    z-index: 1;
+}
+#shadowflame-background[hidden] { display: none; }
+#shadowflame-background.is-visible { opacity: 0.55; }
+#shadowflame-background.is-fallback {
+    background:
+        radial-gradient(58% 68% at 0% 112%, #ffffffdd, transparent 65%),
+        radial-gradient(58% 68% at 100% 112%, #ffffffdd, transparent 65%),
+        radial-gradient(60% 30% at 50% 115%, #d4d4d499, transparent 65%), #000;
+}
+.shadowflame-canvas, .shadowflame-sparks { display: block; height: 100%; inset: 0; pointer-events: none; position: absolute; width: 100%; }
+.shadowflame-sparks { z-index: 2; }
+@media (prefers-reduced-motion: reduce) { #shadowflame-background { transition: none; } }

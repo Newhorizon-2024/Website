@@ -3,7 +3,15 @@ import { playlist }
 
 import {
     applySongVisuals
-} from "./song-visuals.js";
+} from "./song-visuals.js?v=26.10.19.1";
+
+import {
+    initializeWakeVolumeSlider
+} from "./volume-slider.js?v=26.10.18.8";
+
+import {
+    initializeElasticProgressBar
+} from "./progress-elastic.js?v=26.10.18.9";
 
 /* ===========================
    1. 页面元素
@@ -80,6 +88,7 @@ let currentSongIndex =
     findPlayableSongIndex(0, 1);
 
 let playlistLoaded = false;
+let musicControlsInitialized = false;
 
 
 /* ===========================
@@ -288,15 +297,15 @@ function toggleVolumeSlider() {
         return;
     }
 
-    const isHidden =
-        window.getComputedStyle(
-            volumeSliderContainer
-        ).display === "none";
-
-    volumeSliderContainer.style.display =
-        isHidden
-            ? "block"
-            : "none";
+    const restoreFocus = volumeSliderContainer.contains(document.activeElement);
+    const isOpen = volumeSliderContainer.classList.toggle("is-open");
+    volumeSliderContainer.setAttribute("aria-hidden", String(!isOpen));
+    volumeSliderContainer.inert = !isOpen;
+    volumeButton?.classList.toggle("active", isOpen);
+    volumeButton?.setAttribute("aria-expanded", String(isOpen));
+    if (!isOpen && restoreFocus) {
+        volumeButton?.focus({ preventScroll: true });
+    }
 }
 
 
@@ -858,6 +867,7 @@ function handleAudioEnded() {
 =========================== */
 
 export function initializeMusicControls() {
+    if (musicControlsInitialized) return;
     if (!audioElement) {
         console.warn(
             "未找到 #background-music，音乐控制不会启用。"
@@ -865,6 +875,8 @@ export function initializeMusicControls() {
 
         return;
     }
+
+    musicControlsInitialized = true;
 
     previousSongButton
         ?.addEventListener(
@@ -935,6 +947,8 @@ export function initializeMusicControls() {
         updateAudioVolume();
     }
 
+    initializeWakeVolumeSlider({ input: volumeSlider, panel: volumeSliderContainer });
+    initializeElasticProgressBar({ input: progressBar });
     updateProgressDisplay();
     restoreDefaultLoginSong();
 }

@@ -282,6 +282,7 @@
 
 /* 网站运行时间显示 */
 #countdown {
+    font-variant-numeric: tabular-nums;
     font-size: 4vw;
     left: 50%;
     opacity: 0;
@@ -289,7 +290,8 @@
     text-align: center;
     top: 50%;
     transform: translate(-50%, -50%);
-    transition: opacity 2.5s ease-in-out;
+    transition: opacity 600ms ease-out;
+    white-space: nowrap;
     z-index: 3;
 }
 

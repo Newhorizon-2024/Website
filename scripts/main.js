@@ -1791,76 +1791,95 @@ const millisecondsPerHour =
 const millisecondsPerDay =
     millisecondsPerHour * 24;
 
-/**
- * 更新网站运行时间。
- */
-function updateCountdown() {
-    const countdownElement =
-        document.getElementById(
-            "countdown"
-        );
+/* 数字递增只在首次显示及悬停重播时运行，常规定时更新不会覆盖动画。 */
+const countdownMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+let countdownAnimationFrame = null;
+let countdownShown = false;
+let countdownDayDigits = 2;
 
-    if (!countdownElement) {
+function getCountdownValues() {
+    const elapsed = Math.max(0, Date.now() - countdownStartDate.getTime());
+    return [
+        Math.floor(elapsed / millisecondsPerDay),
+        Math.floor(elapsed % millisecondsPerDay / millisecondsPerHour),
+        Math.floor(elapsed % millisecondsPerHour / millisecondsPerMinute),
+        Math.floor(elapsed % millisecondsPerMinute / millisecondsPerSecond)
+    ];
+}
+
+function renderCountdown(values) {
+    const element = document.getElementById("countdown");
+    if (!element) return;
+    element.textContent = values.map((value, index) =>
+        String(value).padStart(index === 0 ? countdownDayDigits : 2, "0")
+    ).join(":");
+}
+
+function finishCountdownAnimation() {
+    if (countdownAnimationFrame !== null) {
+        window.cancelAnimationFrame(countdownAnimationFrame);
+        countdownAnimationFrame = null;
+    }
+    renderCountdown(getCountdownValues());
+}
+
+/**
+ * 保留原有 window.updateCountdown 入口。
+ * animate 只用于显示及悬停，从全零递增至真实的天 / 时 / 分 / 秒。
+ */
+function updateCountdown(options = {}) {
+    const element = document.getElementById("countdown");
+    if (!element) return;
+
+    const target = getCountdownValues();
+    countdownDayDigits = Math.max(2, String(target[0]).length);
+    if (!options.animate) {
+        if (countdownAnimationFrame === null) renderCountdown(target);
+        return;
+    }
+    countdownShown = true;
+    if (countdownAnimationFrame !== null) return;
+    if (countdownMotionQuery.matches || document.hidden) {
+        renderCountdown(target);
         return;
     }
 
-    const currentDate =
-        new Date();
-
-    const elapsedTime =
-        currentDate -
-        countdownStartDate;
-
-    const days =
-        String(
-            Math.floor(
-                elapsedTime /
-                millisecondsPerDay
-            )
-        ).padStart(
-            2,
-            "0"
-        );
-
-    const hours =
-        String(
-            Math.floor(
-                elapsedTime %
-                millisecondsPerDay /
-                millisecondsPerHour
-            )
-        ).padStart(
-            2,
-            "0"
-        );
-
-    const minutes =
-        String(
-            Math.floor(
-                elapsedTime %
-                millisecondsPerHour /
-                millisecondsPerMinute
-            )
-        ).padStart(
-            2,
-            "0"
-        );
-
-    const seconds =
-        String(
-            Math.floor(
-                elapsedTime %
-                millisecondsPerMinute /
-                millisecondsPerSecond
-            )
-        ).padStart(
-            2,
-            "0"
-        );
-
-    countdownElement.textContent =
-        `${days}:${hours}:${minutes}:${seconds}`;
+    renderCountdown([0, 0, 0, 0]);
+    let startedAt = null;
+    const animateCount = timestamp => {
+        if (startedAt === null) startedAt = timestamp;
+        const progress = Math.min(1, (timestamp - startedAt) / 1000);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        renderCountdown(target.map(value => Math.floor(value * eased)));
+        if (progress < 1) {
+            countdownAnimationFrame = window.requestAnimationFrame(animateCount);
+        } else {
+            countdownAnimationFrame = null;
+            // 结束时重新读取时间，跨秒或跨分钟仍保持正确。
+            renderCountdown(getCountdownValues());
+        }
+    };
+    countdownAnimationFrame = window.requestAnimationFrame(animateCount);
 }
+
+const countdownElement = document.getElementById("countdown");
+countdownElement?.addEventListener("pointerenter", event => {
+    if (!countdownShown || event.pointerType === "touch" || countdownAnimationFrame !== null) return;
+    const style = getComputedStyle(countdownElement);
+    if (Number(style.opacity) > 0 && style.visibility !== "hidden" && style.display !== "none") {
+        updateCountdown({ animate: true });
+    }
+});
+
+countdownMotionQuery.addEventListener?.("change", event => {
+    if (event.matches && countdownShown) finishCountdownAnimation();
+});
+document.addEventListener("visibilitychange", () => {
+    if (countdownShown) finishCountdownAnimation();
+});
+window.addEventListener("pagehide", () => {
+    if (countdownShown) finishCountdownAnimation();
+});
 
 
 /* ===========================

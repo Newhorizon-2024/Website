@@ -15,7 +15,7 @@
 
     <link
         rel="stylesheet"
-        href="styles/main.css?v=26.9.2.1"
+        href="styles/main.css?v=26.10.19.1"
     >
 
     <!-- ===========================
@@ -166,7 +166,7 @@
         </div>
 
         <!-- 运行时间 -->
-        <div id="countdown"></div>
+        <div id="countdown">00:00:00:00</div>
     </div>
 
     <!-- ===========================
@@ -223,14 +223,17 @@
                 00:00
             </span>
 
-            <input
-                id="progress-bar"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value="0"
-            >
+            <div id="progress-elastic-track">
+                <input
+                    id="progress-bar"
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value="0"
+                    aria-label="播放进度"
+                >
+            </div>
 
             <span id="remaining-time">
                 00:00
@@ -270,6 +273,8 @@
             <button
                 id="volume-btn"
                 type="button"
+                aria-controls="volume-slider-container"
+                aria-expanded="false"
             >
                 音量
             </button>
@@ -278,20 +283,29 @@
         <!-- 音量控制 -->
         <div
             id="volume-slider-container"
-            style="display: none;"
+            aria-hidden="true"
+            inert
         >
-            <input
-                id="volume-slider"
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value="1"
-            >
+            <div class="volume-wake-slider">
+                <div class="volume-wake-track">
+                    <div class="volume-wake-bars" aria-hidden="true"></div>
+                    <input
+                        id="volume-slider"
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value="0.5"
+                        aria-label="音量"
+                        aria-valuetext="50%"
+                    >
+                </div>
+                <output id="volume-value" for="volume-slider" aria-hidden="true">50%</output>
+            </div>
         </div>
 
         <!-- 歌单面板 -->
-        <div id="playlist-container">
+        <div id="playlist-container" data-lenis-prevent>
             <h2>歌单</h2>
             <ul id="playlist"></ul>
         </div>
@@ -322,6 +336,29 @@
                 class="website-update-log"
                 aria-label="New Horizon 网站更新记录"
             >
+                <article class="website-update-entry">
+                    <time datetime="2026-10-19T01:05:29+08:00">
+                        2026年10月19日 01:05:29
+                    </time>
+
+                    <ul>
+                        <li>新增九点方块图片加载提示，图片准备完成后淡入，减少展示图片突然出现的情况。</li>
+                        <li>重做“组织”目录，采用环形圆柱轮播与升起入场动画，保留组织资料的打开入口。</li>
+                        <li>重做创作者作品大图预览，支持拖动、方向键与指示点切换，并加入黑白形变转场。</li>
+                        <li>放大创作者作品预览图片，保留黑边与完整画面，并移除切换按钮的空心圆框。</li>
+                        <li>将历史时间线主线改为漂浮曲线，保留事件浏览功能，并修复节点早于主线出现的问题。</li>
+                        <li>优化时间线背景曲线的清晰度，以及桌面端与移动端的显示效果。</li>
+                        <li>重新设计世界观公转、自转模块的进入与退出过渡，优化页面切换的衔接。</li>
+                        <li>调整移动端手风琴入口：首次点击展开，再次点击同一入口进入；点击其他入口时切换展开项。</li>
+                        <li>为“事物”转轮的中央文字加入故障扰动效果，为网站运行时间加入从零递增的显示动画。</li>
+                        <li>更新播放器音量控件，加入波条交互及缓入缓出；为播放进度条加入弹性拉伸与回弹，保留原有颜色和进度圆点。</li>
+                        <li>重新设计“返回主页”按钮，支持拉扯、回弹与悬停提示；按住时暂时隐藏下方文字，松开恢复。</li>
+                        <li>修复歌单的鼠标滚轮浏览，滚动到边界时不再带动整个页面。</li>
+                        <li>新增《Stained, Brutal Calamity》播放专属白色火焰背景，采用中间低、两侧高的轮廓，暂停或切歌后退出。</li>
+                        <li>统一首页公告、播放器与导航栏的宽度，优化多项动画的后台暂停及减少动态效果适配。</li>
+                    </ul>
+                </article>
+
                 <article class="website-update-entry">
                     <time datetime="2026-09-01T16:13:27+08:00">
                         2026年9月1日 16:13:27
@@ -2251,6 +2288,7 @@
     <div
         id="creator-lightbox"
         role="dialog"
+        aria-label="创作者作品预览"
         aria-hidden="true"
         aria-modal="true"
     >
@@ -2271,12 +2309,16 @@
         </button>
 
         <figure class="creator-lightbox-figure">
+            <div id="creator-morph-stage" class="morph-slider-stage" role="group" aria-roledescription="图片轮播" aria-label="创作者作品，左右方向键切换，也可左右拖动" tabindex="0" data-morph-transition="melt">
             <img
                 id="creator-lightbox-image"
                 src=""
                 alt=""
                 decoding="async"
             >
+            </div>
+
+            <div class="creator-lightbox-indicators" role="tablist" aria-label="选择作品"></div>
 
             <figcaption class="creator-lightbox-information">
                 <p id="creator-lightbox-caption"></p>
@@ -4534,14 +4576,14 @@
 
 
         <!-- ===========================
-            组织平面浏览器
+            组织圆柱轮播
         =========================== -->
 
         <div
             id="organizations-orbit"
             class="organizations-orbit"
             role="listbox"
-            aria-label="世界观组织目录"
+            aria-label="世界观组织圆柱轮播，拖动或使用方向键浏览，点击打开档案"
             tabindex="0"
         >
             <!-- ===========================
@@ -4991,7 +5033,7 @@
                 </span>
 
                 <span>
-                    CLICK TO SELECT
+                    CLICK TO OPEN
                 </span>
             </div>
         </div>
@@ -6243,12 +6285,32 @@
          返回主页按钮
     =========================== -->
 
-    <button
-        id="back-to-home"
-        type="button"
-    >
-        返回主页
-    </button>
+    <div id="back-to-home" class="sling-button">
+        <svg class="sling-button__fx" viewBox="-40 -40 80 80" aria-hidden="true">
+            <g class="sling-button__tension" opacity="0">
+                <path class="sling-button__band" />
+                <path class="sling-button__band sling-button__band--hot" />
+            </g>
+            <circle class="sling-button__well" r="35" />
+            <circle class="sling-button__arc" r="35" pathLength="1" stroke-dasharray="0 1" opacity="0" />
+        </svg>
+        <span class="sling-button__move">
+            <button id="back-to-home-pad" class="sling-button__pad" type="button" aria-label="返回主页" aria-describedby="back-to-home-hint">
+                <span class="sling-button__face">
+                    <span class="sling-button__icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 20V4M5 11l7-7 7 7" />
+                        </svg>
+                    </span>
+                </span>
+            </button>
+        </span>
+        <span class="sling-button__label" aria-hidden="true">返回主页</span>
+        <span id="back-to-home-hint" class="sling-button__hint" role="status" aria-live="polite">
+            <span class="sling-button__hint-left">点击返回</span>
+            <span class="sling-button__hint-right">拉开后松手</span>
+        </span>
+    </div>
 
 
     <!-- ===========================
@@ -6339,22 +6401,22 @@
 
     <script
         type="module"
-        src="scripts/main.js?v=26.9.2.1"
+        src="scripts/main.js?v=26.10.18.2"
     ></script>
 
     <script
         type="module"
-        src="scripts/overlay.js?v=26.9.2.1"
+        src="scripts/overlay.js?v=26.10.18.2"
     ></script>
 
     <script
         type="module"
-        src="scripts/controls.js?v=26.9.2.1"
+        src="scripts/controls.js?v=26.10.19.1"
     ></script>
 
     <script
         type="module"
-        src="scripts/events.js?v=26.9.2.1"
+        src="scripts/events.js?v=26.10.19.1"
     ></script>
 </body>
 </html>

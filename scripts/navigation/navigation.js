@@ -1,3 +1,13 @@
+import {
+    showWorldviewCore,
+    hideWorldviewCore,
+    transitionWorldviewCoreOut
+} from "../effects/worldview-core.js?v=26.10.18.1";
+
+import {
+    initializeSlingButton
+} from "../effects/sling-button.js?v=26.10.18.11";
+
 /* ===========================
    1. 导航栏状态
 =========================== */
@@ -632,6 +642,12 @@ export function initializeNavigation() {
         disableScrollAnchoring();
 
         try {
+            // 保持旧 Section 可见，等待世界观画布离场后才提交页面切换。
+            if (previousId === "worldview-section") {
+                await transitionWorldviewCoreOut();
+                hideWorldviewCore();
+            }
+
             /*
             * 清理无关页面。
             */
@@ -701,6 +717,8 @@ export function initializeNavigation() {
 
                 activeSection =
                     targetSection;
+
+                if (sectionId === "worldview-section") showWorldviewCore();
 
                 dispatchSectionShown(
                     sectionId,
@@ -786,6 +804,8 @@ export function initializeNavigation() {
             */
             void document.documentElement
                 .offsetHeight;
+
+            if (sectionId === "worldview-section") showWorldviewCore();
 
             window.requestAnimationFrame(
                 () => {
@@ -959,9 +979,9 @@ export function initializeNavigation() {
     8. 返回首页
     =========================== */
 
-    backToHomeButton?.addEventListener(
-        "click",
-        () => {
+    initializeSlingButton({
+        root: backToHomeButton,
+        onSend: () => {
             showSection(
                 "home-section",
                 {
@@ -976,7 +996,7 @@ export function initializeNavigation() {
                 }
             );
         }
-    );
+    });
 
 
     /* ===========================
@@ -1006,6 +1026,8 @@ export function initializeNavigation() {
         activeSection?.id ||
         "home-section"
     );
+
+    if (activeSection?.id === "worldview-section") showWorldviewCore();
 
     updateBountyPosterState(
         activeSection?.id ||

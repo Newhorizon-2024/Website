@@ -18,7 +18,7 @@
     padding: 10px 0;
     position: relative;
     white-space: nowrap;
-    width: 88%;
+    width: var(--site-home-panel-width);
     z-index: 4;
 }
 
@@ -91,7 +91,7 @@ body.is-section-transitioning #navbar .tab {
         overflow-x: auto;
         padding: 8px 0;
         scrollbar-width: none;
-        width: 94%;
+        width: var(--site-home-panel-width);
     }
 
     #navbar::-webkit-scrollbar {

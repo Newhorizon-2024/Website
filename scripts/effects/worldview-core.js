@@ -285,6 +285,25 @@ let revealStartedAt =
 let revealDuration =
     1100;
 
+let revealTargetProgress = 1;
+let transitionPhase = "hidden";
+let exitPromise = null;
+let resolveExit = null;
+let exitTimeout = null;
+let showFrameId = null;
+let sceneTime = 0;
+let exitVisual = null;
+let currentVisual = { core: 0, orbit: 0, label: 0 };
+
+function finishCoreExit() {
+    window.clearTimeout(exitTimeout);
+    exitTimeout = null;
+    const complete = resolveExit;
+    resolveExit = null;
+    exitPromise = null;
+    complete?.();
+}
+
 let unavailableSignalUntil =
     0;
 
@@ -1841,13 +1860,6 @@ function openWorldviewOrbiter(
         return false;
     }
 
-    interactionEnabled =
-        false;
-
-    dispatchCursorClear();
-
-    hideWorldviewCore();
-
     window.showSection(
         sectionId,
         {
@@ -2156,10 +2168,13 @@ function animate() {
             animate
         );
 
-    const time =
-        clock.getElapsedTime();
+    // 暂停期间不累计时间；返回时沿用离开前的公转、自转姿态。
+    const delta = Math.min(clock.getDelta(), 0.05);
+    sceneTime += delta;
+    const time = sceneTime;
+    const frameStep = delta * 60;
 
-    if (revealProgress < 1) {
+    if (transitionPhase === "entering" || transitionPhase === "exiting") {
         const elapsed =
             performance.now() -
             revealStartedAt;
@@ -2167,7 +2182,7 @@ function animate() {
         revealProgress =
             revealStartProgress +
             (
-                1 -
+                revealTargetProgress -
                 revealStartProgress
             ) *
             clamp(
@@ -2177,40 +2192,44 @@ function animate() {
                 1
             );
 
-        if (revealProgress >= 1) {
-            revealProgress =
-                1;
-            interactionEnabled =
-                true;
+        if (elapsed >= revealDuration) {
+            revealProgress = revealTargetProgress;
+            const entering = transitionPhase === "entering";
+            transitionPhase = entering ? "idle" : "exited";
+            interactionEnabled = entering;
+            if (entering) hasCompletedInitialReveal = true;
             container?.classList.remove(
                 "is-core-establishing",
                 "is-core-restoring"
             );
+            if (!entering) finishCoreExit();
         }
     }
 
-    const easedReveal =
-        easeInOutCubic(
-            revealProgress
-        );
+    const exiting = transitionPhase === "exiting" || transitionPhase === "exited";
+    const easedReveal = smoothstep(0, 1,
+        exiting && revealStartProgress > 0
+            ? revealProgress / revealStartProgress
+            : revealProgress
+    );
 
     const coreReveal =
-        smoothstep(
-            0.06,
-            0.56,
+        (exiting ? exitVisual.core : 1) * smoothstep(
+            exiting ? 0 : 0.02,
+            exiting ? 0.72 : 0.58,
             easedReveal
         );
 
     const orbitReveal =
-        smoothstep(
-            0.4,
-            0.86,
+        (exiting ? exitVisual.orbit : 1) * smoothstep(
+            exiting ? 0.12 : 0.14,
+            exiting ? 0.9 : 0.88,
             easedReveal
         );
 
     const labelReveal =
-        smoothstep(
-            0.68,
+        (exiting ? exitVisual.label : 1) * smoothstep(
+            exiting ? 0.62 : 0.48,
             1,
             easedReveal
         );
@@ -2218,17 +2237,22 @@ function animate() {
     coreRoot.scale.setScalar(
         WORLDVIEW_CORE_CONFIG.coreScale *
         (
-            0.92 +
-            coreReveal *
-            0.08
+            0.86 +
+            (exiting ? easedReveal * (exitVisual.coreScale - 0.86) : coreReveal * 0.14)
         )
     );
 
     orbitRoot.scale.setScalar(
-        0.82 +
-        orbitReveal *
-            0.18
+        exiting
+            ? exitVisual.orbitScale - (1 - easedReveal) * 0.1
+            : 0.72 + orbitReveal * 0.28
     );
+
+    // 使用真实相机纵深，避免在整个 Section 上叠加平移和模糊。
+    camera.position.z = exiting
+        ? exitVisual.cameraZ + (1 - easedReveal) * 1.15
+        : 16 + (1 - easedReveal) * 1.8;
+    currentVisual = { core: coreReveal, orbit: orbitReveal, label: labelReveal };
 
     coreRoot.visible =
         coreReveal >
@@ -2649,23 +2673,23 @@ function animate() {
 
             pivot.rotation.y +=
                 data.orbitSpeed *
-                0.01 *
+                0.01 * frameStep *
                 unavailableSpeed *
                 orbitReveal;
 
             group.rotation.x +=
                 data.spinX *
-                0.01 *
+                0.01 * frameStep *
                 orbitReveal;
 
             group.rotation.y +=
                 data.spinY *
-                0.01 *
+                0.01 * frameStep *
                 orbitReveal;
 
             group.rotation.z +=
                 data.spinZ *
-                0.01 *
+                0.01 * frameStep *
                 orbitReveal;
 
             group.position.y =
@@ -2696,13 +2720,13 @@ function animate() {
                     : data.label.userData
                         .baseOpacity;
 
-            data.label.material.opacity =
+            data.label.material.opacity = Math.min(labelReveal,
                 THREE.MathUtils.lerp(
                     data.label.material.opacity,
                     labelTargetOpacity *
                         labelReveal,
                     0.12
-                );
+                ));
 
             const nextScale =
                 THREE.MathUtils.lerp(
@@ -2823,6 +2847,9 @@ export function showWorldviewCore() {
         return false;
     }
 
+    // 导航统一管理显示；重复通知不会重新播放或建立第二条 RAF。
+    if (active) return true;
+
     active =
         true;
 
@@ -2836,7 +2863,7 @@ export function showWorldviewCore() {
         reducedMotionQuery.matches
             ? 1
             : returning
-                ? 0.34
+                ? 0
                 : 0;
 
     revealProgress =
@@ -2844,18 +2871,19 @@ export function showWorldviewCore() {
 
     revealDuration =
         returning
-            ? 460
-            : 1100;
+            ? 620
+            : 1050;
+
+    revealTargetProgress = 1;
+    transitionPhase = reducedMotionQuery.matches ? "idle" : "entering";
 
     revealStartedAt =
         performance.now();
 
-    hasCompletedInitialReveal =
-        true;
-
     if (reducedMotionQuery.matches) {
         interactionEnabled =
             true;
+        hasCompletedInitialReveal = true;
     }
 
     container.classList.remove(
@@ -2899,8 +2927,9 @@ export function showWorldviewCore() {
         )
     );
 
-    window.requestAnimationFrame(
+    showFrameId = window.requestAnimationFrame(
         () => {
+            showFrameId = null;
             if (!active) {
                 return;
             }
@@ -2924,6 +2953,42 @@ export function showWorldviewCore() {
 }
 
 
+/* 离场由导航等待完成，画布仍留在当前布局中进行真实的空间收束。 */
+export function transitionWorldviewCoreOut() {
+    if (!active || reducedMotionQuery.matches) return Promise.resolve();
+    if (exitPromise) return exitPromise;
+
+    interactionEnabled = false;
+    dragging = false;
+    rotationVelocityX = rotationVelocityY = rotationVelocityZ = 0;
+    targetManualRotationX = manualRotationX;
+    targetManualRotationY = manualRotationY;
+    targetManualRotationZ = manualRotationZ;
+    mouse.set(2, 2);
+    clearHoveredOrbiter();
+    dispatchCursorClear();
+    dispatchCursorSuspend();
+    container.classList.remove("is-core-establishing", "is-core-restoring");
+    container.classList.add("is-core-exiting");
+    // 即使在入场中途离开，也从当前帧开始收束，不跳到完整展开状态。
+    exitVisual = {
+        ...currentVisual,
+        coreScale: coreRoot.scale.x / WORLDVIEW_CORE_CONFIG.coreScale,
+        orbitScale: orbitRoot.scale.x,
+        cameraZ: camera.position.z
+    };
+    revealStartProgress = revealProgress;
+    revealTargetProgress = 0;
+    revealDuration = 380;
+    revealStartedAt = performance.now();
+    transitionPhase = "exiting";
+    exitPromise = new Promise(resolve => { resolveExit = resolve; });
+    // 后台标签页 RAF 暂停时也能完成导航，避免锁住所有导航按钮。
+    exitTimeout = window.setTimeout(finishCoreExit, revealDuration + 100);
+    return exitPromise;
+}
+
+
 /* ===========================
    35. 隐藏
 =========================== */
@@ -2932,6 +2997,13 @@ export function hideWorldviewCore() {
     if (!initialized) {
         return;
     }
+
+    if (showFrameId !== null) {
+        window.cancelAnimationFrame(showFrameId);
+        showFrameId = null;
+    }
+    finishCoreExit();
+    transitionPhase = "hidden";
 
     window.dispatchEvent(
         new CustomEvent(
@@ -2947,7 +3019,8 @@ export function hideWorldviewCore() {
 
     container?.classList.remove(
         "is-core-establishing",
-        "is-core-restoring"
+        "is-core-restoring",
+        "is-core-exiting"
     );
 
     dragging =
@@ -2959,14 +3032,7 @@ export function hideWorldviewCore() {
     hoveredCore =
         false;
 
-    lockedOpen =
-        false;
-
-    openness =
-        0;
-
-    targetOpenness =
-        0;
+    // 保留核心展开状态及手动旋转，返回时恢复同一片空间。
 
     targetManualRotationX =
         manualRotationX;
@@ -3079,88 +3145,3 @@ export function getWorldviewCoreContext() {
 }
 
 
-/* ===========================
-   38. 恢复世界观 Core
-=========================== */
-
-function restoreWorldviewCoreAfterReturn() {
-    let attempts =
-        0;
-
-    const maximumAttempts =
-        20;
-
-    function tryRestore() {
-        attempts +=
-            1;
-
-        const section =
-            document.getElementById(
-                "worldview-section"
-            );
-
-        if (!section) {
-            return;
-        }
-
-        const rect =
-            section.getBoundingClientRect();
-
-        const visible =
-            section.classList.contains(
-                "is-active"
-            ) ||
-            section.classList.contains(
-                "slide-enter-left"
-            ) ||
-            section.classList.contains(
-                "slide-enter-right"
-            ) ||
-            section.classList.contains(
-                "depth-enter"
-            );
-
-        if (
-            visible &&
-            rect.width >
-                0 &&
-            rect.height >
-                0
-        ) {
-            showWorldviewCore();
-            return;
-        }
-
-        if (
-            attempts <
-            maximumAttempts
-        ) {
-            window.requestAnimationFrame(
-                tryRestore
-            );
-        }
-    }
-
-    window.requestAnimationFrame(
-        tryRestore
-    );
-}
-
-
-/* ===========================
-   39. 从独立区块返回世界观
-=========================== */
-
-window.addEventListener(
-    "before-back-to-parent",
-    event => {
-        if (
-            event.detail?.to !==
-            "worldview-section"
-        ) {
-            return;
-        }
-
-        restoreWorldviewCoreAfterReturn();
-    }
-);

@@ -58,6 +58,8 @@ body.locked {
 =========================== */
 
 :root {
+    /* 主页导航、播放器与公告共用同一条外沿。 */
+    --site-home-panel-width: 88%;
     /* 公共面板 */
     --site-panel-background: rgba(40, 40, 40, 0.9);
     --site-panel-blur: 8px;
@@ -81,4 +83,8 @@ body.locked {
     --section-slide-duration: 650ms;
     --section-transition-easing:
         cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (max-width: 600px) {
+    :root { --site-home-panel-width: 94%; }
 }

@@ -1,10 +1,3 @@
-import {
-    hideWorldviewCore,
-    initializeWorldviewCore,
-    showWorldviewCore
-} from "../effects/worldview-core.js";
-
-
 /* ===========================
     情报署手风琴
 =========================== */
@@ -20,6 +13,11 @@ export function initializeNhnAccordion() {
             ".back-to-nhn"
         );
 
+    const mobileQuery = window.matchMedia(
+        "(max-width: 768px), (hover: none), (pointer: coarse)"
+    );
+    let navigating = false;
+
     if (
         accordionOptions.length === 0 &&
         backToNhnButtons.length === 0
@@ -33,6 +31,7 @@ export function initializeNhnAccordion() {
                 option.classList.remove(
                     "expanded"
                 );
+                option.setAttribute("aria-expanded", "false");
             }
         );
     }
@@ -68,34 +67,14 @@ export function initializeNhnAccordion() {
         );
     }
 
-    function updateWorldviewState(
-        targetId
-    ) {
-        if (
-            targetId ===
-            "worldview-section"
-        ) {
-            /*
-             * 等待showSection完成当前帧中的显示切换，
-             * 再读取容器尺寸并启动渲染。
-             */
-            window.requestAnimationFrame(
-                () => {
-                    showWorldviewCore();
-                }
-            );
-
-            return;
-        }
-
-        hideWorldviewCore();
-    }
-
     accordionOptions.forEach(
         option => {
             option.addEventListener(
                 "click",
-                () => {
+                async event => {
+                    if (navigating || document.body.classList.contains("is-section-transitioning")) {
+                        return;
+                    }
                     const targetId =
                         option.dataset.target;
 
@@ -106,15 +85,23 @@ export function initializeNhnAccordion() {
 
                     resetAccordionOptions();
 
+                    const requiresConfirmation = mobileQuery.matches || event.pointerType === "touch";
+                    if (requiresConfirmation && !isExpanded) {
+                        option.classList.add("expanded");
+                        option.setAttribute("aria-expanded", "true");
+                        return;
+                    }
+
                     /*
                      * 没有 data-target 的选项
                      * 只负责手风琴展开。
                      */
                     if (!targetId) {
-                        if (!isExpanded) {
+                        if (requiresConfirmation || !isExpanded) {
                             option.classList.add(
                                 "expanded"
                             );
+                            option.setAttribute("aria-expanded", "true");
                         }
 
                         return;
@@ -136,28 +123,17 @@ export function initializeNhnAccordion() {
                     option.classList.add(
                         "expanded"
                     );
+                    option.setAttribute("aria-expanded", "true");
 
-                    window.setTimeout(
-                        async () => {
-                            option.classList.remove(
-                                "expanded"
-                            );
+                    if (typeof window.showSection !== "function") {
+                        console.error("全局 showSection 尚未初始化。");
+                        return;
+                    }
 
-                            resetTimelineDetails();
-
-                            if (
-                                typeof window
-                                    .showSection !==
-                                "function"
-                            ) {
-                                console.error(
-                                    "全局 showSection 尚未初始化。"
-                                );
-
-                                return;
-                            }
-
-                            await window.showSection(
+                    navigating = true;
+                    resetTimelineDetails();
+                    try {
+                        await window.showSection(
                                 targetId,
                                 {
                                     transitionType:
@@ -169,13 +145,11 @@ export function initializeNhnAccordion() {
                                     scrollMode:
                                         "none"
                                 }
-                            );
-
-                            updateWorldviewState(
-                                targetId
-                            );
-                        }
-                    );
+                        );
+                    } finally {
+                        navigating = false;
+                        resetAccordionOptions();
+                    }
                 }
             );
         }
@@ -203,8 +177,6 @@ export function initializeNhnAccordion() {
                         return;
                     }
 
-                    hideWorldviewCore();
-
                     window.showSection(
                         "nhn-section",
                         {
@@ -222,4 +194,8 @@ export function initializeNhnAccordion() {
             );
         }
     );
+
+    resetAccordionOptions();
+    mobileQuery.addEventListener?.("change", resetAccordionOptions);
+    window.addEventListener("section-shown", resetAccordionOptions);
 }

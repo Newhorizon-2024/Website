@@ -463,13 +463,13 @@ function showCountdown() {
         return;
     }
 
-    // 立即更新一次
-    window.updateCountdown();
-
     // 避免重复创建定时器
     if (countdownInterval) {
         return;
     }
+
+    // 首次显示从全零递增，随后由原有定时器继续正常计时。
+    window.updateCountdown({ animate: true });
 
     countdownInterval =
         window.setInterval(

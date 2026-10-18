@@ -184,10 +184,10 @@ export function initializeWorldviewThings() {
         "Bossrush";
 
     let fuzzyIntensity =
-        0.22;
+        0.18;
 
     let fuzzyTargetIntensity =
-        0.22;
+        0.18;
 
     let fuzzyCanvasWidth =
         0;
@@ -205,6 +205,8 @@ export function initializeWorldviewThings() {
 
     let visualEffectsActive =
         false;
+
+    let wheelVisible = true;
 
 
     /* ===========================
@@ -695,391 +697,107 @@ export function initializeWorldviewThings() {
 
 
     /* ===========================
-       Fuzzy Text 尺寸
+       Fuzzy Text：源文字逐行切片
+       参考参数：900 字重、0.18 / 0.5 强度、1px 切片、60fps
     =========================== */
+
+    const fuzzySource = document.createElement("canvas");
+    const fuzzySourceContext = fuzzySource.getContext("2d");
+    let fuzzyPixelRatio = 1;
+    let fuzzyInk = "";
+    let fuzzyFont = "";
+    let fuzzyRange = 30;
+    let fuzzyInkBounds = { left: 0, top: 0, width: 0, height: 0 };
+    let lastFuzzyFrame = 0;
+    let lastFuzzyInkCheck = 0;
+
+    function paintFuzzySource() {
+        if (!fuzzySourceContext || !fuzzyFont) return;
+        fuzzySourceContext.setTransform(1, 0, 0, 1, 0, 0);
+        fuzzySourceContext.clearRect(0, 0, fuzzySource.width, fuzzySource.height);
+        fuzzySourceContext.setTransform(fuzzyPixelRatio, 0, 0, fuzzyPixelRatio, 0, 0);
+        fuzzySourceContext.font = fuzzyFont;
+        fuzzySourceContext.textBaseline = "alphabetic";
+        fuzzySourceContext.fillStyle = fuzzyInk;
+        const metrics = fuzzySourceContext.measureText(fuzzyText);
+        fuzzySourceContext.fillText(
+            fuzzyText,
+            5 + (metrics.actualBoundingBoxLeft || 0),
+            metrics.actualBoundingBoxAscent || parseFloat(fuzzyFont.split(" ")[1])
+        );
+    }
 
     function resizeFuzzyTextCanvas() {
-        const rect =
-            fuzzyTextCanvas
-                .getBoundingClientRect();
+        const rect = fuzzyTextCanvas.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0 || !fuzzySourceContext) return;
 
-        if (
-            rect.width <= 0 ||
-            rect.height <= 0
-        ) {
-            return;
-        }
-
-        const pixelRatio =
-            Math.min(
-                window.devicePixelRatio ||
-                    1,
-                2
-            );
-
-        fuzzyCanvasWidth =
-            rect.width;
-
-        fuzzyCanvasHeight =
-            rect.height;
-
-        fuzzyTextCanvas.width =
-            Math.max(
-                1,
-                Math.round(
-                    rect.width *
-                    pixelRatio
-                )
-            );
-
-        fuzzyTextCanvas.height =
-            Math.max(
-                1,
-                Math.round(
-                    rect.height *
-                    pixelRatio
-                )
-            );
-
-        fuzzyTextContext.setTransform(
-            pixelRatio,
-            0,
-            0,
-            pixelRatio,
-            0,
-            0
+        fuzzyCanvasWidth = rect.width;
+        fuzzyCanvasHeight = rect.height;
+        fuzzyPixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        // 窄屏缩小扰动留白，为长名称保留完整的文字空间。
+        fuzzyRange = Math.min(30, Math.max(12, rect.width * 0.1));
+        const style = getComputedStyle(fuzzyTextCanvas);
+        const family = style.fontFamily || 'Arial, "Microsoft YaHei", sans-serif';
+        let fontSize = Math.min(50, Math.max(24, rect.width / 6));
+        const availableWidth = Math.max(1, rect.width - (fuzzyRange + 8) * 2 - 10);
+        fuzzySourceContext.font = `900 ${fontSize}px ${family}`;
+        const initialWidth = fuzzySourceContext.measureText(fuzzyText).width;
+        if (initialWidth > availableWidth) fontSize *= availableWidth / initialWidth;
+        fuzzyFont = `900 ${fontSize}px ${family}`;
+        fuzzySourceContext.font = fuzzyFont;
+        const metrics = fuzzySourceContext.measureText(fuzzyText);
+        const width = Math.ceil(
+            (metrics.actualBoundingBoxLeft || 0) +
+            (metrics.actualBoundingBoxRight ?? metrics.width)
         );
+        const height = Math.ceil(
+            (metrics.actualBoundingBoxAscent ?? fontSize) +
+            (metrics.actualBoundingBoxDescent ?? fontSize * 0.2)
+        );
+        fuzzySource.width = Math.max(1, Math.ceil((width + 10) * fuzzyPixelRatio));
+        fuzzySource.height = Math.max(1, Math.ceil(height * fuzzyPixelRatio));
+        fuzzyTextCanvas.width = Math.max(1, Math.round(rect.width * fuzzyPixelRatio));
+        fuzzyTextCanvas.height = Math.max(1, Math.round(rect.height * fuzzyPixelRatio));
+        fuzzyInkBounds = {
+            left: (rect.width - width) / 2,
+            top: (rect.height - height) / 2,
+            width,
+            height
+        };
+        fuzzyInk = style.color || "#eeeeee";
+        paintFuzzySource();
+        lastFuzzyFrame = 0;
+        drawFuzzyText();
     }
 
-
-    /* ===========================
-       计算 Fuzzy Text 字号
-    =========================== */
-
-    function getFuzzyFontSize() {
-        const textLength =
-            Math.max(
-                1,
-                fuzzyText.length
-            );
-
-        const widthBasedSize =
-            fuzzyCanvasWidth /
-            Math.max(
-                4.5,
-                textLength *
-                    0.72
-            );
-
-        return clamp(
-            widthBasedSize,
-            24,
-            50
-        );
-    }
-
-
-    /* ===========================
-    绘制 Fuzzy Text
-    =========================== */
-
-    function drawFuzzyText(
-        currentTime = performance.now()
-    ) {
-        if (
-            fuzzyCanvasWidth <= 0 ||
-            fuzzyCanvasHeight <= 0
-        ) {
+    function drawFuzzyText(currentTime = performance.now()) {
+        if (!fuzzySource.width || !fuzzyCanvasWidth || !fuzzyCanvasHeight) return;
+        // 源文字仅在内容、尺寸、字体或颜色变化时重绘。
+        if (currentTime - lastFuzzyInkCheck > 250) {
+            lastFuzzyInkCheck = currentTime;
+            const ink = getComputedStyle(fuzzyTextCanvas).color || "#eeeeee";
+            if (ink !== fuzzyInk) {
+                fuzzyInk = ink;
+                paintFuzzySource();
+            }
+        }
+        fuzzyTextContext.setTransform(1, 0, 0, 1, 0, 0);
+        fuzzyTextContext.clearRect(0, 0, fuzzyTextCanvas.width, fuzzyTextCanvas.height);
+        const amplitude = (reducedMotionQuery.matches ? 0 : fuzzyIntensity) *
+            fuzzyRange * fuzzyPixelRatio;
+        const x = Math.round((fuzzyTextCanvas.width - fuzzySource.width) / 2);
+        const y = Math.round((fuzzyTextCanvas.height - fuzzySource.height) / 2);
+        if (amplitude < 0.5) {
+            fuzzyTextContext.drawImage(fuzzySource, x, y);
             return;
         }
-
-        fuzzyTextContext.clearRect(
-            0,
-            0,
-            fuzzyCanvasWidth,
-            fuzzyCanvasHeight
-        );
-
-        const fontSize =
-            getFuzzyFontSize();
-
-        fuzzyTextContext.font =
-            `400 ${fontSize}px Arial, "Microsoft YaHei", sans-serif`;
-
-        fuzzyTextContext.textAlign =
-            "center";
-
-        fuzzyTextContext.textBaseline =
-            "middle";
-
-        const centerX =
-            fuzzyCanvasWidth /
-            2;
-
-        const centerY =
-            fuzzyCanvasHeight /
-            2;
-
-        /*
-        * 周期性脉冲。
-        * 即使鼠标未悬停，文字也会有轻微闪烁。
-        */
-        const pulse =
-            (
-                Math.sin(
-                    currentTime *
-                    0.012
-                ) +
-                1
-            ) /
-            2;
-
-        const secondaryPulse =
-            (
-                Math.sin(
-                    currentTime *
-                    0.027 +
-                    1.8
-                ) +
-                1
-            ) /
-            2;
-
-        const activeIntensity =
-            reducedMotionQuery.matches
-                ? 0
-                : fuzzyIntensity;
-
-        /*
-        * 整体透明度也略微波动，
-        * 形成比单纯位移更明显的闪烁。
-        */
-        const mainOpacity =
-            clamp(
-                0.76 +
-                pulse *
-                    0.18 +
-                activeIntensity *
-                    0.05,
-                0,
-                1
-            );
-
-        /*
-        * 偶发横向跳动。
-        * 数值经过取整，制造数字信号式抖动。
-        */
-        const mainJitterX =
-            reducedMotionQuery.matches
-                ? 0
-                : Math.round(
-                    (
-                        Math.random() -
-                        0.5
-                    ) *
-                    (
-                        0.8 +
-                        activeIntensity *
-                        3.8
-                    )
-                );
-
-        const mainJitterY =
-            reducedMotionQuery.matches
-                ? 0
-                : Math.round(
-                    (
-                        Math.random() -
-                        0.5
-                    ) *
-                    (
-                        0.3 +
-                        activeIntensity *
-                        1.3
-                    )
-                );
-
-        /*
-        * 第一组残影：
-        * 较清晰、较靠近主体。
-        */
-        const nearCopyCount =
-            Math.round(
-                5 +
-                activeIntensity *
-                    10
-            );
-
-        for (
-            let index = 0;
-            index < nearCopyCount;
-            index += 1
-        ) {
-            const offsetX =
-                (
-                    Math.random() -
-                    0.5
-                ) *
-                (
-                    3 +
-                    activeIntensity *
-                    11
-                );
-
-            const offsetY =
-                (
-                    Math.random() -
-                    0.5
-                ) *
-                (
-                    1 +
-                    activeIntensity *
-                    3.6
-                );
-
-            const opacity =
-                0.025 +
-                activeIntensity *
-                    0.045 +
-                pulse *
-                    0.018;
-
-            fuzzyTextContext.fillStyle =
-                `rgba(
-                    242,
-                    242,
-                    242,
-                    ${opacity}
-                )`;
-
-            fuzzyTextContext.fillText(
-                fuzzyText,
-                centerX +
-                    offsetX,
-                centerY +
-                    offsetY
-            );
-        }
-
-        /*
-        * 第二组残影：
-        * 更稀疏、更远，制造明显的水平毛刺。
-        */
-        const farCopyCount =
-            Math.round(
-                2 +
-                activeIntensity *
-                    5
-            );
-
-        for (
-            let index = 0;
-            index < farCopyCount;
-            index += 1
-        ) {
-            const direction =
-                Math.random() >
-                0.5
-                    ? 1
-                    : -1;
-
-            const offsetX =
-                direction *
-                (
-                    5 +
-                    Math.random() *
-                    (
-                        7 +
-                        activeIntensity *
-                        13
-                    )
-                );
-
-            const offsetY =
-                (
-                    Math.random() -
-                    0.5
-                ) *
-                2.2;
-
-            const opacity =
-                0.012 +
-                activeIntensity *
-                    0.027 +
-                secondaryPulse *
-                    0.012;
-
-            fuzzyTextContext.fillStyle =
-                `rgba(
-                    242,
-                    242,
-                    242,
-                    ${opacity}
-                )`;
-
-            fuzzyTextContext.fillText(
-                fuzzyText,
-                centerX +
-                    offsetX,
-                centerY +
-                    offsetY
-            );
-        }
-
-        /*
-        * 主文字。
-        */
-        fuzzyTextContext.fillStyle =
-            `rgba(
-                242,
-                242,
-                242,
-                ${mainOpacity}
-            )`;
-
-        fuzzyTextContext.fillText(
-            fuzzyText,
-            centerX +
-                mainJitterX,
-            centerY +
-                mainJitterY
-        );
-
-        /*
-        * 极短暂的亮层。
-        * 不是每帧出现，从而产生不规则闪烁。
-        */
-        const flashProbability =
-            0.025 +
-            activeIntensity *
-                0.065;
-
-        if (
-            !reducedMotionQuery.matches &&
-            Math.random() <
-                flashProbability
-        ) {
-            fuzzyTextContext.fillStyle =
-                `rgba(
-                    255,
-                    255,
-                    255,
-                    ${
-                        0.28 +
-                        activeIntensity *
-                            0.32
-                    }
-                )`;
-
-            fuzzyTextContext.fillText(
-                fuzzyText,
-                centerX +
-                    (
-                        Math.random() -
-                        0.5
-                    ) *
-                    2,
-                centerY
+        const sliceSize = Math.max(1, Math.round(fuzzyPixelRatio));
+        for (let row = 0; row < fuzzySource.height; row += sliceSize) {
+            const height = Math.min(sliceSize, fuzzySource.height - row);
+            const shift = Math.round((Math.random() - 0.5) * amplitude);
+            fuzzyTextContext.drawImage(
+                fuzzySource, 0, row, fuzzySource.width, height,
+                x + shift, y + row, fuzzySource.width, height
             );
         }
     }
@@ -1198,7 +916,7 @@ export function initializeWorldviewThings() {
     ) {
         if (
             !visualEffectsActive ||
-            !isSectionActive()
+            !isSectionActive() || document.hidden || !wheelVisible
         ) {
             visualAnimationFrameId =
                 null;
@@ -1206,12 +924,7 @@ export function initializeWorldviewThings() {
             return;
         }
 
-        fuzzyIntensity =
-            lerp(
-                fuzzyIntensity,
-                fuzzyTargetIntensity,
-                0.12
-            );
+        fuzzyIntensity = fuzzyTargetIntensity;
 
         shapeStrength =
             clamp(
@@ -1275,7 +988,10 @@ export function initializeWorldviewThings() {
             )
         );
 
-        drawFuzzyText();
+        if (currentTime - lastFuzzyFrame >= 1000 / 60 - 1) {
+            lastFuzzyFrame = currentTime;
+            drawFuzzyText(currentTime);
+        }
 
         visualAnimationFrameId =
             window.requestAnimationFrame(
@@ -1284,6 +1000,12 @@ export function initializeWorldviewThings() {
     }
 
     function startVisualEffects() {
+        if (!isSectionActive() || document.hidden || !wheelVisible) return;
+        if (reducedMotionQuery.matches) {
+            stopVisualEffects();
+            resizeFuzzyTextCanvas();
+            return;
+        }
         visualEffectsActive =
             true;
 
@@ -1450,20 +1172,25 @@ export function initializeWorldviewThings() {
        中心文字悬停
     =========================== */
 
-    function handleCenterPointerEnter() {
+    function handleCenterPointerEnter(event) {
         if (
             reducedMotionQuery.matches
         ) {
             return;
         }
 
-        fuzzyTargetIntensity =
-            1;
+        const rect = fuzzyTextCanvas.getBoundingClientRect();
+        const x = (event.clientX - rect.left) * fuzzyCanvasWidth / (rect.width || 1);
+        const y = (event.clientY - rect.top) * fuzzyCanvasHeight / (rect.height || 1);
+        const overText = finePointerQuery.matches && event.pointerType !== "touch" &&
+            x >= fuzzyInkBounds.left && x <= fuzzyInkBounds.left + fuzzyInkBounds.width &&
+            y >= fuzzyInkBounds.top && y <= fuzzyInkBounds.top + fuzzyInkBounds.height;
+        fuzzyTargetIntensity = overText ? 0.5 : 0.18;
     }
 
     function handleCenterPointerLeave() {
         fuzzyTargetIntensity =
-            0.22;
+            0.18;
     }
 
 
@@ -1925,7 +1652,7 @@ export function initializeWorldviewThings() {
             false;
 
         fuzzyTargetIntensity =
-            0.22;
+            0.18;
 
         clearShapePointer();
 
@@ -1976,6 +1703,15 @@ export function initializeWorldviewThings() {
         }
     );
 
+    const wheelVisibilityObserver = typeof IntersectionObserver === "function"
+        ? new IntersectionObserver(([entry]) => {
+            wheelVisible = entry.isIntersecting;
+            if (wheelVisible) updateSectionState();
+            else stopVisualEffects();
+        })
+        : null;
+    wheelVisibilityObserver?.observe(wheel);
+
 
     /* ===========================
        系统设置变化
@@ -1985,6 +1721,7 @@ export function initializeWorldviewThings() {
         event
     ) {
         if (event.matches) {
+            stopVisualEffects();
             fuzzyTargetIntensity =
                 0;
 
@@ -2005,7 +1742,7 @@ export function initializeWorldviewThings() {
         }
 
         fuzzyTargetIntensity =
-            0.22;
+            0.18;
 
         if (isSectionActive()) {
             startVisualEffects();
@@ -2058,6 +1795,9 @@ export function initializeWorldviewThings() {
         "pointerleave",
         handleCenterPointerLeave
     );
+
+    centerButton.addEventListener("pointermove", handleCenterPointerEnter);
+    centerButton.addEventListener("pointercancel", handleCenterPointerLeave);
 
     centerButton.addEventListener(
         "dragstart",
@@ -2159,11 +1899,21 @@ export function initializeWorldviewThings() {
 
     window.addEventListener(
         "pagehide",
-        () => {
+        event => {
             resetInteractionState();
             stopVisualEffects();
+            if (!event.persisted) {
+                wheelVisibilityObserver?.disconnect();
+                sectionClassObserver.disconnect();
+            }
         }
     );
+
+    window.addEventListener("pageshow", updateSectionState);
+
+    document.fonts?.ready.then(() => {
+        if (isSectionActive()) resizeFuzzyTextCanvas();
+    });
 
     document.addEventListener(
         "visibilitychange",

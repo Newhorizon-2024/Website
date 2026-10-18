@@ -1,6 +1,6 @@
 import {
     initializeNavigation
-} from "./navigation/navigation.js";
+} from "./navigation/navigation.js?v=26.10.18.11";
 
 import {
     initializeBackToParent
@@ -8,7 +8,7 @@ import {
 
 import {
     initializeMusicControls
-} from "./music-controls/player.js";
+} from "./music-controls/player.js?v=26.10.19.1";
 
 
 /* ===========================

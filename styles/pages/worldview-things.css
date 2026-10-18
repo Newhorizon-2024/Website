@@ -819,6 +819,9 @@
 =========================== */
 
 .things-wheel-fuzzy-text {
+    color: inherit;
+    font-family: Arial, "Microsoft YaHei", sans-serif;
+    font-weight: 900;
     display:
         block;
     height:

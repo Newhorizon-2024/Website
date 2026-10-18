@@ -1,0 +1,118 @@
+/* 音量面板沿用歌单的展开、位移及透明度时序，不使用 display 切换。 */
+#volume-slider-container {
+    box-sizing: border-box;
+    display: block;
+    margin: 0 auto;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0;
+    pointer-events: none;
+    position: relative;
+    transform: translateY(-12px) scale(0.985);
+    transform-origin: top center;
+    transition:
+        max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease,
+        padding 0.4s ease,
+        margin-top 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s linear 0.55s;
+    visibility: hidden;
+    width: min(320px, calc(100% - 40px));
+}
+#volume-slider-container.is-open {
+    margin-top: 16px;
+    max-height: 88px;
+    opacity: 1;
+    padding: 8px 0;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    transition:
+        max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease,
+        padding 0.4s ease,
+        margin-top 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0s;
+    visibility: visible;
+}
+.volume-wake-slider {
+    --volume-wake-fill: #f5f5f5;
+    --volume-wake-track: #27272a;
+    align-items: center;
+    color: #eee;
+    display: flex;
+    gap: 12px;
+    height: 56px;
+    width: 100%;
+}
+.volume-wake-track {
+    align-items: center;
+    cursor: grab;
+    display: flex;
+    flex: 1 1 auto;
+    height: 56px;
+    min-width: 0;
+    position: relative;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.volume-wake-bars {
+    align-items: center;
+    display: flex;
+    gap: 4px;
+    height: 100%;
+    pointer-events: none;
+    width: 100%;
+}
+.volume-wake-bar {
+    background: var(--volume-wake-track);
+    border-radius: 999px;
+    flex: 1 1 0;
+    height: 56px;
+    min-width: 0;
+    transform: scaleY(0.2142857143);
+    transform-origin: center;
+    transition: background-color 120ms ease;
+}
+.volume-wake-bar[data-on="true"] { background: var(--volume-wake-fill); }
+/* 保留原有原生 range 的键盘和无障碍能力，视觉由柱条负责。 */
+.volume-wake-slider.is-enhanced #volume-slider {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    cursor: grab;
+    height: 100%;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    padding: 0;
+    pointer-events: none;
+    position: absolute;
+    touch-action: none;
+    width: 100%;
+}
+.volume-wake-slider.is-dragging .volume-wake-track { cursor: grabbing; }
+.volume-wake-track:has(#volume-slider:focus-visible) {
+    outline: 1px solid rgba(238, 238, 238, 0.5);
+    outline-offset: 5px;
+}
+#volume-value {
+    color: rgba(238, 238, 238, 0.65);
+    flex: 0 0 4ch;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+@media (max-width: 360px) {
+    .volume-wake-bars { gap: 3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #volume-slider-container,
+    #volume-slider-container.is-open,
+    .volume-wake-bar { transition: none; }
+    .volume-wake-bar { transform: scaleY(0.2142857143) !important; }
+}

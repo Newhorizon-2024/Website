@@ -8,11 +8,8 @@
 =========================== */
 
 const TIMELINE_THREADS_CONFIG = {
-    /*
-     * 内部分辨率比例。
-     * 越低越节省性能，线条也会更柔和。
-     */
-    resolutionScale: 0.72,
+    /* 按 CSS 尺寸和屏幕像素密度绘制，避免低分辨率拉伸。 */
+    maximumPixelRatio: 2,
 
     /*
      * 流线数量。
@@ -78,15 +75,12 @@ const TIMELINE_THREADS_CONFIG = {
     nodeRadius: 330,
 
     /*
-     * 模糊程度。
-     */
-    blurAmount: 7,
-
-    /*
      * 颜色。
      */
     color: [218, 218, 218]
 };
+
+let timelineInitialized = false;
 
 
 /* ===========================
@@ -94,6 +88,7 @@ const TIMELINE_THREADS_CONFIG = {
 =========================== */
 
 export function initializeNhnTimeline() {
+    if (timelineInitialized) return;
     const timelineSection =
         document.getElementById(
             "timeline-section"
@@ -118,6 +113,29 @@ export function initializeNhnTimeline() {
     ) {
         return;
     }
+
+    timelineInitialized = true;
+    const timelineScroll = timelineSection.querySelector(".timeline-scroll");
+    const timelineTrack = timelineSection.querySelector(".timeline-track");
+    const timelineLine = timelineSection.querySelector(".timeline-line");
+    const svgNamespace = "http://www.w3.org/2000/svg";
+    const mainCurve = document.createElementNS(svgNamespace, "svg");
+    const mainPath = document.createElementNS(svgNamespace, "path");
+    mainCurve.classList.add("timeline-main-curve");
+    mainCurve.setAttribute("aria-hidden", "true");
+    mainCurve.setAttribute("focusable", "false");
+    mainPath.classList.add("timeline-main-path");
+    mainPath.setAttribute("fill", "none");
+    mainPath.setAttribute("vector-effect", "non-scaling-stroke");
+    mainPath.setAttribute("pathLength", "1");
+    mainCurve.append(mainPath);
+    timelineLine?.append(mainCurve);
+    timelineLine?.setAttribute("aria-hidden", "true");
+    let canvasWidth = 0;
+    let canvasHeight = 0;
+    let canvasPixelRatio = 0;
+    let mainGeometry = null;
+    let focusedItem = null;
 
 
     /* ===========================
@@ -305,8 +323,8 @@ export function initializeNhnTimeline() {
             return false;
         }
 
-        threadsContext.imageSmoothingEnabled =
-            true;
+        threadsContext.lineCap = "round";
+        threadsContext.lineJoin = "round";
 
         return true;
     }
@@ -410,63 +428,89 @@ export function initializeNhnTimeline() {
        8. Canvas 尺寸
     =========================== */
 
+    function getLayoutOffset(element) {
+        let x = 0;
+        let y = 0;
+        for (let node = element; node && node !== timelineSection; node = node.offsetParent) {
+            x += node.offsetLeft;
+            y += node.offsetTop;
+        }
+        return { x, y };
+    }
+
+    function measureMainCurve() {
+        if (!timelineTrack || !timelineLine || !timelineSection.clientWidth) return;
+        const width = timelineLine.clientWidth;
+        const height = timelineTrack.offsetHeight;
+        if (!width || !height) return;
+        const style = getComputedStyle(timelineTrack);
+        const dotSize = parseFloat(getComputedStyle(timelineSection).getPropertyValue("--timeline-dot-size")) || 16;
+        mainGeometry = {
+            width, height,
+            baseline: parseFloat(style.paddingTop) + dotSize / 2,
+            lineLeft: innerWidth > 600 ? (timelineTrack.clientWidth - width) / 2 : 0,
+            offset: getLayoutOffset(timelineTrack),
+            amplitude: innerWidth > 600 ? 27 : 16,
+            nodes: Array.from(timelineItems, item => ({
+                item,
+                x: item.offsetLeft + item.offsetWidth / 2
+            }))
+        };
+        mainCurve.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        drawMainCurve();
+    }
+
+    function mainCurveOffset(x) {
+        if (!mainGeometry) return 0;
+        const progress = x / mainGeometry.width;
+        return (
+            Math.sin(progress * Math.PI * 2 * 1.15 + elapsedTime * 0.75) +
+            Math.sin(progress * Math.PI * 2 * 2.1 - elapsedTime * 0.42 + 0.8) * 0.22
+        ) * mainGeometry.amplitude;
+    }
+
+    function drawMainCurve() {
+        if (!mainGeometry) return;
+        const { width, baseline, lineLeft, nodes } = mainGeometry;
+        // 三次贝塞尔片段通过同一函数采样；节点中心严格落在这条线上。
+        const sampleCount = Math.max(24, Math.ceil(width / 24));
+        const step = width / sampleCount;
+        let path = `M 0 ${(baseline + mainCurveOffset(0)).toFixed(3)}`;
+        for (let index = 0; index < sampleCount; index++) {
+            const x0 = index * step;
+            const x1 = (index + 1) * step;
+            const y0 = baseline + mainCurveOffset(x0);
+            const y1 = baseline + mainCurveOffset(x1);
+            const tangent0 = (mainCurveOffset(x0 + 0.25) - mainCurveOffset(x0 - 0.25)) / 0.5;
+            const tangent1 = (mainCurveOffset(x1 + 0.25) - mainCurveOffset(x1 - 0.25)) / 0.5;
+            path += ` C ${(x0 + step / 3).toFixed(3)} ${(y0 + tangent0 * step / 3).toFixed(3)}, ${(x1 - step / 3).toFixed(3)} ${(y1 - tangent1 * step / 3).toFixed(3)}, ${x1.toFixed(3)} ${y1.toFixed(3)}`;
+        }
+        mainPath.setAttribute("d", path);
+        nodes.forEach(({item, x}) => {
+            item.style.transform = `translate3d(0, ${mainCurveOffset(x - lineLeft).toFixed(3)}px, 0)`;
+        });
+        if (focusedItem && nodeFocus.active) updateNodeFocusPosition(focusedItem, nodeFocus.selected);
+    }
+
     function resizeThreadsCanvas() {
-        if (
-            !threadsCanvas ||
-            !threadsContext
-        ) {
-            return;
+        if (!threadsCanvas || !threadsContext) return;
+        const width = timelineSection.clientWidth;
+        const height = timelineSection.clientHeight;
+        if (!width || !height) return;
+        canvasWidth = width;
+        canvasHeight = height;
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, TIMELINE_THREADS_CONFIG.maximumPixelRatio);
+        canvasPixelRatio = pixelRatio;
+        const backingWidth = Math.max(1, Math.round(width * pixelRatio));
+        const backingHeight = Math.max(1, Math.round(height * pixelRatio));
+        if (threadsCanvas.width !== backingWidth || threadsCanvas.height !== backingHeight) {
+            threadsCanvas.width = backingWidth;
+            threadsCanvas.height = backingHeight;
         }
-
-        const rect =
-            timelineSection
-                .getBoundingClientRect();
-
-        const scale =
-            TIMELINE_THREADS_CONFIG
-                .resolutionScale;
-
-        const pixelRatio =
-            Math.min(
-                window.devicePixelRatio ||
-                    1,
-                1.5
-            );
-
-        const width =
-            Math.max(
-                1,
-                Math.round(
-                    rect.width *
-                    scale *
-                    pixelRatio
-                )
-            );
-
-        const height =
-            Math.max(
-                1,
-                Math.round(
-                    rect.height *
-                    scale *
-                    pixelRatio
-                )
-            );
-
-        if (
-            threadsCanvas.width ===
-                width &&
-            threadsCanvas.height ===
-                height
-        ) {
-            return;
-        }
-
-        threadsCanvas.width =
-            width;
-
-        threadsCanvas.height =
-            height;
+        threadsContext.setTransform(backingWidth / width, 0, 0, backingHeight / height, 0, 0);
+        threadsContext.lineCap = "round";
+        threadsContext.lineJoin = "round";
+        measureMainCurve();
     }
 
 
@@ -474,76 +518,28 @@ export function initializeNhnTimeline() {
        9. 获取节点位置
     =========================== */
 
-    function updateNodeFocusPosition(
-        item,
-        selected = false
-    ) {
-        if (!item) {
-            nodeFocus.active =
-                false;
-
-            nodeFocus.selected =
-                false;
-
-            nodeFocus.targetStrength =
-                0;
-
+    function updateNodeFocusPosition(item, selected = false) {
+        focusedItem = item;
+        if (!item || !mainGeometry) {
+            nodeFocus.active = false;
+            nodeFocus.selected = false;
+            nodeFocus.targetStrength = 0;
             return;
         }
-
-        const sectionRect =
-            timelineSection
-                .getBoundingClientRect();
-
-        const itemRect =
-            item.getBoundingClientRect();
-
-        if (
-            sectionRect.width <= 0 ||
-            sectionRect.height <= 0
-        ) {
-            return;
-        }
-
-        nodeFocus.targetX =
-            clamp(
-                (
-                    itemRect.left +
-                    itemRect.width /
-                        2 -
-                    sectionRect.left
-                ) /
-                sectionRect.width,
-                0,
-                1
-            );
-
-        nodeFocus.targetY =
-            clamp(
-                (
-                    itemRect.top +
-                    Math.min(
-                        itemRect.height,
-                        24
-                    ) /
-                        2 -
-                    sectionRect.top
-                ) /
-                sectionRect.height,
-                0,
-                1
-            );
-
-        nodeFocus.active =
-            true;
-
-        nodeFocus.selected =
-            selected;
-
-        nodeFocus.targetStrength =
-            selected
-                ? 1
-                : 0.58;
+        const node = mainGeometry.nodes.find(node => node.item === item);
+        if (!node || !canvasWidth || !canvasHeight) return;
+        nodeFocus.targetX = clamp(
+            (mainGeometry.offset.x + node.x - (timelineScroll?.scrollLeft || 0)) / canvasWidth,
+            0, 1
+        );
+        nodeFocus.targetY = clamp(
+            (mainGeometry.offset.y + mainGeometry.baseline +
+                mainCurveOffset(node.x - mainGeometry.lineLeft)) / canvasHeight,
+            0, 1
+        );
+        nodeFocus.active = true;
+        nodeFocus.selected = selected;
+        nodeFocus.targetStrength = selected ? 1 : 0.58;
     }
 
 
@@ -848,6 +844,7 @@ export function initializeNhnTimeline() {
     ) {
         if (
             !sectionVisible ||
+            document.hidden || !timelineSection.classList.contains("is-active") ||
             reducedMotion ||
             !threadsContext ||
             !threadsCanvas
@@ -879,6 +876,11 @@ export function initializeNhnTimeline() {
             TIMELINE_THREADS_CONFIG
                 .baseSpeed *
             speedMultiplier;
+
+        if (canvasPixelRatio !== Math.min(window.devicePixelRatio || 1, TIMELINE_THREADS_CONFIG.maximumPixelRatio)) {
+            resizeThreadsCanvas();
+        }
+        drawMainCurve();
 
         pointer.x =
             lerp(
@@ -923,10 +925,10 @@ export function initializeNhnTimeline() {
             );
 
         const width =
-            threadsCanvas.width;
+            canvasWidth;
 
         const height =
-            threadsCanvas.height;
+            canvasHeight;
 
         threadsContext.clearRect(
             0,
@@ -940,11 +942,7 @@ export function initializeNhnTimeline() {
         threadsContext.globalCompositeOperation =
             "screen";
 
-        threadsContext.filter =
-            `blur(
-                ${TIMELINE_THREADS_CONFIG
-                    .blurAmount}px
-            )`;
+        threadsContext.filter = "none";
 
         const activeIntensity =
             clamp(
@@ -983,6 +981,8 @@ export function initializeNhnTimeline() {
     =========================== */
 
     function startThreads() {
+        if (!sectionVisible || document.hidden || !timelineSection.classList.contains("is-active")) return;
+        resizeThreadsCanvas();
         if (
             reducedMotion ||
             !sectionVisible ||
@@ -991,8 +991,6 @@ export function initializeNhnTimeline() {
         ) {
             return;
         }
-
-        resizeThreadsCanvas();
 
         lastFrameTime =
             performance.now();
@@ -1028,8 +1026,8 @@ export function initializeNhnTimeline() {
         threadsContext.clearRect(
             0,
             0,
-            threadsCanvas.width,
-            threadsCanvas.height
+            canvasWidth,
+            canvasHeight
         );
     }
 
@@ -1039,6 +1037,7 @@ export function initializeNhnTimeline() {
     =========================== */
 
     function hideTimelineDetails() {
+        focusedItem = null;
         timelineDetails.forEach(
             detail => {
                 detail.classList.remove(
@@ -1261,6 +1260,8 @@ export function initializeNhnTimeline() {
                     nodeFocus.active =
                         false;
 
+                    focusedItem = null;
+
                     nodeFocus.targetStrength =
                         0;
 
@@ -1305,6 +1306,8 @@ export function initializeNhnTimeline() {
 
                     nodeFocus.targetStrength =
                         0;
+                    nodeFocus.active = false;
+                    focusedItem = null;
                 }
             );
 
@@ -1439,6 +1442,8 @@ export function initializeNhnTimeline() {
             nodeFocus.active =
                 false;
 
+            focusedItem = null;
+
             nodeFocus.targetStrength =
                 0;
         }
@@ -1511,6 +1516,53 @@ export function initializeNhnTimeline() {
     resizeObserver.observe(
         timelineSection
     );
+
+    if (timelineTrack) resizeObserver.observe(timelineTrack);
+    timelineScroll?.addEventListener("scroll", () => {
+        if (focusedItem) updateNodeFocusPosition(focusedItem, nodeFocus.selected);
+    }, { passive: true });
+
+    function updateTimelineVisibility() {
+        const rect = timelineSection.getBoundingClientRect();
+        sectionVisible = timelineSection.classList.contains("is-active") &&
+            rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < innerHeight &&
+            rect.right > 0 && rect.left < innerWidth;
+        if (sectionVisible && !document.hidden) startThreads();
+        else {
+            stopThreads();
+            clearThreadsCanvas();
+        }
+    }
+
+    const sectionClassObserver = new MutationObserver(updateTimelineVisibility);
+    sectionClassObserver.observe(timelineSection, { attributes: true, attributeFilter: ["class"] });
+    let pixelRatioQuery = null;
+    function watchPixelRatio() {
+        pixelRatioQuery?.removeEventListener("change", handlePixelRatioChange);
+        pixelRatioQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+        pixelRatioQuery.addEventListener("change", handlePixelRatioChange);
+    }
+    function handlePixelRatioChange() {
+        watchPixelRatio();
+        resizeThreadsCanvas();
+        updateTimelineVisibility();
+    }
+    watchPixelRatio();
+    window.addEventListener("resize", () => {
+        resizeThreadsCanvas();
+        updateTimelineVisibility();
+    }, { passive: true });
+    document.addEventListener("visibilitychange", updateTimelineVisibility);
+    window.addEventListener("pageshow", updateTimelineVisibility);
+    window.addEventListener("pagehide", event => {
+        stopThreads();
+        if (!event.persisted) {
+            resizeObserver.disconnect();
+            intersectionObserver?.disconnect();
+            sectionClassObserver.disconnect();
+            pixelRatioQuery?.removeEventListener("change", handlePixelRatioChange);
+        }
+    });
 
     intersectionObserver =
         new IntersectionObserver(
@@ -1585,6 +1637,7 @@ export function initializeNhnTimeline() {
 
         if (reducedMotion) {
             stopThreads();
+            resizeThreadsCanvas();
             clearThreadsCanvas();
             return;
         }
@@ -1617,6 +1670,7 @@ export function initializeNhnTimeline() {
 
     window.refreshTimelineThreads =
         () => {
+            updateTimelineVisibility();
             resizeThreadsCanvas();
 
             const activeItem =

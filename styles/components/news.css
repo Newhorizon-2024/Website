@@ -2,6 +2,11 @@
    26. 新闻区块
 =========================== */
 
+/* 不继承公共面板在平板端额外加宽的规则。 */
+#news-section {
+    width: var(--site-home-panel-width);
+}
+
 /* 网站更新记录 */
 .website-update-log {
     margin: 0 auto 28px;

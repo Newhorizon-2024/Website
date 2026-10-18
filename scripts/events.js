@@ -3,8 +3,12 @@
 =========================== */
 
 import {
+    initializeImageLoading
+} from "./effects/image-loading.js?v=26.10.18.11";
+
+import {
     initializeCreatorGallery
-} from "./creators/creator-gallery.js";
+} from "./creators/creator-gallery.js?v=26.10.19.1";
 
 import {
     initializeCountdownTooltip
@@ -52,11 +56,11 @@ import {
 
 import {
     initializeWorldviewCore
-} from "./effects/worldview-core.js";
+} from "./effects/worldview-core.js?v=26.10.18.1";
 
 import {
     initializeWorldviewOrganizations
-} from "./effects/worldview-organizations.js";
+} from "./effects/worldview-organizations.js?v=26.10.18.11";
 
 import {
     initializeWorldviewTargetCursor
@@ -68,7 +72,7 @@ import {
 
 import {
     initializeWorldviewThings
-} from "./effects/worldview-things.js";
+} from "./effects/worldview-things.js?v=26.10.18.2";
 
 import {
     initializeWorldviewScenes
@@ -88,11 +92,11 @@ import {
 
 import {
     initializeNhnAccordion
-} from "./navigation/nhn-accordion.js";
+} from "./navigation/nhn-accordion.js?v=26.10.18.2";
 
 import {
     initializeNhnTimeline
-} from "./navigation/nhn-timeline.js";
+} from "./navigation/nhn-timeline.js?v=26.10.18.4";
 
 import {
     initializeWorkFeed
@@ -108,6 +112,7 @@ import {
 =========================== */
 
 function initializeEvents() {
+    initializeImageLoading();
     initializeBountyNavigation();
     initializeBossrushSection();
     initializeColosseumSection();

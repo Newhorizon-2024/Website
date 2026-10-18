@@ -1,0 +1,46 @@
+/* 仅增强播放进度条，不覆盖原有轨道颜色、Dot 的形状、颜色或阴影。 */
+#progress-elastic-track {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    flex: 1;
+    height: 6px;
+    min-width: 0;
+    position: relative;
+    touch-action: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+/* 提高手指可触及范围，不增加原有播放器行高。 */
+#progress-elastic-track::before {
+    content: "";
+    inset: -14px 0;
+    position: absolute;
+}
+#progress-elastic-track #progress-bar {
+    flex: 1;
+    height: var(--progress-elastic-height, 6px);
+    margin: 0;
+    pointer-events: none;
+    width: 100%;
+}
+#progress-elastic-track.is-pointer-focused #progress-bar {
+    outline: none;
+}
+#progress-elastic-track #progress-bar::-webkit-slider-runnable-track {
+    height: var(--progress-elastic-height, 6px);
+}
+#progress-elastic-track #progress-bar::-webkit-slider-thumb {
+    margin-top: calc((var(--progress-elastic-height, 6px) - 14px) / 2);
+    transform: scale(var(--progress-dot-scale-x, 1), var(--progress-dot-scale-y, 1));
+}
+#progress-elastic-track #progress-bar::-moz-range-track,
+#progress-elastic-track #progress-bar::-moz-range-progress {
+    height: var(--progress-elastic-height, 6px);
+}
+#progress-elastic-track #progress-bar::-moz-range-thumb {
+    transform: scale(var(--progress-dot-scale-x, 1), var(--progress-dot-scale-y, 1));
+}
+@media (max-width: 480px) {
+    #progress-elastic-track { flex: none; margin: 0 auto; width: 90%; }
+}

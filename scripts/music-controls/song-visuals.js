@@ -1,3 +1,5 @@
+import { applyShadowflameSong } from "../effects/shadowflame.js?v=26.10.19.1";
+
 /* ===========================
    Bossrush 视觉效果
 =========================== */
@@ -165,6 +167,7 @@ const AUDIO_VISUALIZER_CONFIG = {
 export function applySongVisuals(
     song
 ) {
+    applyShadowflameSong(song, backgroundMusic);
     const speedMultiplier =
         song?.speedMultiplier ||
         1;

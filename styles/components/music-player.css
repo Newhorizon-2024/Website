@@ -18,7 +18,7 @@
     max-width: 1400px;
     padding: 5vh 0;
     position: relative;
-    width: 88%;
+    width: var(--site-home-panel-width);
     z-index: 4;
 }
 
