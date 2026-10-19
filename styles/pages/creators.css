@@ -17,6 +17,21 @@
     width: 88%;
 }
 
+/* Only the held/returning work can cross the module; the resting layout stays clipped. */
+#creators-section.is-stack-extracted {
+    overflow: visible;
+}
+
+/* Root + body together prevent body overflow from propagating to the viewport. */
+html.creator-stack-extracted,
+body.creator-stack-extracted {
+    overflow-x: clip;
+}
+
+.creator-card.is-stack-extracted {
+    z-index: 6;
+}
+
 /* 创作者区块渐隐背景 */
 #creators-section::before {
     -webkit-backdrop-filter: blur(8px);
@@ -299,11 +314,21 @@
     padding: 0;
     position: absolute;
     top: 8%;
+    touch-action: pan-y pinch-zoom;
+    transform:
+        perspective(1000px)
+        translate3d(var(--stack-drag-x, 0px), var(--stack-drag-y, 0px), 0)
+        rotateX(var(--stack-tilt-x, 0deg))
+        rotateY(var(--stack-tilt-y, 0deg))
+        rotate(var(--stack-rotation, 0deg))
+        translate(var(--stack-x, 0%), var(--stack-y, 0%));
     transform-origin: center;
     transition:
         box-shadow 0.35s ease,
         filter 0.35s ease,
         transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 /* 创作者作品图片 */
@@ -317,70 +342,11 @@
     width: auto;
 }
 
-/* 第一张作品 */
-.creator-work:nth-child(1) {
-    transform:
-        rotate(var(--work-rotation-1))
-        translate(0, 0);
-    z-index: 4;
-}
-
-/* 第二张作品 */
-.creator-work:nth-child(2) {
-    transform:
-        rotate(var(--work-rotation-2))
-        translate(15%, 6%);
-    z-index: 3;
-}
-
-/* 第三张作品 */
-.creator-work:nth-child(3) {
-    transform:
-        rotate(var(--work-rotation-3))
-        translate(29%, 12%);
-    z-index: 2;
-}
-
-/* 第四张作品 */
-.creator-work:nth-child(4) {
-    transform:
-        rotate(var(--work-rotation-4))
-        translate(42%, 17%);
-    z-index: 1;
-}
-
-/* 偶数栏目作品从右侧开始堆叠 */
+/* 同一栏目保留原始 DOM 顺序，叠放位置和层级由 creator-stack.js 管理。 */
+/* 偶数栏目作品仍从右侧开始堆叠。 */
 .creator-card:nth-child(even) .creator-work {
     left: auto;
     right: 0;
-}
-
-/* 偶数栏目第一张作品 */
-.creator-card:nth-child(even) .creator-work:nth-child(1) {
-    transform:
-        rotate(var(--work-rotation-1))
-        translate(0, 0);
-}
-
-/* 偶数栏目第二张作品 */
-.creator-card:nth-child(even) .creator-work:nth-child(2) {
-    transform:
-        rotate(var(--work-rotation-2))
-        translate(-15%, 6%);
-}
-
-/* 偶数栏目第三张作品 */
-.creator-card:nth-child(even) .creator-work:nth-child(3) {
-    transform:
-        rotate(var(--work-rotation-3))
-        translate(-29%, 12%);
-}
-
-/* 偶数栏目第四张作品 */
-.creator-card:nth-child(even) .creator-work:nth-child(4) {
-    transform:
-        rotate(var(--work-rotation-4))
-        translate(-42%, 17%);
 }
 
 /* 创作者作品悬停与键盘焦点 */
@@ -389,11 +355,24 @@
     box-shadow: 0 26px 58px rgba(0, 0, 0, 0.58);
     filter: brightness(1.08);
     outline: none;
-    transform:
-        rotate(0)
-        translate(0, -12px)
-        scale(1.035);
-    z-index: 4;
+}
+
+.creator-work:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.75);
+    outline-offset: 2px;
+}
+
+.creator-gallery.is-stack-dragging,
+.creator-gallery.is-stack-extracted {
+    z-index: 5;
+}
+
+.creator-work.is-stack-dragging {
+    box-shadow: 0 30px 65px rgba(0, 0, 0, 0.6);
+    cursor: grabbing;
+    transition: none;
+    will-change: transform;
+    z-index: 100 !important;
 }
 
 /* 创作者作品内部图片放大 */
@@ -510,7 +489,7 @@
     align-items: center;
     -webkit-backdrop-filter: blur(18px);
     backdrop-filter: blur(18px);
-    background: rgba(5, 5, 5, 0.9);
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     inset: 0;
     justify-content: center;
@@ -543,10 +522,10 @@
 }
 
 .morph-slider-stage {
-    background: #050505;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 16px;
-    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.55);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
     box-sizing: border-box;
     cursor: grab;
     height: 100%;
@@ -634,8 +613,8 @@
 #creator-lightbox-image {
     height: auto;
     width: auto;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.72);
+    border: 0;
+    box-shadow: none;
     display: block;
     max-height: 78vh;
     max-width: 100%;
@@ -660,8 +639,8 @@
 
 /* 在缩略图和大图之间移动的临时图片 */
 .creator-gallery-transition-image {
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.72);
+    border: 0;
+    box-shadow: none;
     object-fit: cover;
     pointer-events: none;
     position: fixed;
@@ -858,7 +837,7 @@ body.creator-lightbox-open {
         width: var(--creator-preview-width);
     }
 
-    .morph-slider-stage { height: 100%; border-radius: 12px; }
+    .morph-slider-stage { height: 100%; border-radius: 0; }
     .creator-lightbox-information { font-size: 13px; }
     #creator-lightbox-caption { font-size: 13px; }
 
@@ -884,7 +863,6 @@ body.creator-lightbox-open {
 @media (hover: none), (pointer: coarse) {
     .creator-work:hover {
         filter: none;
-        transform: none;
     }
 
     .creator-work:hover img {

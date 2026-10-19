@@ -1,0 +1,38 @@
+/* Keep the existing h2 sizes/alignment and real text/br wrapping; no clipping mask. */
+.creator-name h2.creator-name-text {
+    overflow: visible;
+}
+
+.creator-name-text__visual {
+    white-space: normal;
+}
+
+.creator-name-text__word {
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: baseline;
+    white-space: normal;
+}
+
+.creator-name-text__char {
+    display: inline-block;
+    vertical-align: baseline;
+}
+
+.creator-name-text[data-name-text-state="pending"] .creator-name-text__char {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+}
+
+.creator-name-text[data-name-text-state="entering"] .creator-name-text__char {
+    will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .creator-name-text .creator-name-text__char {
+        opacity: 1 !important;
+        transform: none !important;
+        translate: none !important;
+        will-change: auto !important;
+    }
+}

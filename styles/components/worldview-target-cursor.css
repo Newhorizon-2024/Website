@@ -40,13 +40,13 @@
 }
 
 /* 拖动期间降低存在感 */
-#worldview-target-cursor.is-suspended {
-    opacity: 0.3;
+/* 锁定方块 */
+#worldview-target-cursor.is-active.is-locked {
+    opacity: 1;
 }
 
-/* 锁定方块 */
-#worldview-target-cursor.is-locked {
-    opacity: 1;
+#worldview-target-cursor.is-active.is-suspended {
+    opacity: 0.3;
 }
 
 
@@ -117,286 +117,61 @@
 
 
 /* ===========================
-   4. Crosshair
+   4. Crosshair: full-length, smoothly followed, then softly dispersed.
+   Distortion stays on the two thin lines, never the whole viewport.
 =========================== */
 
 #worldview-crosshair {
     --crosshair-x: -100px;
     --crosshair-y: -100px;
-
-    height: 100vh;
-    left: 0;
-    opacity: 0;
+    inset: 0;
     pointer-events: none;
     position: fixed;
-    top: 0;
-    transform:
-        translate3d(
-            var(--crosshair-x),
-            var(--crosshair-y),
-            0
-        )
-        translate(-50%, -50%);
-    width: 100vw;
     z-index: 11;
 }
 
-/* Crosshair 释放状态 */
-#worldview-crosshair.is-releasing {
-    animation:
-        worldview-crosshair-release
-        0.72s
-        cubic-bezier(
-            0.16,
-            1,
-            0.3,
-            1
-        )
-        forwards;
+.worldview-crosshair-filters {
+    height: 0;
+    position: absolute;
+    width: 0;
 }
 
-
-/* ===========================
-   5. Crosshair 横线
-=========================== */
+.worldview-crosshair-horizontal,
+.worldview-crosshair-vertical {
+    background: #fff;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    transform-origin: center;
+}
 
 .worldview-crosshair-horizontal {
-    background:
-        linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.02) 12%,
-            rgba(255, 255, 255, 0.18) 38%,
-            rgba(255, 255, 255, 0.85) 50%,
-            rgba(255, 255, 255, 0.18) 62%,
-            rgba(255, 255, 255, 0.02) 88%,
-            transparent 100%
-        );
     height: 1px;
-    left: 50%;
-    position: absolute;
-    top: 50%;
-    transform:
-        translate(-50%, -50%)
-        scaleX(0);
-    transform-origin: center;
-    width: 100vw;
+    transform: translate3d(0, var(--crosshair-y), 0);
+    width: 100%;
 }
 
-
-/* ===========================
-   6. Crosshair 竖线
-=========================== */
-
 .worldview-crosshair-vertical {
-    background:
-        linear-gradient(
-            180deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.02) 12%,
-            rgba(255, 255, 255, 0.18) 38%,
-            rgba(255, 255, 255, 0.85) 50%,
-            rgba(255, 255, 255, 0.18) 62%,
-            rgba(255, 255, 255, 0.02) 88%,
-            transparent 100%
-        );
-    height: 100vh;
-    left: 50%;
-    position: absolute;
-    top: 50%;
-    transform:
-        translate(-50%, -50%)
-        scaleY(0);
-    transform-origin: center;
+    height: 100%;
+    transform: translate3d(var(--crosshair-x), 0, 0);
     width: 1px;
 }
 
-
-/* ===========================
-   7. Crosshair 中心点
-=========================== */
-
-.worldview-crosshair-point {
-    background: #FFFFFF;
-    border-radius: 50%;
-    box-shadow:
-        0 0 8px
-        rgba(255, 255, 255, 0.75),
-        0 0 28px
-        rgba(255, 255, 255, 0.24);
-    height: 4px;
-    left: 50%;
-    position: absolute;
-    top: 50%;
-    transform:
-        translate(-50%, -50%)
-        scale(0);
-    width: 4px;
-}
-
-
-/* ===========================
-   8. Crosshair 动画绑定
-=========================== */
-
-#worldview-crosshair.is-releasing
-.worldview-crosshair-horizontal {
-    animation:
-        worldview-crosshair-horizontal
-        0.72s
-        cubic-bezier(
-            0.16,
-            1,
-            0.3,
-            1
-        )
-        forwards;
-}
-
-#worldview-crosshair.is-releasing
-.worldview-crosshair-vertical {
-    animation:
-        worldview-crosshair-vertical
-        0.72s
-        cubic-bezier(
-            0.16,
-            1,
-            0.3,
-            1
-        )
-        forwards;
-}
-
-#worldview-crosshair.is-releasing
-.worldview-crosshair-point {
-    animation:
-        worldview-crosshair-point
-        0.58s
-        ease-out
-        forwards;
-}
-
-
-/* ===========================
-   9. Crosshair 释放动画
-=========================== */
-
-@keyframes worldview-crosshair-release {
-    0% {
-        opacity: 0;
-    }
-
-    8% {
-        opacity: 1;
-    }
-
-    42% {
-        opacity: 0.88;
-    }
-
-    100% {
-        opacity: 0;
+@media (max-width: 768px), (hover: none), (pointer: coarse) {
+    #worldview-target-cursor,
+    #worldview-crosshair {
+        display: none;
     }
 }
 
-
-/* 横线从中心瞬间贯穿屏幕 */
-@keyframes worldview-crosshair-horizontal {
-    0% {
-        filter: blur(2px);
-        opacity: 0;
-        transform:
-            translate(-50%, -50%)
-            scaleX(0);
+@media (prefers-reduced-motion: reduce) {
+    #worldview-target-cursor {
+        transition: none;
     }
 
-    18% {
-        filter: blur(0);
-        opacity: 1;
-        transform:
-            translate(-50%, -50%)
-            scaleX(1);
-    }
-
-    55% {
-        opacity: 0.72;
-        transform:
-            translate(-50%, -50%)
-            scaleX(1);
-    }
-
-    100% {
-        filter: blur(1px);
-        opacity: 0;
-        transform:
-            translate(-50%, -50%)
-            scaleX(1.08);
-    }
-}
-
-
-/* 竖线从中心瞬间贯穿屏幕 */
-@keyframes worldview-crosshair-vertical {
-    0% {
-        filter: blur(2px);
-        opacity: 0;
-        transform:
-            translate(-50%, -50%)
-            scaleY(0);
-    }
-
-    18% {
-        filter: blur(0);
-        opacity: 1;
-        transform:
-            translate(-50%, -50%)
-            scaleY(1);
-    }
-
-    55% {
-        opacity: 0.72;
-        transform:
-            translate(-50%, -50%)
-            scaleY(1);
-    }
-
-    100% {
-        filter: blur(1px);
-        opacity: 0;
-        transform:
-            translate(-50%, -50%)
-            scaleY(1.08);
-    }
-}
-
-
-/* 中心点爆发 */
-@keyframes worldview-crosshair-point {
-    0% {
-        opacity: 0;
-        transform:
-            translate(-50%, -50%)
-            scale(0);
-    }
-
-    18% {
-        opacity: 1;
-        transform:
-            translate(-50%, -50%)
-            scale(2.2);
-    }
-
-    42% {
-        opacity: 0.92;
-        transform:
-            translate(-50%, -50%)
-            scale(1);
-    }
-
-    100% {
-        opacity: 0;
-        transform:
-            translate(-50%, -50%)
-            scale(0.25);
+    #worldview-crosshair {
+        display: none;
     }
 }

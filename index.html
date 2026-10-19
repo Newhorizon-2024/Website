@@ -15,7 +15,7 @@
 
     <link
         rel="stylesheet"
-        href="styles/main.css?v=26.10.19.1"
+        href="styles/main.css?v=26.10.20.1"
     >
 
     <!-- ===========================
@@ -337,116 +337,113 @@
                 aria-label="New Horizon 网站更新记录"
             >
                 <article class="website-update-entry">
-                    <time datetime="2026-10-19T01:05:29+08:00">
-                        2026年10月19日 01:05:29
+                    <time datetime="2026-10-20T00:25:23+08:00">
+                        2026年10月20日 00:25:23
                     </time>
 
                     <ul>
-                        <li>新增九点方块图片加载提示，图片准备完成后淡入，减少展示图片突然出现的情况。</li>
-                        <li>重做“组织”目录，采用环形圆柱轮播与升起入场动画，保留组织资料的打开入口。</li>
-                        <li>重做创作者作品大图预览，支持拖动、方向键与指示点切换，并加入黑白形变转场。</li>
-                        <li>放大创作者作品预览图片，保留黑边与完整画面，并移除切换按钮的空心圆框。</li>
-                        <li>将历史时间线主线改为漂浮曲线，保留事件浏览功能，并修复节点早于主线出现的问题。</li>
-                        <li>优化时间线背景曲线的清晰度，以及桌面端与移动端的显示效果。</li>
-                        <li>重新设计世界观公转、自转模块的进入与退出过渡，优化页面切换的衔接。</li>
-                        <li>调整移动端手风琴入口：首次点击展开，再次点击同一入口进入；点击其他入口时切换展开项。</li>
-                        <li>为“事物”转轮的中央文字加入故障扰动效果，为网站运行时间加入从零递增的显示动画。</li>
-                        <li>更新播放器音量控件，加入波条交互及缓入缓出；为播放进度条加入弹性拉伸与回弹，保留原有颜色和进度圆点。</li>
-                        <li>重新设计“返回主页”按钮，支持拉扯、回弹与悬停提示；按住时暂时隐藏下方文字，松开恢复。</li>
-                        <li>修复歌单的鼠标滚轮浏览，滚动到边界时不再带动整个页面。</li>
-                        <li>新增《Stained, Brutal Calamity》播放专属白色火焰背景，采用中间低、两侧高的轮廓，暂停或切歌后退出。</li>
-                        <li>统一首页公告、播放器与导航栏的宽度，优化多项动画的后台暂停及减少动态效果适配。</li>
+                        <li>创作者名字新增逐字升起；作品支持拖出换序、跨区拖动与黑白转场预览。</li>
+                        <li>悬赏令恢复倾斜与外发光，新增拖动衰变、平滑归位及双击预览。</li>
+                        <li>两类大图预览统一模糊、半暗背景；创作者预览移除圆角边框与黑底。</li>
+                        <li>世界观目录优化渐隐十字线、移动端标签与公转裁切；组织滚轮仅作用于图片。</li>
+                        <li>背景方块按 75% 底层、25% 前景分层，避免遮盖大图预览与操作提示。</li>
                     </ul>
                 </article>
 
-                <article class="website-update-entry">
-                    <time datetime="2026-09-01T16:13:27+08:00">
-                        2026年9月1日 16:13:27
-                    </time>
+                <details class="website-update-history">
+                    <summary>以往更新</summary>
 
-                    <ul>
-                        <li>新增“罗马斗兽场”场景档案，并公开其建筑、竞技场与区服资料。</li>
-                        <li>新增 Bossrush、“内域”与 Mineash 世界观档案。</li>
-                        <li>新增世界观正文关联导航，现在可以通过关键词前往对应人物、事物与场景。</li>
-                        <li>为“大都会”“大航路”“魔君”与“君主”补充英文名称。</li>
-                        <li>重新设计“组织”目录，使用图片与深色毛玻璃呈现组织资料。</li>
-                        <li>优化场景、事物、组织及“里世界”页面的浏览流畅度与移动端显示。</li>
-                        <li>优化站内图片加载，减少页面打开和内容切换时的等待与跳动。</li>
-                        <li>优化创作者作品图片，在保持观感的同时显著降低资源体积。</li>
-                        <li>整理音乐歌单，重新划分影视曲、游戏曲与分享曲，并移除部分曲目。</li>
-                        <li>将网站使用的核心动画与滚动资源改为本地加载，提高直接访问时的稳定性。</li>
-                    </ul>
-                </article>
+                    <div class="website-update-history-entries">
+                        <article class="website-update-entry">
+                            <time datetime="2026-10-19T01:05:29+08:00">
+                                2026年10月19日 01:05:29
+                            </time>
 
-                <article class="website-update-entry">
-                    <time datetime="2026-08-06T00:02:15+08:00">
-                        2026年8月6日 00:02:15
-                    </time>
+                            <ul>
+                                <li>新增九点图片加载提示；重做组织圆柱轮播与创作者黑白形变预览。</li>
+                                <li>时间线改为漂浮曲线，修复模糊及节点提前显示。</li>
+                                <li>优化世界观进出转场、移动端手风琴、事物文字扰动与运行计时。</li>
+                                <li>更新音量控件、弹性进度条与歌单滚动；返回主页按钮支持拉扯回弹。</li>
+                                <li>新增《Stained, Brutal Calamity》专属白色火焰，暂停或切歌后退出。</li>
+                                <li>统一首页面板宽度，优化后台动画暂停及减少动态效果适配。</li>
+                            </ul>
+                        </article>
 
-                    <ul>
-                        <li>新增“力量体系”世界观档案及其独立视觉效果。</li>
-                    </ul>
-                </article>
+                        <article class="website-update-entry">
+                            <time datetime="2026-09-01T16:13:27+08:00">
+                                2026年9月1日 16:13:27
+                            </time>
 
-                <article class="website-update-entry">
-                    <time datetime="2026-08-04T23:17:08+08:00">
-                        2026年8月4日 23:17:08
-                    </time>
+                            <ul>
+                                <li>新增罗马斗兽场、Bossrush、内域与 Mineash 档案，补充英文名称及正文关联导航。</li>
+                                <li>更新组织目录，优化里世界等页面的流畅度、图片加载与移动端布局。</li>
+                                <li>压缩创作者图片、整理分类歌单；核心动画与滚动资源改为本地加载。</li>
+                            </ul>
+                        </article>
 
-                    <ul>
-                        <li>新增场景、事物与组织三类世界观浏览目录。</li>
-                        <li>新增“新世界”“里世界”“魔君”与“君主”等世界观档案。</li>
-                        <li>新增创作者作品画廊、作品动态、悬赏令与分类音乐播放器。</li>
-                        <li>新增 New Horizon News 入口、世界观历史时间轴及分级返回导航。</li>
-                        <li>重做网站页面切换、响应式布局与移动端交互。</li>
-                    </ul>
-                </article>
+                        <article class="website-update-entry">
+                            <time datetime="2026-08-06T00:02:15+08:00">
+                                2026年8月6日 00:02:15
+                            </time>
 
-                <article class="website-update-entry">
-                    <time datetime="2026-07-27T23:48:37+08:00">
-                        2026年7月27日 23:48:37
-                    </time>
+                            <ul>
+                                <li>新增“力量体系”世界观档案及其独立视觉效果。</li>
+                            </ul>
+                        </article>
 
-                    <ul>
-                        <li>扩充创作者资料、个人头像与作品展示内容。</li>
-                        <li>扩充悬赏令、新闻和世界观相关内容。</li>
-                        <li>优化作品图片查看与页面交互体验。</li>
-                    </ul>
-                </article>
+                        <article class="website-update-entry">
+                            <time datetime="2026-08-04T23:17:08+08:00">
+                                2026年8月4日 23:17:08
+                            </time>
 
-                <article class="website-update-entry">
-                    <time datetime="2026-02-02T23:53:11+08:00">
-                        2026年2月2日 23:53:11
-                    </time>
+                            <ul>
+                                <li>新增三类世界观目录、新世界等档案、历史时间轴与分级导航。</li>
+                                <li>新增创作者画廊、作品动态、悬赏令、分类播放器与 New Horizon News 入口。</li>
+                                <li>重做页面切换、响应式布局与移动端交互。</li>
+                            </ul>
+                        </article>
 
-                    <ul>
-                        <li>扩充网站音乐库与视觉资源。</li>
-                        <li>调整首页入口、音乐控制和网站基础界面。</li>
-                        <li>为后续独立栏目与世界观内容建立新的页面结构。</li>
-                    </ul>
-                </article>
+                        <article class="website-update-entry">
+                            <time datetime="2026-07-27T23:48:37+08:00">
+                                2026年7月27日 23:48:37
+                            </time>
 
-                <article class="website-update-entry">
-                    <time datetime="2025-01-26T23:30:52+08:00">
-                        2025年1月26日 23:30:52
-                    </time>
+                            <ul>
+                                <li>扩充创作者、悬赏令、新闻与世界观内容，优化作品查看及页面交互。</li>
+                            </ul>
+                        </article>
 
-                    <ul>
-                        <li>重做网站基础结构，将样式、交互与媒体资源拆分管理。</li>
-                        <li>重做启动界面、背景效果与网站控制组件。</li>
-                    </ul>
-                </article>
+                        <article class="website-update-entry">
+                            <time datetime="2026-02-02T23:53:11+08:00">
+                                2026年2月2日 23:53:11
+                            </time>
 
-                <article class="website-update-entry">
-                    <time datetime="2024-05-30T20:51:49+08:00">
-                        2024年5月30日 20:51:49
-                    </time>
+                            <ul>
+                                <li>扩充音乐与视觉资源，调整首页和音乐控制，为独立栏目建立新结构。</li>
+                            </ul>
+                        </article>
 
-                    <ul>
-                        <li>New Horizon 网站项目建立。</li>
-                        <li>新增首个首页、启动界面、背景音乐、语言切换与动态背景。</li>
-                    </ul>
-                </article>
+                        <article class="website-update-entry">
+                            <time datetime="2025-01-26T23:30:52+08:00">
+                                2025年1月26日 23:30:52
+                            </time>
+
+                            <ul>
+                                <li>拆分管理样式、交互与媒体，重做启动界面、背景及控制组件。</li>
+                            </ul>
+                        </article>
+
+                        <article class="website-update-entry">
+                            <time datetime="2024-05-30T20:51:49+08:00">
+                                2024年5月30日 20:51:49
+                            </time>
+
+                            <ul>
+                                <li>New Horizon 网站建立，上线首页、启动界面、音乐、语言切换与动态背景。</li>
+                            </ul>
+                        </article>
+                    </div>
+                </details>
             </div>
 
             <img
@@ -2447,14 +2444,25 @@
         <span class="worldview-target-center"></span>
     </div>
 
-    <!-- 世界观 Crosshair 脉冲 -->
+    <!-- 世界观 Crosshair：跟随、扰动与虚化消散 -->
     <div
         id="worldview-crosshair"
         aria-hidden="true"
     >
+        <svg class="worldview-crosshair-filters" aria-hidden="true">
+            <defs>
+                <filter id="worldview-crosshair-noise-x" x="-5%" y="-2000%" width="110%" height="4100%" color-interpolation-filters="sRGB">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.000001" numOctaves="1" seed="3" result="noise"/>
+                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+                <filter id="worldview-crosshair-noise-y" x="-2000%" y="-5%" width="4100%" height="110%" color-interpolation-filters="sRGB">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.000001" numOctaves="1" seed="7" result="noise"/>
+                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+            </defs>
+        </svg>
         <span class="worldview-crosshair-horizontal"></span>
         <span class="worldview-crosshair-vertical"></span>
-        <span class="worldview-crosshair-point"></span>
     </div>
 
     <!-- ===========================
@@ -6401,7 +6409,7 @@
 
     <script
         type="module"
-        src="scripts/main.js?v=26.10.18.2"
+        src="scripts/main.js?v=26.10.19.5"
     ></script>
 
     <script
@@ -6411,12 +6419,12 @@
 
     <script
         type="module"
-        src="scripts/controls.js?v=26.10.19.1"
+        src="scripts/controls.js?v=26.10.19.3"
     ></script>
 
     <script
         type="module"
-        src="scripts/events.js?v=26.10.19.1"
+        src="scripts/events.js?v=26.10.20.1"
     ></script>
 </body>
 </html>

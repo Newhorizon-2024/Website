@@ -1,0 +1,144 @@
+/* 悬赏令预览：背景模糊并变暗 50%，不加实体卡片或关闭叉号。 */
+#wanted-lightbox {
+    align-items: center;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    background: rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    opacity: 0;
+    overflow: hidden;
+    padding: max(20px, env(safe-area-inset-top)) 64px max(20px, env(safe-area-inset-bottom));
+    pointer-events: none;
+    position: fixed;
+    transition: opacity 260ms ease;
+    z-index: 5;
+}
+#wanted-lightbox.active { opacity: 1; pointer-events: auto; }
+body.wanted-lightbox-open { overflow: hidden; }
+.wanted-lightbox-figure {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    height: min(1100px, calc(100dvh - 40px));
+    margin: 0;
+    max-width: 100%;
+    min-height: 0;
+    text-align: center;
+    width: min(1760px, calc(100vw - 128px));
+}
+#wanted-lightbox .wanted-morph-stage {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    cursor: grab;
+    height: 100%;
+    isolation: isolate;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+    touch-action: pan-y;
+    user-select: none;
+    width: 100%;
+}
+#wanted-lightbox .wanted-morph-stage.is-dragging { cursor: grabbing; }
+#wanted-lightbox .wanted-morph-stage:focus-visible { outline: 1px solid rgba(255,255,255,.45); outline-offset: 3px; }
+#wanted-lightbox-image,
+#wanted-lightbox .wanted-morph-hold,
+#wanted-lightbox .creator-morph-canvas {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: block;
+    height: 100%;
+    inset: 0;
+    margin: 0;
+    max-height: none;
+    max-width: none;
+    object-fit: contain;
+    position: absolute;
+    transform: none;
+    transition: none;
+    width: 100%;
+    -webkit-user-drag: none;
+}
+#wanted-lightbox .wanted-morph-hold { pointer-events: none; z-index: 1; }
+#wanted-lightbox .creator-morph-canvas { opacity: 0; pointer-events: none; z-index: 2; }
+#wanted-lightbox .is-morphing .creator-morph-canvas { opacity: 1; }
+#wanted-lightbox .is-morphing #wanted-lightbox-image,
+#wanted-lightbox .is-morphing .wanted-morph-hold,
+#wanted-lightbox-image.is-wanted-transition-hidden,
+.wanted-poster.is-wanted-transition-hidden { opacity: 0; }
+#wanted-lightbox-caption {
+    color: #eee;
+    font-size: 13px;
+    letter-spacing: .08em;
+    line-height: 1.5;
+    margin: 12px 0 0;
+    opacity: .78;
+    overflow-wrap: anywhere;
+    pointer-events: none;
+}
+#wanted-lightbox-hint {
+    color: #ddd;
+    font-size: 11px;
+    letter-spacing: .06em;
+    line-height: 1.5;
+    margin: 6px 0 0;
+    opacity: .45;
+    pointer-events: none;
+}
+.wanted-lightbox-control {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    color: #eee;
+    cursor: pointer;
+    display: flex;
+    height: 48px;
+    justify-content: center;
+    opacity: .7;
+    padding: 8px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: opacity 200ms ease;
+    width: 48px;
+    z-index: 3;
+    -webkit-tap-highlight-color: transparent;
+}
+.wanted-lightbox-control:hover { opacity: 1; }
+.wanted-lightbox-control:focus-visible { outline: 1px solid #eee; outline-offset: 2px; }
+.wanted-lightbox-control svg { fill: none; height: 30px; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; width: 30px; }
+.wanted-lightbox-prev { left: max(12px, env(safe-area-inset-left)); }
+.wanted-lightbox-next { right: max(12px, env(safe-area-inset-right)); }
+.wanted-gallery-transition-image {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: block;
+    margin: 0;
+    max-height: none;
+    max-width: none;
+    object-fit: contain;
+    pointer-events: none;
+    position: fixed;
+    transform-origin: top left;
+    z-index: 6;
+}
+@media (max-width: 600px) {
+    #wanted-lightbox { padding-left: 36px; padding-right: 36px; }
+    .wanted-lightbox-figure { width: calc(100vw - 72px); height: calc(100dvh - 48px); }
+    .wanted-lightbox-control { height: 36px; padding: 4px; width: 32px; }
+    .wanted-lightbox-control svg { height: 24px; width: 24px; }
+    .wanted-lightbox-prev { left: max(2px, env(safe-area-inset-left)); }
+    .wanted-lightbox-next { right: max(2px, env(safe-area-inset-right)); }
+    #wanted-lightbox-caption { font-size: 12px; margin-top: 9px; }
+    #wanted-lightbox-hint { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    #wanted-lightbox, .wanted-lightbox-control { transition: none; }
+}

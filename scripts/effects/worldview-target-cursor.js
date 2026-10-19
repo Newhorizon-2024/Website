@@ -45,13 +45,28 @@ export function initializeWorldviewTargetCursor() {
 
     const finePointerQuery =
         window.matchMedia(
-            "(hover: hover) and (pointer: fine)"
+            "(min-width: 769px) and (hover: hover) and (pointer: fine)"
         );
 
     const reducedMotionQuery =
         window.matchMedia(
             "(prefers-reduced-motion: reduce)"
         );
+
+    const worldviewCanvas = document.getElementById("worldview-canvas");
+    const horizontal = crosshair.querySelector(".worldview-crosshair-horizontal");
+    const vertical = crosshair.querySelector(".worldview-crosshair-vertical");
+    const turbulence = [...crosshair.querySelectorAll("feTurbulence")];
+    const displacement = [...crosshair.querySelectorAll("feDisplacementMap")];
+    let pointerInside = false;
+    let pointerKnown = false;
+    let lastPointerAt = 0;
+    let crosshairX = 0;
+    let crosshairY = 0;
+    let pulseStartedAt = 0;
+    let pulseEndsAt = 0;
+    let pulseStrength = 0;
+    let lineAnimations = [];
 
     let enabled =
         false;
@@ -143,8 +158,32 @@ export function initializeWorldviewTargetCursor() {
         return (
             enabled &&
             finePointerQuery.matches &&
-            !reducedMotionQuery.matches
+            pointerInside &&
+            !document.hidden &&
+            !worldviewSection.matches(".is-core-establishing, .is-core-restoring, .is-core-exiting")
         );
+    }
+
+    function updateCrosshairBounds() {
+        const rect = worldviewSection.getBoundingClientRect();
+        crosshair.style.clipPath = `inset(${Math.max(0, rect.top)}px ${Math.max(0, window.innerWidth - rect.right)}px ${Math.max(0, window.innerHeight - rect.bottom)}px ${Math.max(0, rect.left)}px)`;
+        return rect;
+    }
+
+    function resetCrosshair() {
+        lineAnimations.forEach(animation => animation.cancel());
+        lineAnimations = [];
+        pulseEndsAt = 0;
+        displacement.forEach(node => node.setAttribute("scale", "0"));
+        crosshair.classList.remove("is-releasing");
+    }
+
+    function hidePointer() {
+        pointerInside = false;
+        cursor.classList.remove("is-active", "is-locked");
+        document.body.classList.remove("is-worldview-cursor-active");
+        resetCrosshair();
+        stopAnimation();
     }
 
 
@@ -153,22 +192,11 @@ export function initializeWorldviewTargetCursor() {
     =========================== */
 
     function enableCursor() {
-        if (!finePointerQuery.matches) {
-            return;
-        }
-
         enabled =
             true;
-
-        document.body.classList.add(
-            "is-worldview-cursor-active"
-        );
-
-        cursor.classList.add(
-            "is-active"
-        );
-
-        startAnimation();
+        suspended = false;
+        pointerInside = false;
+        updateCrosshairBounds();
     }
 
 
@@ -195,6 +223,8 @@ export function initializeWorldviewTargetCursor() {
         lastTargetObject =
             null;
 
+        hidePointer();
+
         cursor.classList.remove(
             "is-active",
             "is-locked",
@@ -216,7 +246,22 @@ export function initializeWorldviewTargetCursor() {
     function handlePointerMove(
         event
     ) {
-        if (!enabled) {
+        if (!enabled || !finePointerQuery.matches || event.pointerType === "touch") {
+            return;
+        }
+
+        const rect = updateCrosshairBounds();
+        const wasInside = pointerInside;
+        pointerInside = event.clientX >= rect.left && event.clientX <= rect.right &&
+            event.clientY >= rect.top && event.clientY <= rect.bottom &&
+            (event.target === worldviewCanvas || worldviewSection.contains(event.target));
+        if (!pointerInside) {
+            hidePointer();
+            return;
+        }
+
+        if (!canRun()) {
+            hidePointer();
             return;
         }
 
@@ -226,9 +271,33 @@ export function initializeWorldviewTargetCursor() {
         pointerY =
             event.clientY;
 
+        if (!wasInside) {
+            crosshairX = pointerX;
+            crosshairY = pointerY;
+            currentX = pointerX - 13;
+            currentY = pointerY - 13;
+            currentWidth = currentHeight = 26;
+            cursor.style.setProperty("--target-cursor-x", `${currentX}px`);
+            cursor.style.setProperty("--target-cursor-y", `${currentY}px`);
+            cursor.style.setProperty("--target-cursor-width", "26px");
+            cursor.style.setProperty("--target-cursor-height", "26px");
+            crosshair.style.setProperty("--crosshair-x", `${crosshairX}px`);
+            crosshair.style.setProperty("--crosshair-y", `${crosshairY}px`);
+        }
+        pointerKnown = true;
+        cursor.classList.add("is-active");
+        cursor.classList.toggle("is-locked", !!targetObject && !suspended);
+        document.body.classList.add("is-worldview-cursor-active");
+        const now = performance.now();
+        if (!wasInside || (now - lastPointerAt > 700 && now > pulseEndsAt)) {
+            releaseCrosshair();
+        }
+        lastPointerAt = now;
+
         if (!targetObject) {
             setFreeCursorTarget();
         }
+        startAnimation();
     }
 
     function setFreeCursorTarget() {
@@ -265,6 +334,7 @@ export function initializeWorldviewTargetCursor() {
             event.detail;
 
         if (
+            !enabled ||
             !detail?.object ||
             !detail?.camera ||
             !detail?.canvas
@@ -281,9 +351,7 @@ export function initializeWorldviewTargetCursor() {
         targetCanvas =
             detail.canvas;
 
-        cursor.classList.add(
-            "is-locked"
-        );
+        cursor.classList.toggle("is-locked", canRun() && !suspended);
 
         if (
             targetObject !==
@@ -505,42 +573,30 @@ export function initializeWorldviewTargetCursor() {
 
     function releaseCrosshair() {
         if (
-            reducedMotionQuery.matches
+            !canRun() || suspended || reducedMotionQuery.matches || !horizontal || !vertical
         ) {
             return;
         }
-
-        updateLockedTarget();
-
-        const centerX =
-            targetX +
-            targetWidth /
-            2;
-
-        const centerY =
-            targetY +
-            targetHeight /
-            2;
-
-        crosshair.style.setProperty(
-            "--crosshair-x",
-            `${centerX}px`
-        );
-
-        crosshair.style.setProperty(
-            "--crosshair-y",
-            `${centerY}px`
-        );
-
-        crosshair.classList.remove(
-            "is-releasing"
-        );
-
-        void crosshair.offsetWidth;
-
-        crosshair.classList.add(
-            "is-releasing"
-        );
+        resetCrosshair();
+        pulseStartedAt = performance.now();
+        pulseEndsAt = pulseStartedAt + 1180;
+        pulseStrength = targetObject ? 22 : 9;
+        crosshair.classList.add("is-releasing");
+        lineAnimations = [horizontal, vertical].map((line, index) => {
+            const filter = `url(#worldview-crosshair-noise-${index ? "y" : "x"})`;
+            return line.animate([
+                { opacity: 0, filter: `${filter} blur(1.5px)`, offset: 0 },
+                { opacity: 0.72, filter: `${filter} blur(0px)`, offset: 0.13 },
+                { opacity: 0.6, filter: `${filter} blur(0px)`, offset: 0.43 },
+                { opacity: 0, filter: `${filter} blur(3.5px)`, offset: 1 }
+            ], { duration: 1180, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+        });
+        lineAnimations[0].onfinish = () => {
+            pulseEndsAt = 0;
+            crosshair.classList.remove("is-releasing");
+            displacement.forEach(node => node.setAttribute("scale", "0"));
+        };
+        startAnimation();
     }
 
 
@@ -552,7 +608,8 @@ export function initializeWorldviewTargetCursor() {
         suspended =
             true;
 
-        clearTarget();
+        resetCrosshair();
+        stopAnimation();
 
         cursor.classList.add(
             "is-suspended"
@@ -567,7 +624,8 @@ export function initializeWorldviewTargetCursor() {
             "is-suspended"
         );
 
-        setFreeCursorTarget();
+        if (!targetObject) setFreeCursorTarget();
+        if (canRun()) startAnimation();
     }
 
 
@@ -576,7 +634,7 @@ export function initializeWorldviewTargetCursor() {
     =========================== */
 
     function animate() {
-        if (!canRun()) {
+        if (!canRun() || suspended) {
             animationFrameId =
                 null;
 
@@ -598,28 +656,28 @@ export function initializeWorldviewTargetCursor() {
             lerp(
                 currentX,
                 targetX,
-                0.2
+                reducedMotionQuery.matches ? 1 : 0.2
             );
 
         currentY =
             lerp(
                 currentY,
                 targetY,
-                0.2
+                reducedMotionQuery.matches ? 1 : 0.2
             );
 
         currentWidth =
             lerp(
                 currentWidth,
                 targetWidth,
-                0.18
+                reducedMotionQuery.matches ? 1 : 0.18
             );
 
         currentHeight =
             lerp(
                 currentHeight,
                 targetHeight,
-                0.18
+                reducedMotionQuery.matches ? 1 : 0.18
             );
 
         cursor.style.setProperty(
@@ -642,6 +700,27 @@ export function initializeWorldviewTargetCursor() {
             `${currentHeight}px`
         );
 
+        const now = performance.now();
+        if (pulseEndsAt > now) {
+            const followX = targetObject ? targetX + targetWidth / 2 : pointerX;
+            const followY = targetObject ? targetY + targetHeight / 2 : pointerY;
+            crosshairX = lerp(crosshairX, followX, 0.15);
+            crosshairY = lerp(crosshairY, followY, 0.15);
+            crosshair.style.setProperty("--crosshair-x", `${crosshairX}px`);
+            crosshair.style.setProperty("--crosshair-y", `${crosshairY}px`);
+            const progress = Math.min(1, (now - pulseStartedAt) / 430);
+            turbulence.forEach(node => node.setAttribute("baseFrequency", String(Math.max(0.000001, (1 - progress) * 0.085))));
+            displacement.forEach(node => node.setAttribute("scale", String(pulseStrength * Math.pow(1 - progress, 2))));
+        }
+
+        // No perpetual free-cursor loop: targets keep tracking their 3D orbit, idle pointers stop.
+        const unsettled = Math.abs(currentX - targetX) + Math.abs(currentY - targetY) +
+            Math.abs(currentWidth - targetWidth) + Math.abs(currentHeight - targetHeight) > 0.1;
+        if (!targetObject && !unsettled && now >= pulseEndsAt) {
+            animationFrameId = null;
+            return;
+        }
+
         animationFrameId =
             window.requestAnimationFrame(
                 animate
@@ -650,6 +729,7 @@ export function initializeWorldviewTargetCursor() {
 
     function startAnimation() {
         if (
+            !canRun() || suspended ||
             animationFrameId !==
             null
         ) {
@@ -687,6 +767,7 @@ export function initializeWorldviewTargetCursor() {
         "pointermove",
         handlePointerMove,
         {
+            capture: true,
             passive:
                 true
         }
@@ -722,14 +803,21 @@ export function initializeWorldviewTargetCursor() {
         resumeCursor
     );
 
-    crosshair.addEventListener(
-        "animationend",
-        () => {
-            crosshair.classList.remove(
-                "is-releasing"
-            );
-        }
-    );
+    worldviewCanvas?.addEventListener("pointerleave", hidePointer);
+    document.documentElement.addEventListener("pointerleave", hidePointer);
+    window.addEventListener("blur", hidePointer);
+    window.addEventListener("pagehide", hidePointer);
+    window.addEventListener("resize", () => { updateCrosshairBounds(); hidePointer(); });
+    window.addEventListener("scroll", hidePointer, { passive: true });
+    document.addEventListener("visibilitychange", () => { if (document.hidden) hidePointer(); });
+    finePointerQuery.addEventListener("change", () => {
+        hidePointer();
+        document.body.classList.remove("is-worldview-cursor-active");
+    });
+    reducedMotionQuery.addEventListener("change", () => {
+        resetCrosshair();
+        if (pointerKnown && canRun()) startAnimation();
+    });
 
     initialized =
         true;

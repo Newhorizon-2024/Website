@@ -1,5 +1,6 @@
-import { prepareImageLoading } from "../effects/image-loading.js?v=26.10.18.11";
-import { MorphSliderStage } from "./morph-slider.js?v=26.10.19.1";
+import { prepareImageLoading } from "../effects/image-loading.js?v=26.10.19.4";
+import { MorphSliderStage } from "./morph-slider.js?v=26.10.19.4";
+import { initializeCreatorStacks } from "./creator-stack.js?v=26.10.19.5";
 
 let initialized = false;
 
@@ -191,7 +192,7 @@ export function initializeCreatorGallery() {
 
             for (
                 let index = 1;
-                index <= 4;
+                index <= card.querySelectorAll(".creator-work").length;
                 index += 1
             ) {
                 card.style.setProperty(
@@ -749,6 +750,7 @@ export function initializeCreatorGallery() {
 
     initializeCardRotations();
     initializeCardObserver();
+    initializeCreatorStacks({ isBlocked: () => lightbox.classList.contains("active") || closing });
 
     creatorWorks.forEach(
         (work, index) => {

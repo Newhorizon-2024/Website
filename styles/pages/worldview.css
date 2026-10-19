@@ -68,3 +68,82 @@
     display: none;
 }
 
+/* Touch directory: projected, screen-readable names, not another card grid. */
+.worldview-directory-labels {
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 2;
+}
+
+.worldview-directory-labels[hidden] {
+    display: none !important;
+}
+
+.worldview-directory-labels__lines {
+    height: 100%;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+}
+
+.worldview-directory-labels__lines line {
+    stroke: rgba(255, 255, 255, 0.24);
+    stroke-width: 0.75;
+    vector-effect: non-scaling-stroke;
+}
+
+.worldview-directory-label {
+    align-items: center;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    color: #eee;
+    cursor: pointer;
+    display: flex;
+    font: 500 14px/1.4 Arial, "Microsoft YaHei", sans-serif;
+    height: 44px;
+    justify-content: center;
+    left: 0;
+    letter-spacing: 0.08em;
+    margin: 0;
+    padding: 0 10px;
+    pointer-events: auto;
+    position: absolute;
+    text-shadow: 0 1px 5px #111, 0 0 12px rgba(0, 0, 0, 0.8);
+    top: 0;
+    touch-action: none;
+    user-select: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.worldview-directory-label:disabled {
+    cursor: default;
+    pointer-events: none;
+}
+
+.worldview-directory-label[hidden] {
+    display: none !important;
+}
+
+.worldview-directory-label:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.65);
+    outline-offset: -4px;
+}
+
+.worldview-directory-labels__hint {
+    bottom: 8px;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 11px;
+    left: 0;
+    letter-spacing: 0.08em;
+    margin: 0;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+}
+

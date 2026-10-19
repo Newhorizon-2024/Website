@@ -71,11 +71,14 @@ void main() {
     c.r=sampleCurrent(uvC+vec2(ca,0.)).r;c.b=sampleCurrent(uvC-vec2(ca,0.)).b;
     n.r=sampleNext(uvN+vec2(ca,0.)).r;n.b=sampleNext(uvN-vec2(ca,0.)).b;
     vec4 col=mix(c,n,m);
-    vec3 color=col.rgb+vec3(.02)*(1.-col.a);
+    vec3 color=col.rgb;
     float gray=dot(color,vec3(.2126,.7152,.0722));
     // 转场中间采用黑白滤镜，起止逐渐还原，静止原图保留原色。
     color=mix(color,vec3(gray),smoothstep(0.,.2,env));
-    gl_FragColor=vec4(color,1.);
+    // Channel separation must not leave nonzero RGB in a zero-alpha letterbox.
+    color=min(color,vec3(col.a));
+    // Keep contain letterboxes and transparent artwork transparent throughout the transition.
+    gl_FragColor=vec4(color,col.a);
 }
 `;
 const MODES = { melt: 0, ripple: 1, shear: 2, swirl: 3 };
@@ -99,7 +102,7 @@ export class MorphSliderStage {
         canvas.className = "creator-morph-canvas";
         canvas.setAttribute("aria-hidden", "true");
         let gl = null;
-        try { gl = canvas.getContext("webgl", { alpha: false, antialias: false, powerPreference: "low-power" }); } catch { /* 浏览器可能禁止创建额外上下文 */ }
+        try { gl = canvas.getContext("webgl", { alpha: true, premultipliedAlpha: true, antialias: false, powerPreference: "low-power" }); } catch { /* 浏览器可能禁止创建额外上下文 */ }
         if (!gl) { this.disabled = true; this.stage.dataset.morphState = "fallback"; return false; }
         this.canvas = canvas;
         this.gl = gl;

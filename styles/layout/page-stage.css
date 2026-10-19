@@ -17,13 +17,36 @@
    6. Three.js 背景画布
 =========================== */
 
-/* 全屏动态背景画布 */
-#background-3d {
+/* 共用单个 WebGL 渲染器的底层 / 前景画布，均不拦截点击和滚动。 */
+#background-3d,
+#background-3d-foreground {
     height: 100%;
     left: 0;
     pointer-events: none;
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 3;
+}
+
+/* 底层 75%：位于渐变之上、几乎所有正文与功能模块之下。 */
+#background-3d {
+    z-index: 0;
+}
+
+/*
+ * 前景 25%：body 末尾的同级 z4，覆盖普通 z4 面板；
+ * 预览 z5、图片转场 z6、加载提示 z7 仍在其上方。
+ * 预览的 backdrop-filter 会统一模糊此层，不出现清晰方块压住图片。
+ */
+#background-3d-foreground {
+    z-index: 4;
+}
+
+#background-3d-foreground[hidden] {
+    display: none;
+}
+
+/* 启动遮罩也必须高于前景；只调整它的层级，不影响原加载动画。 */
+#overlay {
+    z-index: 5;
 }

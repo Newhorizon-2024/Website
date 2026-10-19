@@ -4,11 +4,15 @@
 
 import {
     initializeImageLoading
-} from "./effects/image-loading.js?v=26.10.18.11";
+} from "./effects/image-loading.js?v=26.10.19.4";
 
 import {
     initializeCreatorGallery
-} from "./creators/creator-gallery.js?v=26.10.19.1";
+} from "./creators/creator-gallery.js?v=26.10.19.5";
+
+import {
+    initializeCreatorNameText
+} from "./creators/creator-name-text.js?v=26.10.20.1";
 
 import {
     initializeCountdownTooltip
@@ -52,19 +56,23 @@ import {
 
 import {
     initializeWantedPosterPointerEffects
-} from "./effects/wanted-poster.js";
+} from "./effects/wanted-poster.js?v=26.10.19.5";
+
+import {
+    initializeWantedPreview
+} from "./effects/wanted-preview.js?v=26.10.19.4";
 
 import {
     initializeWorldviewCore
-} from "./effects/worldview-core.js?v=26.10.18.1";
+} from "./effects/worldview-core.js?v=26.10.19.3";
 
 import {
     initializeWorldviewOrganizations
-} from "./effects/worldview-organizations.js?v=26.10.18.11";
+} from "./effects/worldview-organizations.js?v=26.10.19.5";
 
 import {
     initializeWorldviewTargetCursor
-} from "./effects/worldview-target-cursor.js";
+} from "./effects/worldview-target-cursor.js?v=26.10.19.2";
 
 import {
     initializeWorldviewUnavailableSignal
@@ -118,6 +126,7 @@ function initializeEvents() {
     initializeColosseumSection();
     initializeCountdownTooltip();
     initializeCreatorGallery();
+    initializeCreatorNameText();
     initializeInnerDomainSection();
     initializeInnerworldSection();
     initializeInlineSectionLinks();
@@ -129,6 +138,7 @@ function initializeEvents() {
     initializePanelPointerEffects();
     initializePowerSystemSection();
     initializeWantedPosterPointerEffects();
+    initializeWantedPreview();
     initializeWorldviewCore();
     initializeWorldviewTargetCursor();
     initializeWorldviewUnavailableSignal();

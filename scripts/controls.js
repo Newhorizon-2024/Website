@@ -1,6 +1,6 @@
 import {
     initializeNavigation
-} from "./navigation/navigation.js?v=26.10.18.11";
+} from "./navigation/navigation.js?v=26.10.19.3";
 
 import {
     initializeBackToParent

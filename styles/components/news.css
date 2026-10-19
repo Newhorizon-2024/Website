@@ -9,7 +9,7 @@
 
 /* 网站更新记录 */
 .website-update-log {
-    margin: 0 auto 28px;
+    margin: 0 auto 20px;
     max-width: 900px;
     position: relative;
     text-align: left;
@@ -32,7 +32,7 @@
 
 /* 单次更新 */
 .website-update-entry {
-    padding: 0 0 28px 30px;
+    padding: 0 0 20px 28px;
     position: relative;
 }
 
@@ -61,13 +61,13 @@
     font-size: 13px;
     letter-spacing: 0.04em;
     line-height: 1.6;
-    margin-bottom: 9px;
+    margin-bottom: 6px;
 }
 
 /* 更新条目 */
 .website-update-entry ul {
     color: rgba(255, 255, 255, 0.82);
-    line-height: 1.75;
+    line-height: 1.65;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -79,7 +79,7 @@
 }
 
 .website-update-entry li + li {
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
 .website-update-entry li::before {
@@ -87,6 +87,34 @@
     content: "—";
     left: 0;
     position: absolute;
+}
+
+/* 旧记录默认收起；原生 details 保留键盘操作，无需额外脚本。 */
+.website-update-history {
+    position: relative;
+}
+
+.website-update-history > summary {
+    color: rgba(255, 255, 255, 0.62);
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-left: 28px;
+    padding: 3px 0;
+    width: fit-content;
+}
+
+.website-update-history > summary:hover {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.website-update-history > summary:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.65);
+    outline-offset: 4px;
+}
+
+.website-update-history-entries {
+    padding-top: 16px;
 }
 
 /* 新闻图片 */
@@ -113,11 +141,11 @@
 /* 新闻图片手机适配 */
 @media (max-width: 600px) {
     .website-update-log {
-        margin-bottom: 22px;
+        margin-bottom: 18px;
     }
 
     .website-update-entry {
-        padding-bottom: 24px;
+        padding-bottom: 18px;
         padding-left: 24px;
     }
 
@@ -128,6 +156,12 @@
     .website-update-entry ul {
         font-size: 14px;
         line-height: 1.7;
+    }
+
+    .website-update-history > summary {
+        font-size: 14px;
+        margin-left: 24px;
+        padding: 7px 0;
     }
 
     #news:hover {

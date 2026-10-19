@@ -53,7 +53,8 @@ function isVisible(record, rect) {
     if (!image.isConnected || !record.intersecting || document.body.classList.contains("locked")) return false;
     if (rect.width < 2 || rect.height < 2 || rect.bottom <= 0 || rect.top >= innerHeight || rect.right <= 0 || rect.left >= innerWidth) return false;
     if (document.body.classList.contains("creator-lightbox-open") && !image.closest("#creator-lightbox")) return false;
-    const lightbox = image.closest("#creator-lightbox");
+    if (document.body.classList.contains("wanted-lightbox-open") && !image.closest("#wanted-lightbox")) return false;
+    const lightbox = image.closest("#creator-lightbox, #wanted-lightbox");
     if (lightbox && !lightbox.classList.contains("active")) return false;
     if (getComputedStyle(image).visibility === "hidden" || image.classList.contains("is-gallery-transition-hidden")) return false;
     for (let parent = image.parentElement; parent && parent !== document.body; parent = parent.parentElement) {

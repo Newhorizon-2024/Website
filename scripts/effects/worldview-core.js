@@ -3,6 +3,10 @@
    Three.js r128 兼容版
 =========================== */
 
+import {
+    createWorldviewDirectoryLabels
+} from "./worldview-directory-labels.js?v=26.10.19.2";
+
 
 /* ===========================
    1. 世界观核心配置
@@ -17,6 +21,18 @@ const WORLDVIEW_CORE_CONFIG = {
 
     openEdgeOpacity:
         0.47,
+
+    orbiterFloatAmplitude:
+        0.34,
+
+    orbiterHoverScale:
+        1.08,
+
+    panelTravel:
+        2.5,
+
+    panelWaveAmplitude:
+        0.08,
 
     dragSensitivity:
         0.0045,
@@ -162,6 +178,19 @@ let orbiters =
 let orbiterMeshes =
     [];
 
+let directoryLabels = null;
+
+let coreFraming = {
+    radius: 0,
+    cameraZ: 16,
+    width: 0,
+    height: 0,
+    insetX: 0,
+    insetY: 0
+};
+
+let containerResizeObserver = null;
+
 
 /* ===========================
    5. 射线检测
@@ -209,6 +238,10 @@ let lastX =
 
 let lastY =
     0;
+
+let activePointerId = null;
+let dragStartX = 0;
+let dragStartY = 0;
 
 
 /* ===========================
@@ -410,6 +443,67 @@ function getCanvasSize() {
     };
 }
 
+// Use the whole motion envelope, not the current frame's bounding box. Orbit,
+// hover and manual rotation therefore never make the camera "breathe".
+function measureWorldviewEnvelope() {
+    let radius = 0;
+
+    orbiters.forEach(({ group }) => {
+        const { cube, baseScale } = group.userData;
+        cube.geometry.computeBoundingSphere();
+        const orbitRadius = Math.hypot(group.position.x, group.position.z);
+        const centerRadius = Math.hypot(
+            orbitRadius,
+            WORLDVIEW_CORE_CONFIG.orbiterFloatAmplitude
+        );
+        const cubeRadius = cube.geometry.boundingSphere.radius *
+            baseScale * WORLDVIEW_CORE_CONFIG.orbiterHoverScale;
+        radius = Math.max(radius, centerRadius + cubeRadius);
+    });
+
+    // The opened shell stays well inside the orbit, but include its full travel
+    // explicitly so a future local geometry edit cannot silently invalidate fit.
+    panels.forEach(panel => {
+        const data = panel.userData;
+        data.solidMesh.geometry.computeBoundingSphere();
+        const panelRadius = data.homePosition.length() +
+            WORLDVIEW_CORE_CONFIG.panelTravel +
+            WORLDVIEW_CORE_CONFIG.panelWaveAmplitude +
+            data.solidMesh.geometry.boundingSphere.radius + 0.018;
+        radius = Math.max(radius,
+            panelRadius * WORLDVIEW_CORE_CONFIG.coreScale);
+    });
+
+    coreFraming.radius = radius;
+}
+
+function fitWorldviewFraming(width, height) {
+    if (!coreFraming.radius) return;
+
+    const inset = Math.min(28, Math.max(16, Math.min(width, height) * 0.045));
+    const safeX = Math.max(0.2, 1 - inset * 2 / width);
+    const safeY = Math.max(0.2, 1 - inset * 2 / height);
+    const verticalTangent = Math.tan(camera.fov * Math.PI / 360);
+    const halfHorizontal = Math.atan(verticalTangent * camera.aspect * safeX);
+    const halfVertical = Math.atan(verticalTangent * safeY);
+    const radius = coreFraming.radius;
+
+    // Plane-to-sphere distance handles both FOV axes and the existing y = 1.5
+    // camera offset. Fitting only orbit centers or only horizontal FOV clips
+    // the lower cubes after rotation, including on wide desktop canvases.
+    const fitX = (radius + Math.abs(camera.position.x) * Math.cos(halfHorizontal)) /
+        Math.sin(halfHorizontal);
+    const fitY = (radius + Math.abs(camera.position.y) * Math.cos(halfVertical)) /
+        Math.sin(halfVertical);
+    const cameraZ = Math.max(16, fitX, fitY);
+    const difference = cameraZ - coreFraming.cameraZ;
+
+    // Preserve the current entrance / exit dolly offset during a real resize.
+    camera.position.z += difference;
+    if (exitVisual) exitVisual.cameraZ += difference;
+    coreFraming = { radius, cameraZ, width, height, insetX: inset, insetY: inset };
+}
+
 function resizeWorldviewCore() {
     if (
         !initialized ||
@@ -425,19 +519,23 @@ function resizeWorldviewCore() {
     } =
         getCanvasSize();
 
+    // A hidden Section can report a 0 x 0 rectangle. Fit it when shown instead
+    // of replacing its last valid framing with a synthetic 1 x 1 viewport.
+    if (width <= 1 || height <= 1) return;
+
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+    if (coreFraming.width === width && coreFraming.height === height &&
+        renderer.getPixelRatio() === pixelRatio) return;
+
     camera.aspect =
         width /
         height;
 
     camera.updateProjectionMatrix();
 
-    renderer.setPixelRatio(
-        Math.min(
-            window.devicePixelRatio ||
-                1,
-            1.5
-        )
-    );
+    fitWorldviewFraming(width, height);
+
+    renderer.setPixelRatio(pixelRatio);
 
     renderer.setSize(
         width,
@@ -1718,7 +1816,7 @@ function updateHoverState() {
 
             data.targetScale =
                 data.baseScale *
-                1.08;
+                WORLDVIEW_CORE_CONFIG.orbiterHoverScale;
 
             data.edges
                 .material
@@ -1887,7 +1985,8 @@ function handlePointerMove(
 ) {
     if (
         !active ||
-        !interactionEnabled
+        !interactionEnabled ||
+        (dragging && event.pointerId !== activePointerId)
     ) {
         return;
     }
@@ -1910,13 +2009,8 @@ function handlePointerMove(
         lastY;
 
     if (
-        Math.abs(
-            deltaX
-        ) +
-        Math.abs(
-            deltaY
-        ) >
-        2
+        Math.hypot(event.clientX - dragStartX, event.clientY - dragStartY) >
+            (event.pointerType === "touch" ? 8 : 4)
     ) {
         moved =
             true;
@@ -1978,7 +2072,10 @@ function handlePointerDown(
 ) {
     if (
         !active ||
-        !interactionEnabled
+        !interactionEnabled ||
+        activePointerId !== null ||
+        (event.pointerType === "mouse" && event.button !== 0) ||
+        event.isPrimary === false
     ) {
         return;
     }
@@ -1991,6 +2088,10 @@ function handlePointerDown(
 
     dragging =
         true;
+
+    activePointerId = event.pointerId;
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
 
     moved =
         false;
@@ -2028,9 +2129,11 @@ function handlePointerDown(
 function handlePointerUp(
     event
 ) {
-    if (!active) {
+    if (!active || activePointerId !== event.pointerId) {
         return;
     }
+
+    activePointerId = null;
 
     dragging =
         false;
@@ -2081,12 +2184,28 @@ function handlePointerUp(
     updateHoverState();
 }
 
+// A cancelled gesture (or lost capture) must never behave like a directory tap.
+function handlePointerCancel(event) {
+    if (event.pointerId !== activePointerId) return;
+    activePointerId = null;
+    dragging = false;
+    moved = true;
+    if (canvas.hasPointerCapture?.(event.pointerId)) {
+        canvas.releasePointerCapture(event.pointerId);
+    }
+    hoveredCore = false;
+    clearHoveredOrbiter();
+    mouse.set(2, 2);
+    dispatchCursorResume();
+}
+
 
 /* ===========================
    30. 指针离开
 =========================== */
 
-function handlePointerLeave() {
+function handlePointerLeave(event) {
+    if (dragging && canvas.hasPointerCapture?.(event.pointerId)) return;
     dragging =
         false;
 
@@ -2136,8 +2255,10 @@ function bindEvents() {
 
     canvas.addEventListener(
         "pointercancel",
-        handlePointerUp
+        handlePointerCancel
     );
+
+    canvas.addEventListener("lostpointercapture", handlePointerCancel);
 
     canvas.addEventListener(
         "pointerleave",
@@ -2148,6 +2269,10 @@ function bindEvents() {
         "resize",
         resizeWorldviewCore
     );
+
+    if (typeof ResizeObserver !== "undefined") {
+        containerResizeObserver = new ResizeObserver(resizeWorldviewCore);
+    }
 }
 
 
@@ -2251,7 +2376,7 @@ function animate() {
     // 使用真实相机纵深，避免在整个 Section 上叠加平移和模糊。
     camera.position.z = exiting
         ? exitVisual.cameraZ + (1 - easedReveal) * 1.15
-        : 16 + (1 - easedReveal) * 1.8;
+        : coreFraming.cameraZ + (1 - easedReveal) * 1.8;
     currentVisual = { core: coreReveal, orbit: orbitReveal, label: labelReveal };
 
     coreRoot.visible =
@@ -2417,7 +2542,7 @@ function animate() {
                 panel.userData;
 
             const travel =
-                2.5 *
+                WORLDVIEW_CORE_CONFIG.panelTravel *
                 eased;
 
             panel.position
@@ -2441,7 +2566,7 @@ function animate() {
                     index *
                     0.8
                 ) *
-                0.08 *
+                WORLDVIEW_CORE_CONFIG.panelWaveAmplitude *
                 eased;
 
             panel.position
@@ -2698,7 +2823,7 @@ function animate() {
                     0.62 +
                     data.phase
                 ) *
-                0.34;
+                WORLDVIEW_CORE_CONFIG.orbiterFloatAmplitude;
 
             data.cube.material.opacity =
                 orbitReveal;
@@ -2713,14 +2838,16 @@ function animate() {
                 orbitReveal;
 
             const labelTargetOpacity =
-                hoveredOrbiter ===
+                directoryLabels?.isEnabled()
+                    ? 0
+                    : hoveredOrbiter ===
                 group
                     ? data.label.userData
                         .hoverOpacity
                     : data.label.userData
                         .baseOpacity;
 
-            data.label.material.opacity = Math.min(labelReveal,
+            data.label.material.opacity = directoryLabels?.isEnabled() ? 0 : Math.min(labelReveal,
                 THREE.MathUtils.lerp(
                     data.label.material.opacity,
                     labelTargetOpacity *
@@ -2763,6 +2890,8 @@ function animate() {
         scene,
         camera
     );
+
+    directoryLabels?.update(labelReveal, interactionEnabled && !dragging);
 }
 
 
@@ -2827,10 +2956,19 @@ export function initializeWorldviewCore() {
     createLights();
     createCore();
     createOrbiters();
+    measureWorldviewEnvelope();
+    directoryLabels = createWorldviewDirectoryLabels({
+        container,
+        orbiters: orbiters.map(item => item.group),
+        camera,
+        onOpen: openWorldviewOrbiter
+    });
     bindEvents();
 
     initialized =
         true;
+
+    resizeWorldviewCore();
 
     return true;
 }
@@ -2849,6 +2987,8 @@ export function showWorldviewCore() {
 
     // 导航统一管理显示；重复通知不会重新播放或建立第二条 RAF。
     if (active) return true;
+
+    directoryLabels?.hide();
 
     active =
         true;
@@ -2912,6 +3052,8 @@ export function showWorldviewCore() {
 
     applyCanvasStyles();
 
+    containerResizeObserver?.observe(container);
+
     window.dispatchEvent(
         new CustomEvent(
             "worldview-core-show",
@@ -2960,6 +3102,7 @@ export function transitionWorldviewCoreOut() {
 
     interactionEnabled = false;
     dragging = false;
+    activePointerId = null;
     rotationVelocityX = rotationVelocityY = rotationVelocityZ = 0;
     targetManualRotationX = manualRotationX;
     targetManualRotationY = manualRotationY;
@@ -3004,6 +3147,9 @@ export function hideWorldviewCore() {
     }
     finishCoreExit();
     transitionPhase = "hidden";
+    directoryLabels?.hide();
+    containerResizeObserver?.disconnect();
+    activePointerId = null;
 
     window.dispatchEvent(
         new CustomEvent(
@@ -3111,6 +3257,10 @@ export function getWorldviewCoreContext() {
         observationRoot,
         coreRoot,
         orbitRoot,
+
+        getFraming() {
+            return { ...coreFraming };
+        },
 
         orbiters:
             orbiters.map(

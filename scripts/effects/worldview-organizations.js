@@ -1,5 +1,5 @@
 /* 世界观 · 组织圆柱轮播。CSS 曲面，不创建 WebGL/React 实例。 */
-import { prepareImageLoading } from "./image-loading.js?v=26.10.18.11";
+import { prepareImageLoading } from "./image-loading.js?v=26.10.19.4";
 
 const ORGANIZATIONS_CAROUSEL_CONFIG = {
     preset: "cylinder",
@@ -81,7 +81,8 @@ export function initializeWorldviewOrganizations() {
     currentButton.style.display = config.captions ? "" : "none";
     browser.style.setProperty("--organizations-card-width", `${config.cardWidth}px`);
     browser.style.setProperty("--organizations-card-height", `${cardHeight}px`);
-    browser.setAttribute("data-lenis-prevent-wheel", "");
+    // 空白舞台仍属于网页滚动；只有命中图片时才由轮播接管滚轮。
+    browser.removeAttribute("data-lenis-prevent-wheel");
     const active = () => section.classList.contains("is-active") && !document.hidden && inView;
     const introDone = () => motion.matches || config.intro === "none" || introElapsed >= config.introDuration;
     const cruising = () => !motion.matches && introDone() && !hovered && !focused && !gesture && performance.now() >= holdUntil;
@@ -139,6 +140,7 @@ export function initializeWorldviewOrganizations() {
 
     organizations.forEach(organization => {
         const element = organization.element;
+        element.setAttribute("data-lenis-prevent-wheel", "");
         element.setAttribute("aria-label", organization.name);
         element.setAttribute("aria-posinset", String(organization.index + 1));
         element.setAttribute("aria-setsize", String(count));
@@ -321,6 +323,8 @@ export function initializeWorldviewOrganizations() {
     listen(browser, "focusout", () => queueMicrotask(() => { focused = browser.contains(document.activeElement); wake(); }));
     listen(browser, "wheel", event => {
         if (!active() || event.ctrlKey || event.metaKey) return;
+        const card = event.target.closest?.(".organization-orbit-item");
+        if (!card || !elements.includes(card)) return;
         const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
         if (!delta) return;
         event.preventDefault();

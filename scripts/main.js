@@ -40,6 +40,21 @@ const backgroundCanvas =
         "background-3d"
     );
 
+/*
+ * 两层仍共用一个 WebGL 渲染器和一套方块数据。
+ * 先渲染前景并复制到透明 2D 画布，再把原画布留给底层；
+ * 不另建 GPU 上下文，也不会将方块数量或动画循环翻倍。
+ */
+const BACKGROUND_CUBE_LAYER = 0;
+const FOREGROUND_CUBE_LAYER = 1;
+const foregroundCanvas = document.createElement("canvas");
+foregroundCanvas.id = "background-3d-foreground";
+foregroundCanvas.setAttribute("aria-hidden", "true");
+backgroundCanvas.setAttribute("aria-hidden", "true");
+const foregroundContext = foregroundCanvas.getContext("2d", { alpha: true });
+foregroundCanvas.hidden = !foregroundContext;
+document.body.appendChild(foregroundCanvas);
+
 /* 创建场景 */
 const scene =
     new THREE.Scene();
@@ -86,6 +101,22 @@ renderer.setSize(
     window.innerHeight
 );
 
+function resizeForegroundCanvas() {
+    if (!foregroundContext) return;
+    if (foregroundCanvas.width !== backgroundCanvas.width) {
+        foregroundCanvas.width = backgroundCanvas.width;
+    }
+    if (foregroundCanvas.height !== backgroundCanvas.height) {
+        foregroundCanvas.height = backgroundCanvas.height;
+    }
+}
+
+resizeForegroundCanvas();
+
+backgroundCanvas.addEventListener("webglcontextlost", () => {
+    foregroundContext?.clearRect(0, 0, foregroundCanvas.width, foregroundCanvas.height);
+});
+
 
 /* ===========================
    3. Three.js 灯光
@@ -102,6 +133,8 @@ directionalLight.position
     .set(5, 5, 5)
     .normalize();
 
+directionalLight.layers.enable(FOREGROUND_CUBE_LAYER);
+
 scene.add(
     directionalLight
 );
@@ -111,6 +144,8 @@ const ambientLight =
     new THREE.AmbientLight(
         0x404040
     );
+
+ambientLight.layers.enable(FOREGROUND_CUBE_LAYER);
 
 scene.add(
     ambientLight
@@ -259,6 +294,13 @@ function createCube() {
         cube
     );
 
+    /* 每四个固定分出一个前景方块；重生时保持所属层，随机运动逻辑不变。 */
+    cube.layers.set(
+        cubes.length % 4 === 3
+            ? FOREGROUND_CUBE_LAYER
+            : BACKGROUND_CUBE_LAYER
+    );
+
     scene.add(
         cube
     );
@@ -283,6 +325,15 @@ for (
 ) {
     createCube();
 }
+
+/* 只读数量标记，方便验证 480 / 160，而不是重复建立两套方块。 */
+backgroundCanvas.dataset.cubeCount = String(
+    foregroundContext ? initialCubeCount * 0.75 : initialCubeCount
+);
+backgroundCanvas.dataset.totalCubeCount = String(initialCubeCount);
+foregroundCanvas.dataset.cubeCount = String(
+    foregroundContext ? initialCubeCount * 0.25 : 0
+);
 
 
 /* ===========================
@@ -1502,6 +1553,26 @@ document.addEventListener(
 =========================== */
 
 /**
+ * 原画布最终只保留底层 75% 方块和悬赏令背景贴片。
+ * 前景的 25% 在同一帧被复制到 body 末尾的 2D 画布，
+ * 保持与底层完全相同的灯光、材质、速度和相机投影。
+ */
+function renderBackgroundLayers() {
+    if (foregroundContext) {
+        if (renderer.getContext().isContextLost()) return;
+        camera.layers.set(FOREGROUND_CUBE_LAYER);
+        renderer.render(scene, camera);
+        foregroundContext.globalCompositeOperation = "copy";
+        foregroundContext.drawImage(backgroundCanvas, 0, 0);
+        camera.layers.set(BACKGROUND_CUBE_LAYER);
+    } else {
+        // 极少数不支持 2D 画布的环境保留所有方块，不让它们丢失。
+        camera.layers.enableAll();
+    }
+    renderer.render(scene, camera);
+}
+
+/**
  * 更新并渲染背景。
  *
  * @param {number} timestamp 动画时间戳
@@ -1587,10 +1658,7 @@ function animate(
         timestamp
     );
 
-    renderer.render(
-        scene,
-        camera
-    );
+    renderBackgroundLayers();
 }
 
 
@@ -1601,6 +1669,9 @@ function animate(
 /* 射线检测器 */
 const raycaster =
     new THREE.Raycaster();
+
+/* 保留两层方块原有的点击改变方向交互。 */
+raycaster.layers.enable(FOREGROUND_CUBE_LAYER);
 
 /* 标准化鼠标坐标 */
 const mousePosition =
@@ -1753,6 +1824,8 @@ function handleWindowResize() {
         nextViewportWidth,
         nextViewportHeight
     );
+
+    resizeForegroundCanvas();
 }
 
 window.addEventListener(

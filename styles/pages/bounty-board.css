@@ -67,40 +67,72 @@
 
 /* 悬赏令图片 */
 .wanted-poster {
-    --poster-light-x: 50%;
-    --poster-light-y: 50%;
-    --poster-rotate-x: 0deg;
-    --poster-rotate-y: 0deg;
-    --poster-scale: 1;
-
     border-radius: 0;
+    cursor: zoom-in;
     flex: 0 0 260px;
     height: auto;
     margin: 0;
     max-width: 100%;
     position: relative;
     transform:
+        translate3d(var(--poster-drag-x, 0px), var(--poster-drag-y, 0px), 0)
+        rotate(var(--poster-drag-rotate, 0deg))
         perspective(900px)
-        rotateX(var(--poster-rotate-x))
-        rotateY(var(--poster-rotate-y))
-        scale(var(--poster-scale));
-    transform-style: preserve-3d;
+        rotateX(var(--poster-rotate-x, 0deg))
+        rotateY(var(--poster-rotate-y, 0deg));
     transition:
-        box-shadow 300ms ease,
-        filter 300ms ease,
-        transform 180ms ease;
+        transform 240ms cubic-bezier(.22, 1, .36, 1),
+        box-shadow 280ms ease,
+        filter 280ms ease;
+    touch-action: pan-y pinch-zoom;
+    user-select: none;
+    -webkit-user-select: none;
     width: 260px;
+}
+
+/* 悬停仅轻微倾斜、发光，不放大海报本体或改变布局宽度。 */
+@media (hover: hover) and (pointer: fine) {
+    .wanted-poster.is-pointer-active:not(.is-wanted-held):not(.is-wanted-returning) {
+        box-shadow: 0 0 24px rgba(255, 255, 255, 0.22);
+        filter: brightness(1.06);
+    }
+}
+
+.wanted-poster.is-wanted-held,
+.wanted-poster.is-wanted-returning {
+    /* 单一 RAF 同时驱动原图与共享画布，避免 CSS 再次延迟归位。 */
+    transition: box-shadow 200ms ease, filter 200ms ease;
     will-change: transform;
 }
 
-/* 悬赏令图片悬停状态 */
-.wanted-poster:hover,
-.wanted-poster.is-pointer-active {
-    --poster-scale: 1.08;
+.wanted-poster.is-wanted-held {
+    cursor: grabbing;
+}
 
-    box-shadow:
-        0 0 24px rgba(255, 255, 255, 0.22);
-    filter: brightness(1.06);
+.wanted-poster.is-wanted-decaying {
+    opacity: var(--poster-source-opacity, 0) !important;
+}
+
+.wanted-poster:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.75);
+    outline-offset: 4px;
+}
+
+#wanted-decay-canvas {
+    pointer-events: none;
+    position: fixed;
+    transform-origin: center;
+    z-index: 6;
+}
+
+#wanted-decay-canvas[hidden] {
+    display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wanted-poster {
+        transition: box-shadow 160ms ease, filter 160ms ease;
+    }
 }
 
 

@@ -2,7 +2,7 @@ import {
     showWorldviewCore,
     hideWorldviewCore,
     transitionWorldviewCoreOut
-} from "../effects/worldview-core.js?v=26.10.18.1";
+} from "../effects/worldview-core.js?v=26.10.19.3";
 
 import {
     initializeSlingButton
