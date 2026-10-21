@@ -15,7 +15,7 @@
 
     <link
         rel="stylesheet"
-        href="styles/main.css?v=26.10.20.1"
+        href="styles/main.css?v=26.10.21.3"
     >
 
     <!-- ===========================
@@ -337,16 +337,14 @@
                 aria-label="New Horizon 网站更新记录"
             >
                 <article class="website-update-entry">
-                    <time datetime="2026-10-20T00:25:23+08:00">
-                        2026年10月20日 00:25:23
+                    <time datetime="2026-10-21T09:10:49+08:00">
+                        2026年10月21日 09:10:49
                     </time>
 
                     <ul>
-                        <li>创作者名字新增逐字升起；作品支持拖出换序、跨区拖动与黑白转场预览。</li>
-                        <li>悬赏令恢复倾斜与外发光，新增拖动衰变、平滑归位及双击预览。</li>
-                        <li>两类大图预览统一模糊、半暗背景；创作者预览移除圆角边框与黑底。</li>
-                        <li>世界观目录优化渐隐十字线、移动端标签与公转裁切；组织滚轮仅作用于图片。</li>
-                        <li>背景方块按 75% 底层、25% 前景分层，避免遮盖大图预览与操作提示。</li>
+                        <li>世界观目录改为捕获背景方块组成，保留原有运动特征；退出后就地归还背景。</li>
+                        <li>“内域”新增 8×8 互动方块，随背景方块靠近逐一汇入，支持指针扰动与轻触涟漪。</li>
+                        <li>优化方块衔接、移动端显示与离页释放，补齐并居中目录的“返回上一级”。</li>
                     </ul>
                 </article>
 
@@ -354,6 +352,20 @@
                     <summary>以往更新</summary>
 
                     <div class="website-update-history-entries">
+                        <article class="website-update-entry">
+                            <time datetime="2026-10-20T00:25:23+08:00">
+                                2026年10月20日 00:25:23
+                            </time>
+
+                            <ul>
+                                <li>创作者名字新增逐字升起；作品支持拖出换序、跨区拖动与黑白转场预览。</li>
+                                <li>悬赏令恢复倾斜与外发光，新增拖动衰变、平滑归位及双击预览。</li>
+                                <li>两类大图预览统一模糊、半暗背景；创作者预览移除圆角边框与黑底。</li>
+                                <li>世界观目录优化渐隐十字线、移动端标签与公转裁切；组织滚轮仅作用于图片。</li>
+                                <li>背景方块按 75% 底层、25% 前景分层，避免遮盖大图预览与操作提示。</li>
+                            </ul>
+                        </article>
+
                         <article class="website-update-entry">
                             <time datetime="2026-10-19T01:05:29+08:00">
                                 2026年10月19日 01:05:29
@@ -2473,6 +2485,9 @@
         id="worldview-section"
         class="section">
         <canvas id="worldview-canvas"></canvas>
+        <button type="button" class="back-to-parent is-overlay worldview-back-button">
+            <span>返回上一级</span>
+        </button>
     </div>
 
     <!-- ===========================
@@ -3506,6 +3521,10 @@
                 <p>
                     当一名或多名意识做好了充足的准备，他们便有可能创造出一片受自己控制，并能够长期存在、持续运营的场景。这些由意识建立并拥有独立空间与规则的区域，被称为“内域”。
                 </p>
+                <div id="inner-domain-cubes" class="inner-domain-cubes" role="group" aria-label="内域方块：背景方块逐一汇入，移动指针或轻触产生涟漪">
+                    <canvas aria-hidden="true"></canvas>
+                    <p class="inner-domain-cubes-status" hidden></p>
+                </div>
             </section>
 
             <section class="inner-domain-copy" data-inner-domain-reveal>
@@ -6409,7 +6428,7 @@
 
     <script
         type="module"
-        src="scripts/main.js?v=26.10.19.5"
+        src="scripts/main.js?v=26.10.21.3"
     ></script>
 
     <script
@@ -6419,12 +6438,12 @@
 
     <script
         type="module"
-        src="scripts/controls.js?v=26.10.19.3"
+        src="scripts/controls.js?v=26.10.21.5"
     ></script>
 
     <script
         type="module"
-        src="scripts/events.js?v=26.10.20.1"
+        src="scripts/events.js?v=26.10.21.5"
     ></script>
 </body>
 </html>

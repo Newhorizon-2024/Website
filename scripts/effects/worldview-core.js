@@ -5,7 +5,8 @@
 
 import {
     createWorldviewDirectoryLabels
-} from "./worldview-directory-labels.js?v=26.10.19.2";
+} from "./worldview-directory-labels.js?v=26.10.21.2";
+import { createWorldviewCapture } from "./worldview-capture.js?v=26.10.21.3";
 
 
 /* ===========================
@@ -179,6 +180,7 @@ let orbiterMeshes =
     [];
 
 let directoryLabels = null;
+let captureBridge = null;
 
 let coreFraming = {
     radius: 0,
@@ -2338,26 +2340,35 @@ function animate() {
             : revealProgress
     );
 
-    const coreReveal =
+    let coreReveal =
         (exiting ? exitVisual.core : 1) * smoothstep(
             exiting ? 0 : 0.02,
             exiting ? 0.72 : 0.58,
             easedReveal
         );
 
-    const orbitReveal =
+    let orbitReveal =
         (exiting ? exitVisual.orbit : 1) * smoothstep(
             exiting ? 0.12 : 0.14,
             exiting ? 0.9 : 0.88,
             easedReveal
         );
 
-    const labelReveal =
+    let labelReveal =
         (exiting ? exitVisual.label : 1) * smoothstep(
             exiting ? 0.62 : 0.48,
             1,
             easedReveal
         );
+
+    const captureVisual = captureBridge?.getVisuals(exiting, exiting
+        ? clamp((performance.now() - revealStartedAt) / revealDuration, 0, 1)
+        : revealProgress);
+    if (captureVisual) {
+        coreReveal = captureVisual.core;
+        orbitReveal = captureVisual.orbit;
+        labelReveal = captureVisual.label;
+    }
 
     coreRoot.scale.setScalar(
         WORLDVIEW_CORE_CONFIG.coreScale *
@@ -2377,7 +2388,14 @@ function animate() {
     camera.position.z = exiting
         ? exitVisual.cameraZ + (1 - easedReveal) * 1.15
         : coreFraming.cameraZ + (1 - easedReveal) * 1.8;
+    // 捕获本身负责空间过渡；目标尺寸不再额外缩放，以便逐顶点对齐交接。
+    if (captureVisual) {
+        coreRoot.scale.setScalar(WORLDVIEW_CORE_CONFIG.coreScale);
+        orbitRoot.scale.setScalar(1);
+        camera.position.z = coreFraming.cameraZ;
+    }
     currentVisual = { core: coreReveal, orbit: orbitReveal, label: labelReveal };
+    const orbitMotion = captureVisual ? 1 : orbitReveal;
 
     coreRoot.visible =
         coreReveal >
@@ -2470,7 +2488,7 @@ function animate() {
                 0,
                 1
             )
-        );
+        ) * (captureVisual ? captureVisual.assembly : 1);
 
 
     /* ===========================
@@ -2800,22 +2818,22 @@ function animate() {
                 data.orbitSpeed *
                 0.01 * frameStep *
                 unavailableSpeed *
-                orbitReveal;
+                orbitMotion;
 
             group.rotation.x +=
                 data.spinX *
                 0.01 * frameStep *
-                orbitReveal;
+                orbitMotion;
 
             group.rotation.y +=
                 data.spinY *
                 0.01 * frameStep *
-                orbitReveal;
+                orbitMotion;
 
             group.rotation.z +=
                 data.spinZ *
                 0.01 * frameStep *
-                orbitReveal;
+                orbitMotion;
 
             group.position.y =
                 Math.sin(
@@ -2885,6 +2903,12 @@ function animate() {
     /* ===========================
        最终渲染
     =========================== */
+
+    if (captureVisual) {
+        scene.updateMatrixWorld(true);
+        camera.updateMatrixWorld(true);
+        captureBridge.update(exiting);
+    }
 
     renderer.render(
         scene,
@@ -2956,6 +2980,7 @@ export function initializeWorldviewCore() {
     createLights();
     createCore();
     createOrbiters();
+    captureBridge = createWorldviewCapture({ container, camera, coreRoot, orbiters });
     measureWorldviewEnvelope();
     directoryLabels = createWorldviewDirectoryLabels({
         container,
@@ -3078,6 +3103,15 @@ export function showWorldviewCore() {
 
             resizeWorldviewCore();
 
+            // 等导航提交布局后再量取真正的模块中心，移动端首次展开按钮不捕获。
+            coreRoot.scale.setScalar(WORLDVIEW_CORE_CONFIG.coreScale);
+            orbitRoot.scale.setScalar(1);
+            camera.position.z = coreFraming.cameraZ;
+            if (transitionPhase !== "exiting" && transitionPhase !== "exited" && captureBridge.begin()) {
+                revealDuration = 1500;
+                revealStartedAt = performance.now();
+            }
+
             if (!clock.running) {
                 clock.start();
             }
@@ -3122,7 +3156,8 @@ export function transitionWorldviewCoreOut() {
     };
     revealStartProgress = revealProgress;
     revealTargetProgress = 0;
-    revealDuration = 380;
+    const releasingCubes = captureBridge?.beginExit();
+    revealDuration = releasingCubes ? 1000 : 380;
     revealStartedAt = performance.now();
     transitionPhase = "exiting";
     exitPromise = new Promise(resolve => { resolveExit = resolve; });
@@ -3146,6 +3181,8 @@ export function hideWorldviewCore() {
         showFrameId = null;
     }
     finishCoreExit();
+    captureBridge?.release();
+    container.dataset.capturePhase = "hidden";
     transitionPhase = "hidden";
     directoryLabels?.hide();
     containerResizeObserver?.disconnect();
@@ -3260,6 +3297,10 @@ export function getWorldviewCoreContext() {
 
         getFraming() {
             return { ...coreFraming };
+        },
+
+        getCaptureState() {
+            return captureBridge?.getState() || null;
         },
 
         orbiters:

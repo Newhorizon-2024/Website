@@ -335,6 +335,241 @@ foregroundCanvas.dataset.cubeCount = String(
     foregroundContext ? initialCubeCount * 0.25 : 0
 );
 
+/*
+ * 世界观借用的是这 640 个现有方块，而不是另一批随机副本。
+ * native position / quaternion / scale 与 userData 留在原对象上；
+ * 过渡只覆盖局部矩阵；原地归还时接续当前位置 / 朝向，保留随机尺寸和速率。
+ */
+const capturedBackgroundCubes = new Map();
+let activeBackgroundLease = null;
+const activeBackgroundLeases = new Set();
+let backgroundLeaseSequence = 0;
+let backgroundFrameSeconds = 1 / 60;
+let previousBackgroundFrameAt = null;
+
+const clampCaptureUnit = value => Math.max(0, Math.min(1, value));
+const frozenCaptureArray = values => Object.freeze(Array.from(values));
+
+function backgroundLeaseSnapshot(lease) {
+    return Object.freeze({
+        id: lease.id,
+        active: lease.active,
+        count: lease.records.length,
+        entries: Object.freeze(lease.records.map(record => Object.freeze({
+            id: record.id,
+            rank: record.rank,
+            distance: record.distance,
+            originalLayer: record.originalLayer,
+            originalLayerMask: record.originalLayerMask,
+            layerMask: record.mesh.layers.mask,
+            originalRandom: Object.freeze({ ...record.originalRandom }),
+            currentRandom: Object.freeze({ ...record.mesh.userData }),
+            originalPosition: frozenCaptureArray(record.sourcePosition.toArray()),
+            homePosition: frozenCaptureArray(record.mesh.position.toArray()),
+            originalQuaternion: frozenCaptureArray(record.sourceQuaternion.toArray()),
+            homeQuaternion: frozenCaptureArray(record.mesh.quaternion.toArray()),
+            originalScale: frozenCaptureArray(record.sourceScale.toArray()),
+            homeScale: frozenCaptureArray(record.mesh.scale.toArray()),
+            matrix: frozenCaptureArray(record.mesh.matrix.elements),
+            opacity: record.opacity,
+            frontMix: record.frontMix,
+            visible: record.visible
+        })))
+    });
+}
+
+function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null, maxDistance = Infinity } = {}) {
+    if (activeBackgroundLease && (!group || activeBackgroundLease.group !== group)) return null;
+    const requestedCount = Math.min(cubes.length, Math.max(0, Math.floor(Number(count) || 0)));
+    if (!requestedCount) return null;
+    const rect = backgroundCanvas.getBoundingClientRect();
+    const centerX = Number.isFinite(x) ? x : rect.left + rect.width / 2;
+    const centerY = Number.isFinite(y) ? y : rect.top + rect.height / 2;
+    camera.updateMatrixWorld(true);
+    const projected = new THREE.Vector3();
+    const ranked = cubes.map((mesh, index) => {
+        if (capturedBackgroundCubes.has(mesh) || (ids && !ids.includes(index))) return null;
+        projected.copy(mesh.position).project(camera);
+        const screenX = rect.left + (projected.x + 1) * rect.width / 2;
+        const screenY = rect.top + (1 - projected.y) * rect.height / 2;
+        return { mesh, index, distance: Math.hypot(screenX - centerX, screenY - centerY) };
+    }).filter(item => item && item.distance <= maxDistance).sort((a, b) => a.distance - b.distance || a.index - b.index);
+    if (!ranked.length) return null;
+    const lease = { id: ++backgroundLeaseSequence, group, active: true, records: [] };
+    lease.records = ranked.slice(0, requestedCount).map(({ mesh, index, distance }, rank) => {
+        mesh.updateMatrix();
+        const material = mesh.material.clone();
+        material.transparent = true;
+        // 半透明交接不应以不可见的深度挡住其他背景方块。
+        material.depthWrite = false;
+        const record = {
+            id: index, rank, distance, mesh,
+            originalMaterial: mesh.material,
+            material,
+            originalLayer: mesh.layers.mask & (1 << FOREGROUND_CUBE_LAYER) ? FOREGROUND_CUBE_LAYER : BACKGROUND_CUBE_LAYER,
+            originalLayerMask: mesh.layers.mask,
+            originalMatrixAutoUpdate: mesh.matrixAutoUpdate,
+            originalVisible: mesh.visible,
+            originalRandom: Object.freeze({ ...mesh.userData }),
+            sourcePosition: mesh.position.clone(),
+            sourceQuaternion: mesh.quaternion.clone(),
+            sourceScale: mesh.scale.clone(),
+            sourceMatrix: mesh.matrix.clone(),
+            opacity: 1, frontMix: 0, visible: mesh.visible
+        };
+        mesh.material = material;
+        mesh.matrixAutoUpdate = false;
+        if (record.originalLayer === BACKGROUND_CUBE_LAYER) mesh.layers.enable(FOREGROUND_CUBE_LAYER);
+        capturedBackgroundCubes.set(mesh, record);
+        return record;
+    });
+    activeBackgroundLeases.add(lease);
+    activeBackgroundLease ||= lease;
+    const entries = Object.freeze(lease.records.map(record => Object.freeze({
+        id: record.id,
+        mesh: record.mesh,
+        originalLayer: record.originalLayer,
+        originalLayerMask: record.originalLayerMask,
+        distance: record.distance,
+        originalRandom: record.originalRandom,
+        sourcePosition: record.sourcePosition.clone(),
+        sourceQuaternion: record.sourceQuaternion.clone(),
+        sourceScale: record.sourceScale.clone(),
+        sourceMatrix: record.sourceMatrix.clone()
+    })));
+    return Object.freeze({
+        id: lease.id,
+        entries,
+        camera,
+        canvas: backgroundCanvas,
+        setPose(index, { matrix, opacity = 1, frontMix = 1, visible = true } = {}) {
+            const record = lease.records[index];
+            if (!lease.active || !record) return false;
+            if (matrix) {
+                if (!matrix.isMatrix4 || !matrix.elements.every(Number.isFinite)) return false;
+                record.mesh.matrix.copy(matrix);
+                record.mesh.matrixWorldNeedsUpdate = true;
+            }
+            record.opacity = clampCaptureUnit(Number.isFinite(opacity) ? opacity : 1);
+            record.frontMix = clampCaptureUnit(Number.isFinite(frontMix) ? frontMix : 1);
+            record.visible = Boolean(visible);
+            record.mesh.visible = record.visible;
+            return true;
+        },
+        getHomeMatrix(index, target = new THREE.Matrix4()) {
+            const record = lease.records[index];
+            return record ? target.compose(record.mesh.position, record.mesh.quaternion, record.mesh.scale) : null;
+        },
+        getFrameSeconds() { return backgroundFrameSeconds; },
+        present() {
+            // 两个画布交接时同帧补绘；不推进漂浮状态，也不另建 RAF / renderer。
+            if (!lease.active || document.hidden) return false;
+            renderBackgroundLayers();
+            return true;
+        },
+        release({ atCurrent = false } = {}) {
+            if (!lease.active) return;
+            lease.active = false;
+            for (const record of lease.records) {
+                const mesh = record.mesh;
+                if (atCurrent) {
+                    // 接管当前姿态而非回到捕获前的位置。尺寸与运动随机值不重设；
+                    // 动画桥已将末帧还原为原尺寸的 native TRS，不丢失 affine 残差。
+                    const currentScale = new THREE.Vector3();
+                    mesh.matrix.decompose(mesh.position, mesh.quaternion, currentScale);
+                    mesh.quaternion.normalize();
+                }
+                mesh.material = record.originalMaterial;
+                mesh.layers.mask = record.originalLayerMask;
+                mesh.visible = record.originalVisible;
+                mesh.matrixAutoUpdate = record.originalMatrixAutoUpdate;
+                mesh.updateMatrix();
+                capturedBackgroundCubes.delete(mesh);
+                record.material.dispose();
+            }
+            activeBackgroundLeases.delete(lease);
+            if (activeBackgroundLease === lease) activeBackgroundLease = activeBackgroundLeases.values().next().value || null;
+        },
+        getState() { return backgroundLeaseSnapshot(lease); }
+    });
+}
+
+/* 仅返回当前借用记录的只读快照，不泄露整个可变背景数组。 */
+window.NewHorizonBackgroundCubes = Object.freeze({
+    claimNearest: claimNearestBackgroundCubes,
+    findNearby({ left, top, right, bottom, margin = 64 }) {
+        const rect = backgroundCanvas.getBoundingClientRect();
+        camera.updateMatrixWorld(true);
+        const point = new THREE.Vector3();
+        let best = null;
+        cubes.forEach((mesh, id) => {
+            if (capturedBackgroundCubes.has(mesh)) return;
+            point.copy(mesh.position).project(camera);
+            if (point.z < -1 || point.z > 1) return;
+            const x = rect.left + (point.x + 1) * rect.width / 2;
+            const y = rect.top + (1 - point.y) * rect.height / 2;
+            if (x < Math.max(-20, left - margin) || x > Math.min(innerWidth + 20, right + margin)
+                || y < Math.max(-20, top - margin) || y > Math.min(innerHeight + 20, bottom + margin)) return;
+            const distance = Math.hypot(x - (left + right) / 2, y - (top + bottom) / 2);
+            if (!best || distance < best.distance) best = { id, screen: { x, y }, distance };
+        });
+        return best;
+    },
+    present() {
+        if (!document.hidden) renderBackgroundLayers();
+    },
+    getState(options = {}) {
+        const state = {
+            totalCount: cubes.length,
+            backgroundCount: cubes.filter(mesh => capturedBackgroundCubes.get(mesh)?.originalLayer === BACKGROUND_CUBE_LAYER ||
+                (!capturedBackgroundCubes.has(mesh) && (mesh.layers.mask & (1 << BACKGROUND_CUBE_LAYER)) !== 0)).length,
+            foregroundCount: cubes.filter(mesh => capturedBackgroundCubes.get(mesh)?.originalLayer === FOREGROUND_CUBE_LAYER ||
+                (!capturedBackgroundCubes.has(mesh) && (mesh.layers.mask & (1 << FOREGROUND_CUBE_LAYER)) !== 0)).length,
+            claimedCount: capturedBackgroundCubes.size,
+            leaseCount: activeBackgroundLeases.size,
+            lease: activeBackgroundLease ? backgroundLeaseSnapshot(activeBackgroundLease) : null
+        };
+        // 完整候选测量只供显式校验；常规快照不复制 640 个方块数据。
+        if (options?.candidates) {
+            const rect = backgroundCanvas.getBoundingClientRect();
+            const center = options.center || options;
+            const x = Number.isFinite(center.x) ? center.x : rect.left + rect.width / 2;
+            const y = Number.isFinite(center.y) ? center.y : rect.top + rect.height / 2;
+            const projected = new THREE.Vector3();
+            camera.updateMatrixWorld(true);
+            state.center = Object.freeze({ x, y });
+            state.candidates = Object.freeze(cubes.map((mesh, id) => {
+                // 不读取已覆盖的 matrixWorld，保持与捕获排序的 native 位姿一致。
+                projected.copy(mesh.position).project(camera);
+                const screenX = rect.left + (projected.x + 1) * rect.width / 2;
+                const screenY = rect.top + (1 - projected.y) * rect.height / 2;
+                const record = capturedBackgroundCubes.get(mesh);
+                return Object.freeze({
+                    id,
+                    position: frozenCaptureArray(mesh.position.toArray()),
+                    scale: frozenCaptureArray(mesh.scale.toArray()),
+                    screen: Object.freeze({ x: screenX, y: screenY }),
+                    distance: Math.hypot(screenX - x, screenY - y),
+                    originalLayer: record ? record.originalLayer :
+                        mesh.layers.mask & (1 << FOREGROUND_CUBE_LAYER) ? FOREGROUND_CUBE_LAYER : BACKGROUND_CUBE_LAYER,
+                    random: Object.freeze({ ...mesh.userData })
+                });
+            }));
+        }
+        return Object.freeze(state);
+    }
+});
+
+function prepareCapturedBackgroundLayer(layer) {
+    for (const record of capturedBackgroundCubes.values()) {
+        if (record.originalMaterial.color) record.material.color.copy(record.originalMaterial.color);
+        const layerOpacity = !foregroundContext || record.originalLayer === FOREGROUND_CUBE_LAYER
+            ? 1 : layer === FOREGROUND_CUBE_LAYER ? record.frontMix : 1 - record.frontMix;
+        record.material.opacity = record.opacity * layerOpacity * record.originalMaterial.opacity;
+        record.mesh.visible = record.visible && record.material.opacity > 0.0001;
+    }
+}
+
 
 /* ===========================
    7. 3D悬赏令基础工具
@@ -1560,13 +1795,16 @@ document.addEventListener(
 function renderBackgroundLayers() {
     if (foregroundContext) {
         if (renderer.getContext().isContextLost()) return;
+        prepareCapturedBackgroundLayer(FOREGROUND_CUBE_LAYER);
         camera.layers.set(FOREGROUND_CUBE_LAYER);
         renderer.render(scene, camera);
         foregroundContext.globalCompositeOperation = "copy";
         foregroundContext.drawImage(backgroundCanvas, 0, 0);
+        prepareCapturedBackgroundLayer(BACKGROUND_CUBE_LAYER);
         camera.layers.set(BACKGROUND_CUBE_LAYER);
     } else {
         // 极少数不支持 2D 画布的环境保留所有方块，不让它们丢失。
+        prepareCapturedBackgroundLayer(BACKGROUND_CUBE_LAYER);
         camera.layers.enableAll();
     }
     renderer.render(scene, camera);
@@ -1592,8 +1830,16 @@ function animate(
      * 不会限制前台运行时的最高帧率。
      */
     if (!isPageVisible) {
+        previousBackgroundFrameAt = null;
         return;
     }
+
+    const backgroundFrameAt = Number.isFinite(timestamp) ? timestamp : performance.now();
+    if (previousBackgroundFrameAt !== null) {
+        backgroundFrameSeconds = Math.min(1 / 20, Math.max(1 / 240,
+            (backgroundFrameAt - previousBackgroundFrameAt) / 1000));
+    }
+    previousBackgroundFrameAt = backgroundFrameAt;
 
     const speedMultiplier =
         window.globalSpeedMultiplier;
@@ -1609,6 +1855,8 @@ function animate(
     ) {
         const cube =
             cubes[index];
+
+        if (capturedBackgroundCubes.has(cube)) continue;
 
         cube.position.x -=
             cube.userData.speedX *
@@ -1706,7 +1954,7 @@ function handleBackgroundMouseDown(
 
     const intersections =
         raycaster.intersectObjects(
-            cubes,
+            cubes.filter(cube => !capturedBackgroundCubes.has(cube)),
             false
         );
 

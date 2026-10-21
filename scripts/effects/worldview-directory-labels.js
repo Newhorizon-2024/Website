@@ -33,6 +33,7 @@ export function createWorldviewDirectoryLabels({
     container.appendChild(root);
 
     const canvas = container.querySelector("#worldview-canvas");
+    const backButton = container.querySelector(".worldview-back-button");
     let canOpen = false;
     let gesture = null;
     let suppressPointerClickUntil = 0;
@@ -209,7 +210,7 @@ export function createWorldviewDirectoryLabels({
                 let overlap = 0;
                 placed.forEach(other => {
                     const overlapX = (record.width + other.width) / 2 + 6 - Math.abs(x - other.x);
-                    const overlapY = LABEL_HEIGHT + 4 - Math.abs(y - other.y);
+                    const overlapY = (LABEL_HEIGHT + (other.height || LABEL_HEIGHT)) / 2 + 4 - Math.abs(y - other.y);
                     if (overlapX > 0 && overlapY > 0) overlap += overlapX * overlapY;
                 });
                 const continuity = record.x === null
@@ -242,6 +243,21 @@ export function createWorldviewDirectoryLabels({
         hint.hidden = height < 180;
 
         const placed = [];
+        // 只避让真实返回按钮的当前区域；保留其余底部空间和原有标签寻位规则。
+        if (backButton && !backButton.hidden) {
+            const bounds = container.getBoundingClientRect();
+            const backBounds = backButton.getBoundingClientRect();
+            if (bounds.width > 0 && bounds.height > 0 && backBounds.width > 0 && backBounds.height > 0) {
+                const scaleX = width / bounds.width;
+                const scaleY = height / bounds.height;
+                placed.push({
+                    x: (backBounds.left - bounds.left + backBounds.width / 2) * scaleX,
+                    y: (backBounds.top - bounds.top + backBounds.height / 2) * scaleY,
+                    width: backBounds.width * scaleX,
+                    height: backBounds.height * scaleY
+                });
+            }
+        }
         const heldRecord = gesture && !gesture.dragging ? gesture.record : null;
         const ordered = heldRecord
             ? [heldRecord, ...records.filter(record => record !== heldRecord)]

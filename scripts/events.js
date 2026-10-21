@@ -33,6 +33,7 @@ import {
 import {
     initializeInnerDomainSection
 } from "./effects/inner-domain-section.js";
+import {initializeInnerDomainCubes} from "./effects/inner-domain-cubes.js?v=26.10.21.5";
 
 import {
     initializeMineashSection
@@ -64,7 +65,7 @@ import {
 
 import {
     initializeWorldviewCore
-} from "./effects/worldview-core.js?v=26.10.19.3";
+} from "./effects/worldview-core.js?v=26.10.21.3";
 
 import {
     initializeWorldviewOrganizations
@@ -128,6 +129,7 @@ function initializeEvents() {
     initializeCreatorGallery();
     initializeCreatorNameText();
     initializeInnerDomainSection();
+    initializeInnerDomainCubes();
     initializeInnerworldSection();
     initializeInlineSectionLinks();
     initializeMineashSection();

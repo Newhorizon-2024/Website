@@ -2,7 +2,8 @@ import {
     showWorldviewCore,
     hideWorldviewCore,
     transitionWorldviewCoreOut
-} from "../effects/worldview-core.js?v=26.10.19.3";
+} from "../effects/worldview-core.js?v=26.10.21.3";
+import {transitionInnerDomainCubesOut} from "../effects/inner-domain-cubes.js?v=26.10.21.5";
 
 import {
     initializeSlingButton
@@ -646,6 +647,9 @@ export function initializeNavigation() {
             if (previousId === "worldview-section") {
                 await transitionWorldviewCoreOut();
                 hideWorldviewCore();
+            }
+            if (previousId === "inner-domain-section") {
+                await transitionInnerDomainCubesOut();
             }
 
             /*

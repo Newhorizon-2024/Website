@@ -68,6 +68,20 @@
     display: none;
 }
 
+/* 保持按钮中心不受通用 hover 的水平位移影响。 */
+#worldview-section .worldview-back-button {
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    transform: none;
+}
+
+#worldview-section .worldview-back-button:active {
+    transform: scale(0.985);
+}
+
 /* Touch directory: projected, screen-readable names, not another card grid. */
 .worldview-directory-labels {
     inset: 0;
@@ -135,7 +149,7 @@
 }
 
 .worldview-directory-labels__hint {
-    bottom: 8px;
+    bottom: 80px;
     color: rgba(255, 255, 255, 0.45);
     font-size: 11px;
     left: 0;
