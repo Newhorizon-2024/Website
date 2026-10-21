@@ -341,6 +341,7 @@ foregroundCanvas.dataset.cubeCount = String(
  * 过渡只覆盖局部矩阵；原地归还时接续当前位置 / 朝向，保留随机尺寸和速率。
  */
 const capturedBackgroundCubes = new Map();
+let backgroundCubeDrag = null;
 let activeBackgroundLease = null;
 const activeBackgroundLeases = new Set();
 let backgroundLeaseSequence = 0;
@@ -388,7 +389,7 @@ function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null
     camera.updateMatrixWorld(true);
     const projected = new THREE.Vector3();
     const ranked = cubes.map((mesh, index) => {
-        if (capturedBackgroundCubes.has(mesh) || (ids && !ids.includes(index))) return null;
+        if (capturedBackgroundCubes.has(mesh) || backgroundCubeDrag?.mesh === mesh || (ids && !ids.includes(index))) return null;
         projected.copy(mesh.position).project(camera);
         const screenX = rect.left + (projected.x + 1) * rect.width / 2;
         const screenY = rect.top + (1 - projected.y) * rect.height / 2;
@@ -503,7 +504,7 @@ window.NewHorizonBackgroundCubes = Object.freeze({
         const point = new THREE.Vector3();
         let best = null;
         cubes.forEach((mesh, id) => {
-            if (capturedBackgroundCubes.has(mesh)) return;
+            if (capturedBackgroundCubes.has(mesh) || backgroundCubeDrag?.mesh === mesh) return;
             point.copy(mesh.position).project(camera);
             if (point.z < -1 || point.z > 1) return;
             const x = rect.left + (point.x + 1) * rect.width / 2;
@@ -527,7 +528,13 @@ window.NewHorizonBackgroundCubes = Object.freeze({
                 (!capturedBackgroundCubes.has(mesh) && (mesh.layers.mask & (1 << FOREGROUND_CUBE_LAYER)) !== 0)).length,
             claimedCount: capturedBackgroundCubes.size,
             leaseCount: activeBackgroundLeases.size,
-            lease: activeBackgroundLease ? backgroundLeaseSnapshot(activeBackgroundLease) : null
+            lease: activeBackgroundLease ? backgroundLeaseSnapshot(activeBackgroundLease) : null,
+            drag: backgroundCubeDrag ? Object.freeze({
+                id: backgroundCubeDrag.id,
+                pointerType: backgroundCubeDrag.pointerType,
+                moved: backgroundCubeDrag.moved,
+                screen: Object.freeze({ x: backgroundCubeDrag.clientX, y: backgroundCubeDrag.clientY })
+            }) : null
         };
         // 完整候选测量只供显式校验；常规快照不复制 640 个方块数据。
         if (options?.candidates) {
@@ -547,7 +554,10 @@ window.NewHorizonBackgroundCubes = Object.freeze({
                 return Object.freeze({
                     id,
                     position: frozenCaptureArray(mesh.position.toArray()),
+                    rotation: frozenCaptureArray(mesh.rotation.toArray().slice(0, 3)),
                     scale: frozenCaptureArray(mesh.scale.toArray()),
+                    claimed: Boolean(record),
+                    dragging: backgroundCubeDrag?.mesh === mesh,
                     screen: Object.freeze({ x: screenX, y: screenY }),
                     distance: Math.hypot(screenX - x, screenY - y),
                     originalLayer: record ? record.originalLayer :
@@ -1771,6 +1781,7 @@ let isPageVisible =
 let anotherWorldObscuresBackground = false;
 window.addEventListener('another-world-visibility-change', event => {
     anotherWorldObscuresBackground = Boolean(event.detail?.hidden);
+    if (anotherWorldObscuresBackground) finishBackgroundCubeDrag(true);
     previousBackgroundFrameAt = null;
 });
 
@@ -1780,6 +1791,7 @@ window.addEventListener('another-world-visibility-change', event => {
 function handleVisibilityChange() {
     isPageVisible =
         !document.hidden;
+    if (!isPageVisible) finishBackgroundCubeDrag(true);
 }
 
 document.addEventListener(
@@ -1849,6 +1861,8 @@ function animate(
     const speedMultiplier =
         window.globalSpeedMultiplier;
 
+    if (backgroundCubeDrag && backgroundInteractionBlocked()) finishBackgroundCubeDrag(true);
+
     /*
      * 方块不再从数组中删除，
      * 因此可以直接使用正序循环。
@@ -1863,13 +1877,11 @@ function animate(
 
         if (capturedBackgroundCubes.has(cube)) continue;
 
-        cube.position.x -=
-            cube.userData.speedX *
-            speedMultiplier;
-
-        cube.position.y -=
-            cube.userData.speedY *
-            speedMultiplier;
+        const isBeingDragged = backgroundCubeDrag?.mesh === cube;
+        if (!isBeingDragged) {
+            cube.position.x -= cube.userData.speedX * speedMultiplier;
+            cube.position.y -= cube.userData.speedY * speedMultiplier;
+        }
 
         cube.rotation.x +=
             cube.userData
@@ -1898,8 +1910,8 @@ function animate(
          * createCube()
          */
         if (
-            isOutsideHorizontalBoundary ||
-            isOutsideVerticalBoundary
+            !isBeingDragged &&
+            (isOutsideHorizontalBoundary || isOutsideVerticalBoundary)
         ) {
             resetCube(
                 cube
@@ -1923,82 +1935,157 @@ function animate(
 const raycaster =
     new THREE.Raycaster();
 
-/* 保留两层方块原有的点击改变方向交互。 */
+/* 两层共用拾取器；不建立额外画布或动画循环。 */
 raycaster.layers.enable(FOREGROUND_CUBE_LAYER);
 
 /* 标准化鼠标坐标 */
 const mousePosition =
     new THREE.Vector2();
 
-/**
- * 点击方块时随机改变其移动方向。
- *
- * @param {MouseEvent} event 鼠标事件
- */
-function handleBackgroundMouseDown(
-    event
-) {
-    mousePosition.x =
-        event.clientX /
-        window.innerWidth *
-        2 -
-        1;
+const backgroundDragPoint = new THREE.Vector3();
+let suppressedBackgroundClick = null;
 
-    mousePosition.y =
-        -(
-            event.clientY /
-            window.innerHeight
-        ) *
-        2 +
-        1;
-
-    raycaster.setFromCamera(
-        mousePosition,
-        camera
+function backgroundInteractionBlocked() {
+    return document.hidden || document.body.matches(
+        '.locked, .is-section-transitioning, .is-another-world-transitioning, '
+        + '.is-another-world-focused, .is-another-world-obscured, '
+        + '.creator-lightbox-open, .wanted-lightbox-open'
     );
-
-    const intersections =
-        raycaster.intersectObjects(
-            cubes.filter(cube => !capturedBackgroundCubes.has(cube)),
-            false
-        );
-
-    if (
-        intersections.length === 0
-    ) {
-        return;
-    }
-
-    const selectedCube =
-        intersections[0].object;
-
-    selectedCube.userData.speedX =
-        (
-            Math.random() -
-            0.5
-        ) * 0.6;
-
-    selectedCube.userData.speedY =
-        (
-            Math.random() -
-            0.5
-        ) * 0.6;
-
-    /*
-     * 保留原有状态字段，
-     * 兼容其他脚本。
-     */
-    selectedCube.userData.draggable =
-        true;
-
-    selectedCube.userData.isDragging =
-        true;
 }
 
-window.addEventListener(
-    "mousedown",
-    handleBackgroundMouseDown
-);
+function isBackgroundPointerTarget(target) {
+    if (!(target instanceof Element) || target.closest('[inert]')) return false;
+    // 只在真正的空白背景拾取；透明前景画布不应让拖拽穿过面板、文字、按钮或世界观画布。
+    if (target.closest('#worldview-section, #navbar, #settings-section, .site-panel')) return false;
+    return target === document.body || target === document.documentElement
+        || target.id === 'content' || target.classList.contains('section');
+}
+
+function setBackgroundPointerRay(clientX, clientY) {
+    const rect = backgroundCanvas.getBoundingClientRect();
+    if (!rect.width || !rect.height || !Number.isFinite(clientX) || !Number.isFinite(clientY)) return false;
+    mousePosition.set(
+        (clientX - rect.left) / rect.width * 2 - 1,
+        -(clientY - rect.top) / rect.height * 2 + 1
+    );
+    camera.updateMatrixWorld(true);
+    raycaster.setFromCamera(mousePosition, camera);
+    return true;
+}
+
+function handleBackgroundPointerDown(event) {
+    if (backgroundCubeDrag || event.defaultPrevented || event.button !== 0 || event.isPrimary === false
+        || backgroundInteractionBlocked() || !isBackgroundPointerTarget(event.target)
+        || !setBackgroundPointerRay(event.clientX, event.clientY)) return;
+    scene.updateMatrixWorld(true);
+    const hits = raycaster.intersectObjects(cubes.filter(cube => cube.visible
+        && cube.material.opacity > 0 && !capturedBackgroundCubes.has(cube)), false);
+    // 前景画布最后合成，重叠时优先拾取实际显示在上面的前景方块。
+    const hit = (foregroundContext && hits.find(item => item.object.layers.mask & (1 << FOREGROUND_CUBE_LAYER))) || hits[0];
+    if (!hit) return;
+    const mesh = hit.object;
+    const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -mesh.position.z);
+    if (!raycaster.ray.intersectPlane(plane, backgroundDragPoint)) return;
+    backgroundCubeDrag = {
+        id: cubes.indexOf(mesh), mesh, plane,
+        offset: mesh.position.clone().sub(backgroundDragPoint),
+        pointerId: event.pointerId, pointerType: event.pointerType,
+        target: event.target,
+        startX: event.clientX, startY: event.clientY,
+        clientX: event.clientX, clientY: event.clientY,
+        moved: false,
+        originalDraggable: mesh.userData.draggable,
+        originalIsDragging: mesh.userData.isDragging,
+        originalCursor: document.documentElement.style.cursor,
+        originalUserSelect: document.documentElement.style.userSelect
+    };
+    mesh.userData.draggable = true;
+    mesh.userData.isDragging = true;
+    document.documentElement.style.cursor = 'grabbing';
+    document.documentElement.style.userSelect = 'none';
+    try { event.target.setPointerCapture(event.pointerId); } catch { /* Window listeners remain available. */ }
+    if (event.cancelable) event.preventDefault();
+}
+
+function updateBackgroundCubeDrag(event) {
+    const drag = backgroundCubeDrag;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (backgroundInteractionBlocked() || capturedBackgroundCubes.has(drag.mesh)) {
+        finishBackgroundCubeDrag(true);
+        return;
+    }
+    drag.clientX = event.clientX;
+    drag.clientY = event.clientY;
+    const threshold = drag.pointerType === 'touch' ? 7 : 4;
+    if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < threshold) return;
+    drag.moved = true;
+    if (setBackgroundPointerRay(event.clientX, event.clientY)
+        && raycaster.ray.intersectPlane(drag.plane, backgroundDragPoint)) {
+        // 原纵深平面 + 抓取偏移保证按下不跳位；角度、材质、尺度、线速度和角速度均不重设。
+        drag.mesh.position.copy(backgroundDragPoint).add(drag.offset);
+    }
+    if (event.cancelable) event.preventDefault();
+}
+
+function finishBackgroundCubeDrag(cancelled = false) {
+    const drag = backgroundCubeDrag;
+    if (!drag) return;
+    backgroundCubeDrag = null;
+    drag.mesh.userData.draggable = drag.originalDraggable;
+    drag.mesh.userData.isDragging = drag.originalIsDragging;
+    document.documentElement.style.cursor = drag.originalCursor;
+    document.documentElement.style.userSelect = drag.originalUserSelect;
+    try {
+        if (drag.target.hasPointerCapture(drag.pointerId)) drag.target.releasePointerCapture(drag.pointerId);
+    } catch { /* The original section may already have been detached. */ }
+    if (drag.moved) {
+        suppressedBackgroundClick = { x: drag.clientX, y: drag.clientY, until: performance.now() + 400 };
+    } else if (!cancelled) {
+        // 原有轻点改变方向功能只在真正的轻点后执行，不污染拖拽前的速度。
+        drag.mesh.userData.speedX = (Math.random() - 0.5) * 0.6;
+        drag.mesh.userData.speedY = (Math.random() - 0.5) * 0.6;
+    }
+}
+
+function handleBackgroundPointerUp(event) {
+    if (backgroundCubeDrag?.pointerId !== event.pointerId) return;
+    updateBackgroundCubeDrag(event);
+    finishBackgroundCubeDrag(false);
+}
+
+function handleBackgroundPointerCancel(event) {
+    if (backgroundCubeDrag?.pointerId === event.pointerId) finishBackgroundCubeDrag(true);
+}
+
+function guardBackgroundTouchScroll(event) {
+    // Pointerdown 时再改 touch-action 已太迟；仅实际命中方块的触摸才阻止页面接管滚动。
+    if (backgroundCubeDrag?.pointerType === 'touch') {
+        if (event.touches.length > 1) finishBackgroundCubeDrag(true);
+        else if (event.cancelable) event.preventDefault();
+    }
+}
+
+window.addEventListener('pointerdown', handleBackgroundPointerDown, { passive: false });
+window.addEventListener('pointermove', updateBackgroundCubeDrag, { capture: true, passive: false });
+window.addEventListener('pointerup', handleBackgroundPointerUp, true);
+window.addEventListener('pointercancel', handleBackgroundPointerCancel, true);
+window.addEventListener('lostpointercapture', handleBackgroundPointerCancel, true);
+window.addEventListener('touchstart', guardBackgroundTouchScroll, { capture: true, passive: false });
+window.addEventListener('touchmove', guardBackgroundTouchScroll, { capture: true, passive: false });
+window.addEventListener('click', event => {
+    const click = suppressedBackgroundClick;
+    suppressedBackgroundClick = null;
+    if (click && event.detail > 0 && performance.now() <= click.until
+        && Math.hypot(event.clientX - click.x, event.clientY - click.y) < 8) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+}, true);
+window.addEventListener('blur', () => finishBackgroundCubeDrag(true));
+window.addEventListener('pagehide', () => finishBackgroundCubeDrag(true));
+window.addEventListener('section-shown', () => finishBackgroundCubeDrag(true));
+window.addEventListener('wanted-preview-open', () => finishBackgroundCubeDrag(true));
+backgroundCanvas.addEventListener('webglcontextlost', () => finishBackgroundCubeDrag(true));
 
 
 /* ===========================
@@ -2018,6 +2105,7 @@ let previousViewportHeight =
  * 收缩后让大量方块在同一帧被集中 resetCube()。
  */
 function handleWindowResize() {
+    finishBackgroundCubeDrag(true);
     const nextViewportWidth =
         Math.max(
             1,
