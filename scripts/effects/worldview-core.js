@@ -295,6 +295,19 @@ let rotationVelocityZ =
 let interactionEnabled =
     true;
 
+// A portal temporarily borrows the live directory pose. Unlike hide(), this
+// suspension must not release its background-cube lease or replay its entrance.
+let portalSuspended = false;
+let portalInteractionEnabled = false;
+// Confirmation borrows a sharp, live copy of the core, not its animation clock.
+// Only the later full-screen terminal / black-hole stage suspends that clock.
+let portalFocusCanvas = null;
+let portalFocusInteractionEnabled = false;
+let portalContextLost = false;
+let animationPausedAt = null;
+let portalRaycaster = null;
+let portalMouse = null;
+
 
 /* ===========================
    12. 档案空间建立状态
@@ -544,6 +557,12 @@ function resizeWorldviewCore() {
         height,
         false
     );
+
+    if (portalSuspended && active && !portalContextLost) {
+        scene.updateMatrixWorld(true);
+        camera.updateMatrixWorld(true);
+        renderer.render(scene, camera);
+    }
 }
 
 
@@ -665,6 +684,9 @@ function createScene() {
             2,
             2
         );
+
+    portalRaycaster = new THREE.Raycaster();
+    portalMouse = new THREE.Vector2();
 }
 
 
@@ -1863,7 +1885,7 @@ function updateHoverState() {
 function openWorldviewOrbiter(
     orbiter
 ) {
-    if (!orbiter) {
+    if (!orbiter || !active || !interactionEnabled || portalFocusCanvas || portalSuspended) {
         return false;
     }
 
@@ -2262,6 +2284,18 @@ function bindEvents() {
 
     canvas.addEventListener("lostpointercapture", handlePointerCancel);
 
+    canvas.addEventListener("webglcontextlost", () => {
+        portalContextLost = true;
+        pauseCoreAnimation();
+        clearWorldviewPortalFocus();
+    });
+    canvas.addEventListener("webglcontextrestored", () => {
+        // Three.js registered its restore handler when the renderer was made.
+        // Rejoin the same owner loop only after that handler has run.
+        portalContextLost = false;
+        resumeCoreAnimation();
+    });
+
     canvas.addEventListener(
         "pointerleave",
         handlePointerLeave
@@ -2275,6 +2309,34 @@ function bindEvents() {
     if (typeof ResizeObserver !== "undefined") {
         containerResizeObserver = new ResizeObserver(resizeWorldviewCore);
     }
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) pauseCoreAnimation();
+        else resumeCoreAnimation();
+    });
+}
+
+function pauseCoreAnimation() {
+    if (!active) return;
+    if (animationPausedAt === null) animationPausedAt = performance.now();
+    if (animationFrameId !== null) {
+        window.cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    if (clock?.running) clock.stop();
+}
+
+function resumeCoreAnimation() {
+    if (!active || portalSuspended || portalContextLost || document.hidden || showFrameId !== null) return;
+    if (animationPausedAt !== null) {
+        if (transitionPhase === "entering" || transitionPhase === "exiting") {
+            revealStartedAt += Math.max(0,
+                performance.now() - Math.max(animationPausedAt, revealStartedAt));
+        }
+        animationPausedAt = null;
+    }
+    if (!clock.running) clock.start();
+    if (animationFrameId === null) animate();
 }
 
 
@@ -2283,7 +2345,7 @@ function bindEvents() {
 =========================== */
 
 function animate() {
-    if (!active) {
+    if (!active || portalSuspended || portalContextLost || document.hidden) {
         animationFrameId =
             null;
 
@@ -2910,6 +2972,10 @@ function animate() {
         captureBridge.update(exiting);
     }
 
+    // One extra core-only pass while the prompt is visible. The regular pass
+    // below restores all orbiters; neither a second RAF nor GL context is made.
+    if (portalFocusCanvas) renderWorldviewPortalFocus(portalFocusCanvas, {restoreFrame: false});
+
     renderer.render(
         scene,
         camera
@@ -3018,6 +3084,11 @@ export function showWorldviewCore() {
     active =
         true;
 
+    portalSuspended = false;
+    portalInteractionEnabled = false;
+    endWorldviewPortalFocus();
+    animationPausedAt = null;
+
     interactionEnabled =
         false;
 
@@ -3112,16 +3183,7 @@ export function showWorldviewCore() {
                 revealStartedAt = performance.now();
             }
 
-            if (!clock.running) {
-                clock.start();
-            }
-
-            if (
-                animationFrameId ===
-                null
-            ) {
-                animate();
-            }
+            resumeCoreAnimation();
         }
     );
 
@@ -3133,6 +3195,10 @@ export function showWorldviewCore() {
 export function transitionWorldviewCoreOut() {
     if (!active || reducedMotionQuery.matches) return Promise.resolve();
     if (exitPromise) return exitPromise;
+    // Normal navigation remains authoritative even if a portal prompt was
+    // interrupted by another navigation action.
+    endWorldviewPortalFocus();
+    if (portalSuspended) setWorldviewPortalSuspended(false);
 
     interactionEnabled = false;
     dragging = false;
@@ -3181,6 +3247,10 @@ export function hideWorldviewCore() {
         showFrameId = null;
     }
     finishCoreExit();
+    endWorldviewPortalFocus();
+    portalSuspended = false;
+    portalInteractionEnabled = false;
+    animationPausedAt = null;
     captureBridge?.release();
     container.dataset.capturePhase = "hidden";
     transitionPhase = "hidden";
@@ -3275,6 +3345,145 @@ export function isWorldviewCoreActive() {
 }
 
 
+// Screen coordinates are viewport CSS pixels, matching PointerEvent.clientX/Y
+// and the fixed portal mask. A dedicated raycaster leaves hover / drag state
+// untouched; an orbiting cube in front of the core must not arm the portal.
+export function hitWorldviewCore(clientX, clientY) {
+    if (!initialized || !active || portalSuspended || !interactionEnabled ||
+        !coreRoot.visible || !Number.isFinite(clientX) || !Number.isFinite(clientY)) return false;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 1 || rect.height <= 1 || clientX < rect.left ||
+        clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return false;
+    portalMouse.set((clientX - rect.left) / rect.width * 2 - 1,
+        1 - (clientY - rect.top) / rect.height * 2);
+    scene.updateMatrixWorld(true);
+    camera.updateMatrixWorld(true);
+    portalRaycaster.setFromCamera(portalMouse, camera);
+    const coreObjects = getCoreInteractiveObjects();
+    const objects = orbitRoot.visible ? coreObjects.concat(orbiterMeshes) : coreObjects;
+    const firstHit = portalRaycaster.intersectObjects(objects, false)[0];
+    return Boolean(firstHit && coreObjects.includes(firstHit.object));
+}
+
+export function getWorldviewCoreScreenPosition() {
+    if (!initialized || !active || !coreRoot.visible) return null;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 1 || rect.height <= 1) return null;
+    scene.updateMatrixWorld(true);
+    camera.updateMatrixWorld(true);
+    const point = coreRoot.getWorldPosition(new THREE.Vector3()).project(camera);
+    return {
+        x: rect.left + (point.x + 1) * rect.width / 2,
+        y: rect.top + (1 - point.y) * rect.height / 2,
+        visible: point.z >= -1 && point.z <= 1
+    };
+}
+
+export function setWorldviewPortalSuspended(value) {
+    const next = Boolean(value);
+    if (next === portalSuspended) return active;
+    if (next) {
+        if (!initialized || !active || (!interactionEnabled && !portalFocusCanvas) || transitionPhase !== "idle") return false;
+        portalInteractionEnabled = portalFocusCanvas ? portalFocusInteractionEnabled : interactionEnabled;
+        if (activePointerId !== null) handlePointerCancel({ pointerId: activePointerId });
+        portalSuspended = true;
+        interactionEnabled = false;
+        pauseCoreAnimation();
+        directoryLabels?.hide();
+        dispatchCursorClear();
+        dispatchCursorSuspend();
+        canvas.style.cursor = "default";
+    } else {
+        portalSuspended = false;
+        interactionEnabled = active && !portalFocusCanvas && portalInteractionEnabled && transitionPhase === "idle";
+        portalInteractionEnabled = false;
+        if (active) {
+            canvas.style.cursor = portalFocusCanvas ? "default" : "grab";
+            if (!portalFocusCanvas) dispatchCursorResume();
+            resumeCoreAnimation();
+        }
+    }
+    return true;
+}
+
+function clearWorldviewPortalFocus() {
+    const target = portalFocusCanvas?.getContext?.("2d");
+    if (!target) return;
+    target.setTransform(1, 0, 0, 1, 0, 0);
+    target.clearRect(0, 0, portalFocusCanvas.width, portalFocusCanvas.height);
+}
+
+export function beginWorldviewPortalFocus(targetCanvas) {
+    if (portalFocusCanvas === targetCanvas && targetCanvas) return true;
+    if (!initialized || !active || portalSuspended || portalContextLost ||
+        !interactionEnabled || transitionPhase !== "idle" || !renderWorldviewPortalFocus(targetCanvas)) return false;
+    portalFocusInteractionEnabled = interactionEnabled;
+    portalFocusCanvas = targetCanvas;
+    if (activePointerId !== null) handlePointerCancel({pointerId: activePointerId});
+    interactionEnabled = false;
+    hoveredCore = false;
+    clearHoveredOrbiter();
+    mouse.set(2, 2);
+    directoryLabels?.hide();
+    dispatchCursorClear();
+    dispatchCursorSuspend();
+    canvas.style.cursor = "default";
+    // The existing RAF keeps sceneTime, orbit, spin, breathing and panels live.
+    return true;
+}
+
+export function endWorldviewPortalFocus() {
+    if (!portalFocusCanvas) return false;
+    clearWorldviewPortalFocus();
+    portalFocusCanvas = null;
+    const restoreInteraction = portalFocusInteractionEnabled;
+    portalFocusInteractionEnabled = false;
+    if (!portalSuspended) {
+        interactionEnabled = active && restoreInteraction && transitionPhase === "idle";
+        if (active) {
+            canvas.style.cursor = "grab";
+            dispatchCursorResume();
+        }
+    }
+    return true;
+}
+
+// Copy the exact live pose without preserveDrawingBuffer or another GL context.
+// In the owner loop, its regular final render restores the directory framebuffer
+// and saves a third pass. One-shot callers still get a complete restoration.
+export function renderWorldviewPortalFocus(targetCanvas, {restoreFrame = true} = {}) {
+    if (!initialized || !active || portalContextLost || !coreRoot.visible || !targetCanvas?.getContext) return false;
+    const target = targetCanvas.getContext("2d");
+    if (!target) return false;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 1 || rect.height <= 1) return false;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const width = Math.max(1, Math.round(window.innerWidth * dpr));
+    const height = Math.max(1, Math.round(window.innerHeight * dpr));
+    // Resizing a 2D backing store reallocates it; do so only on a true resize.
+    if (targetCanvas.width !== width) targetCanvas.width = width;
+    if (targetCanvas.height !== height) targetCanvas.height = height;
+    target.setTransform(dpr, 0, 0, dpr, 0, 0);
+    target.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    const orbitVisible = orbitRoot.visible;
+    try {
+        orbitRoot.visible = false;
+        scene.updateMatrixWorld(true);
+        camera.updateMatrixWorld(true);
+        renderer.render(scene, camera);
+        target.drawImage(canvas, rect.left, rect.top, rect.width, rect.height);
+    } catch {
+        // Context loss must not abort the core owner or leave orbiters hidden.
+        target.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        return false;
+    } finally {
+        orbitRoot.visible = orbitVisible;
+        if (restoreFrame && !portalContextLost) renderer.render(scene, camera);
+    }
+    return true;
+}
+
+
 /* ===========================
    37. 世界观核心上下文
 =========================== */
@@ -3294,6 +3503,19 @@ export function getWorldviewCoreContext() {
         observationRoot,
         coreRoot,
         orbitRoot,
+
+        hitCore: hitWorldviewCore,
+        getCoreScreenPosition: getWorldviewCoreScreenPosition,
+        setPortalSuspended: setWorldviewPortalSuspended,
+        beginPortalFocus: beginWorldviewPortalFocus,
+        endPortalFocus: endWorldviewPortalFocus,
+        renderPortalFocus: renderWorldviewPortalFocus,
+        isPortalSuspended() {
+            return portalSuspended;
+        },
+        isPortalFocused() {
+            return Boolean(portalFocusCanvas);
+        },
 
         getFraming() {
             return { ...coreFraming };

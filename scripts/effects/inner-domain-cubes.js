@@ -12,10 +12,11 @@ in vec2 aUv;
 in vec2 aCenter;
 in vec4 aRotation;
 in vec3 aState;
+in vec3 aColor;
 uniform mat4 uProjection;
 uniform float uSize;
 out vec3 vNormal;
-out vec2 vUv;
+out vec3 vColor;
 out float vFlash;
 out float vReveal;
 
@@ -26,7 +27,7 @@ vec3 turn(vec4 q, vec3 v) {
 void main() {
   vec3 local = turn(aRotation, aPosition * uSize * aState.y);
   vNormal = turn(aRotation, aNormal);
-  vUv = aUv;
+  vColor = aColor;
   vFlash = aState.x;
   vReveal = aState.z;
   gl_Position = aState.z < 0.00001 ? vec4(2.0, 2.0, 2.0, 1.0) : uProjection * vec4(vec3(aCenter, 0.0) + local, 1.0);
@@ -35,50 +36,24 @@ void main() {
 const FRAGMENT = `#version 300 es
 precision highp float;
 in vec3 vNormal;
-in vec2 vUv;
+in vec3 vColor;
 in float vFlash;
 in float vReveal;
-uniform vec3 uFace;
-uniform vec3 uEdge;
 uniform vec3 uRipple;
 uniform vec3 uLight;
 uniform float uShading;
-uniform float uEdgeWidth;
-uniform float uStyle;
-uniform float uMarks;
 uniform float uOpacity;
 out vec4 outColor;
 
 void main() {
-  vec2 span = max(fwidth(vUv), vec2(0.00001));
-  vec2 border = min(vUv, 1.0 - vUv) / span;
-  bool vertical = border.x < border.y;
-  float distance = min(border.x, border.y);
-  float halfWidth = uEdgeWidth * 0.5;
-  float cover = 1.0 - smoothstep(halfWidth - 0.5, halfWidth + 0.5, distance);
-  float along = vertical ? vUv.y : vUv.x;
-  float phase = along * uMarks;
-  float step = max(vertical ? span.y : span.x, 0.00001) * uMarks;
-  float offset = abs(fract(phase + 0.5) - 0.5);
-  if (uStyle > 0.5 && uStyle < 1.5) {
-    cover *= 1.0 - smoothstep(0.25 - step, 0.25 + step, offset);
-  } else if (uStyle > 1.5 && uStyle < 2.5) {
-    float radius = max(uEdgeWidth * 0.9, 1.0);
-    float dot = length(vec2(offset / step, distance));
-    cover = 1.0 - smoothstep(radius - 0.75, radius + 0.75, dot);
-  } else if (uStyle > 2.5) {
-    cover = 0.0;
-  }
   vec3 normal = normalize(vNormal);
-  cover *= smoothstep(0.06, 0.28, abs(normal.z));
   float side = clamp(1.0 - normal.z, 0.0, 1.0);
   float toward = clamp(0.6 + 0.6 * dot(normalize(normal.xy + vec2(0.00001)), normalize(uLight.xy)), 0.0, 1.0);
-  vec3 face = mix(uFace, uEdge, side * mix(0.12, 0.42, toward) * uShading);
+  // Each cube keeps its borrowed material's RGB. Only face lighting and the
+  // existing temporary ripple remain; no UV border / replacement palette.
+  vec3 face = vColor * (1.0 - side * mix(0.12, 0.42, toward) * uShading);
   face = mix(face, uRipple, vFlash * 0.22);
-  vec3 edge = mix(uEdge, uRipple, vFlash);
-  vec3 color = mix(face, edge, cover);
-  float alpha = mix(uOpacity, 1.0, cover);
-  outColor = vec4(color * alpha, alpha) * vReveal;
+  outColor = vec4(face * uOpacity, uOpacity) * vReveal;
 }`;
 
 const FACES = [
@@ -117,8 +92,9 @@ const buildCube = () => {
   return { vertices: new Float32Array(vertices), indices: new Uint16Array(indices) };
 };
 
-const STYLES = { solid: 0, dashed: 1, dotted: 2, none: 3 };
 const INTRO_SECONDS = 1.1;
+// center.xy + rotation.xyzw + flash/scale/reveal + captured material.rgb
+const INSTANCE_FLOATS = 12;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -139,7 +115,7 @@ const link = gl => {
   if (!vertex || !fragment || !program) return null;
   gl.attachShader(program, vertex);
   gl.attachShader(program, fragment);
-  ['aPosition', 'aNormal', 'aUv', 'aCenter', 'aRotation', 'aState'].forEach((name, index) =>
+  ['aPosition', 'aNormal', 'aUv', 'aCenter', 'aRotation', 'aState', 'aColor'].forEach((name, index) =>
     gl.bindAttribLocation(program, index, name)
   );
   gl.linkProgram(program);
@@ -199,7 +175,7 @@ function createEngine(container) {
     const showNotice = message => {status.textContent=message;status.hidden=false;};
     if (!gl || !window.THREE) {showNotice('当前浏览器无法启用交互方块，正文仍可正常阅读'); return null;}
     const camera = new THREE.PerspectiveCamera(0.6, 1, 0.1, 10000);
-    const settingsRef = {current:{gridSize:8,gap:0.18,faceColor:'#120f17',edgeColor:'#ffffff',edgeWidth:1,edgeStyle:'solid',faceOpacity:1,shading:0.6,maxAngle:45,radius:3,speed:1,bounce:0.4,brush:1,perspective:0,autoAnimate:true,rippleOnClick:true,rippleColor:'#ffffff',rippleSpeed:1,intro:true,paused:false}};
+    const settingsRef = {current:{gridSize:8,gap:0.18,faceOpacity:1,shading:0.6,maxAngle:45,radius:3,speed:1,bounce:0.4,brush:1,perspective:0,autoAnimate:true,rippleOnClick:true,rippleColor:'#ffffff',rippleSpeed:1,intro:true,paused:false}};
     const shader = link(gl);
     if (!shader) {showNotice('图形效果暂不可用，正文仍可正常阅读');return null;}
 
@@ -223,10 +199,11 @@ function createEngine(container) {
     [
       [3, 2, 0],
       [4, 4, 8],
-      [5, 3, 24]
+      [5, 3, 24],
+      [6, 3, 36]
     ].forEach(([location, size, offset]) => {
       gl.enableVertexAttribArray(location);
-      gl.vertexAttribPointer(location, size, gl.FLOAT, false, 36, offset);
+      gl.vertexAttribPointer(location, size, gl.FLOAT, false, INSTANCE_FLOATS * 4, offset);
       gl.vertexAttribDivisor(location, 1);
     });
 
@@ -277,7 +254,7 @@ function createEngine(container) {
       wy = new Float32Array(grid.count);
       glow = new Float32Array(grid.count);
       delays = new Float32Array(grid.count);
-      instances = new Float32Array(grid.count * 9);
+      instances = new Float32Array(grid.count * INSTANCE_FLOATS);
       const center = (size - 1) / 2;
       for (let i = 0; i < grid.count; i++) {
         const col = i % size;
@@ -320,18 +297,11 @@ function createEngine(container) {
       const u = shader.uniforms;
       gl.uniformMatrix4fv(u.uProjection, false, project(camera, view.width, view.height, view.scale));
       gl.uniform1f(u.uSize, 1 - s.gap);
-      gl.uniform3fv(u.uFace, toRgb(s.faceColor));
-      gl.uniform3fv(u.uEdge, toRgb(s.edgeColor));
       gl.uniform3fv(u.uRipple, toRgb(s.rippleColor));
       const light = [-0.42, 0.55, 0.72];
       const length = Math.hypot(...light);
       gl.uniform3f(u.uLight, light[0] / length, light[1] / length, light[2] / length);
       gl.uniform1f(u.uShading, s.shading);
-      gl.uniform1f(u.uEdgeWidth, s.edgeWidth * view.ratio);
-      gl.uniform1f(u.uStyle, STYLES[s.edgeStyle] ?? 0);
-      const cubePixels = (1 - s.gap) * view.scale;
-      const spacing = s.edgeStyle === 'dotted' ? Math.max(4, s.edgeWidth * 4) : Math.max(6, s.edgeWidth * 6);
-      gl.uniform1f(u.uMarks, Math.max(1, Math.round(cubePixels / spacing)));
       gl.uniform1f(u.uOpacity, s.faceOpacity);
 
       gl.enable(gl.DEPTH_TEST);
@@ -465,7 +435,7 @@ function createEngine(container) {
         const tilt = [0, 0, 0, 1];
         toRotation(rx[i], ry[i], tilt, 0);
         const turn = [Math.sin(tumble / 2), 0, 0, Math.cos(tumble / 2)];
-        const base = i * 9;
+        const base = i * INSTANCE_FLOATS;
         instances[base] = cx;
         instances[base + 1] = cy;
         multiply(tilt, turn, instances, base + 2);
@@ -483,7 +453,7 @@ function createEngine(container) {
     };
 
 
-    const cells = Array.from({length:settingsRef.current.gridSize ** 2}, (_,index)=>({index,root:new THREE.Object3D(),capture:null,born:0,id:null}));
+    const cells = Array.from({length:settingsRef.current.gridSize ** 2}, (_,index)=>({index,root:new THREE.Object3D(),capture:null,born:0,id:null,color:null}));
     let active = false, exiting = false, dirty = false, contextLost = false, nextCaptureAt = 0, exitAt = 0;
     let exitPromise = null, resolveExit = null, exitTimer = null;
     let captureEvents = [];
@@ -500,7 +470,7 @@ function createEngine(container) {
         if (!candidate) return;
         const cell = cells.filter(item=>!item.capture).sort((a,b)=>{
             const distance = item=>{
-                const base=item.index*9;
+                const base=item.index*INSTANCE_FLOATS;
                 return Math.hypot(rect.left+rect.width/2+instances[base]*view.scale-candidate.screen.x,
                     rect.top+rect.height/2-instances[base+1]*view.scale-candidate.screen.y);
             };
@@ -508,17 +478,20 @@ function createEngine(container) {
         })[0];
         const provider = {claimNearest(){
             const lease = api.claimNearest({x:candidate.screen.x,y:candidate.screen.y,count:1,group:'inner-domain',ids:[candidate.id],maxDistance:3});
+            // The lease already exposes its real mesh. Keep that color object
+            // rather than inventing a shared domain palette or recoloring it.
+            cell.color = lease?.entries[0]?.mesh.material.color || null;
             return lease && {...lease,present(){dirty=true;}};
         }};
         cell.capture = createWorldviewCapture({container,camera,coreRoot:cell.root,orbiters:[],backgroundApi:provider});
-        if (!cell.capture.begin({duration:captureDuration})) {cell.capture=null; return;}
+        if (!cell.capture.begin({duration:captureDuration})) {cell.capture=null;cell.color=null; return;}
         cell.born=now; cell.id=candidate.id;
         captureEvents.push({cell:cell.index,id:cell.id,time:now});
     }
 
     function finishExit() {
         clearTimeout(exitTimer); exitTimer=null;
-        for (const cell of cells) {cell.capture?.release();cell.capture=null;cell.id=null;}
+        for (const cell of cells) {cell.capture?.release();cell.capture=null;cell.id=null;cell.color=null;}
         if (dirty) {window.NewHorizonBackgroundCubes?.present();dirty=false;}
         active=false; exiting=false; cancelAnimationFrame(raf);raf=0;last=0;
         instances.fill(0);render();
@@ -532,7 +505,10 @@ function createEngine(container) {
         step(dt);
         project(camera,view.width,view.height,view.scale);
         for(const cell of cells){
-            const base=cell.index*9;
+            const base=cell.index*INSTANCE_FLOATS;
+            instances[base+9]=cell.color?.r ?? 0;
+            instances[base+10]=cell.color?.g ?? 0;
+            instances[base+11]=cell.color?.b ?? 0;
             cell.root.position.set(instances[base],instances[base+1],0);
             quaternion.fromArray(instances,base+2).normalize();
             cell.root.quaternion.copy(quaternion);
@@ -589,8 +565,8 @@ function createEngine(container) {
     canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;finishExit();showNotice('图形上下文中断，方块已归还背景；刷新可重载效果');});
     resize();
     return {activate,leave,getState(){return {active,exiting,contextLost,pending:!!raf,view:{...view},count:cells.filter(cell=>cell.capture?.hasLease()).length,
-        gpuError:gl.getError(),ripples:rings.length,angles:Array.from(rx).map((x,index)=>[x,ry[index]]),
-        captureEvents:[...captureEvents],cells:cells.filter(cell=>cell.capture).map(cell=>({index:cell.index,id:cell.id,targetDeterminant:cell.root.matrixWorld.determinant(),capture:cell.capture.getState()}))};}};
+        gpuError:gl.getError(),colorSource:'captured-material',edgeStyle:'none',ripples:rings.length,angles:Array.from(rx).map((x,index)=>[x,ry[index]]),
+        captureEvents:[...captureEvents],cells:cells.filter(cell=>cell.capture).map(cell=>({index:cell.index,id:cell.id,color:cell.color?.toArray()||null,targetDeterminant:cell.root.matrixWorld.determinant(),capture:cell.capture.getState()}))};}};
 }
 
 export function transitionInnerDomainCubesOut(){return controller?.leave()||Promise.resolve();}

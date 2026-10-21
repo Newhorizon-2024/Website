@@ -15,8 +15,9 @@
 
     <link
         rel="stylesheet"
-        href="styles/main.css?v=26.10.21.3"
+        href="styles/main.css?v=26.10.21.8"
     >
+    <link rel="stylesheet" href="styles/components/another-world-portal.css?v=26.10.21.7">
 
     <!-- ===========================
          网站图标
@@ -129,6 +130,29 @@
 </head>
 
 <body class="locked">
+    <!-- Bossrush 双眼是背景装饰：前置到画布与正文之前，避免同层后绘制遮挡。 -->
+    <div id="bossrush-eyes">
+        <img
+            src="images/bossrush-eyes/bossrush-eyes.png"
+            alt=""
+            width="1000"
+            height="1000"
+            decoding="async"
+            loading="lazy"
+        >
+    </div>
+
+    <div id="bossrush-eyes-bg">
+        <img
+            src="images/bossrush-eyes/bossrush-eyes.png"
+            alt=""
+            width="1000"
+            height="1000"
+            decoding="async"
+            loading="lazy"
+        >
+    </div>
+
     <!-- ===========================
          Three.js 背景画布
     =========================== -->
@@ -6382,28 +6406,6 @@
          Boss Rush 装饰效果
     =========================== -->
 
-    <div id="bossrush-eyes">
-        <img
-            src="images/bossrush-eyes/bossrush-eyes.png"
-            alt=""
-            width="1000"
-            height="1000"
-            decoding="async"
-            loading="lazy"
-        >
-    </div>
-
-    <div id="bossrush-eyes-bg">
-        <img
-            src="images/bossrush-eyes/bossrush-eyes.png"
-            alt=""
-            width="1000"
-            height="1000"
-            decoding="async"
-            loading="lazy"
-        >
-    </div>
-
     <div id="bossrush-filter">
         <img
             src="images/bossrush-eyes/black-picture.png"
@@ -6428,7 +6430,7 @@
 
     <script
         type="module"
-        src="scripts/main.js?v=26.10.21.3"
+        src="scripts/main.js?v=26.10.21.6"
     ></script>
 
     <script
@@ -6438,12 +6440,13 @@
 
     <script
         type="module"
-        src="scripts/controls.js?v=26.10.21.5"
+        src="scripts/controls.js?v=26.10.21.7"
     ></script>
 
     <script
         type="module"
-        src="scripts/events.js?v=26.10.21.5"
+        src="scripts/events.js?v=26.10.21.7"
     ></script>
+    <script type="module" src="scripts/effects/another-world-portal.js?v=26.10.21.7"></script>
 </body>
 </html>

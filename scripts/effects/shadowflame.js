@@ -234,7 +234,7 @@ function connectAudio(audio) {
         if (layer) { layer.replaceChildren(); layer.hidden = true; layer.classList.remove("is-fallback"); }
     };
     const sync = () => {
-        const foregroundBlocked = document.body.classList.contains("locked") || document.body.classList.contains("creator-lightbox-open");
+        const foregroundBlocked = document.body.classList.contains("locked") || document.body.classList.contains("creator-lightbox-open") || document.body.classList.contains("is-another-world-obscured");
         const wanted = selected && playing && !audio.paused && !audio.ended && !audio.error &&
             fileName(audio.src) === TARGET_FILE && !document.hidden && !foregroundBlocked;
         if (wanted) {

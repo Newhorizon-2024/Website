@@ -1,0 +1,74 @@
+/* Independent observation branch; no global prototype selectors or controls. */
+body.is-another-world-transitioning > :not(#another-world-portal):not(script):not(style):not(link) {
+    transition: filter .65s cubic-bezier(.22,1,.36,1) !important;
+}
+body.is-another-world-focused > :not(#another-world-portal):not(script):not(style):not(link) {
+    filter: blur(12px) !important;
+    pointer-events: none !important;
+}
+body.is-another-world-focused {cursor: default !important;}
+body.is-another-world-focused #worldview-target-cursor,
+body.is-another-world-focused #worldview-crosshair {visibility: hidden !important;}
+#another-world-portal {
+    position: fixed; inset: 0; z-index: 11000; isolation: isolate;
+    color: #eee; font: inherit; overflow: hidden; touch-action: none;
+    -webkit-tap-highlight-color: transparent; outline: none;
+}
+#another-world-portal[hidden], #another-world-portal [hidden] {display: none !important;}
+#another-world-focus {position: absolute;inset: 0;width: 100%;height: 100%;pointer-events: none;}
+#another-world-question {position: absolute;z-index: 2;transform: translateX(-50%);text-align: center;width: 260px;max-width: calc(100vw - 24px);animation: another-world-question-in .55s ease both;}
+#another-world-question p {font-size: clamp(15px, 3.5vw, 19px);letter-spacing: .08em;line-height: 1.8;margin: 0 0 16px;text-shadow: 0 2px 10px #000;}
+#another-world-portal:not([data-phase="confirm"]):not([data-phase="cover"]) #another-world-question,
+#another-world-portal:not([data-phase="confirm"]):not([data-phase="cover"]) #another-world-focus {display: none;}
+.another-world-choices {display: flex;align-items: center;justify-content: center;gap: 18px;}
+.another-world-choices span {font-size: 12px;color: #888;}
+#another-world-portal .another-world-choices button,
+#another-world-portal .another-world-exit,
+#another-world-error button {font: inherit;color: #ddd;cursor: pointer;min-width: 44px;min-height: 44px;border: 0;background: transparent;padding: 10px 16px;touch-action: manipulation;}
+#another-world-portal button:focus-visible {outline: 1px solid #ddd;outline-offset: 4px;}
+#another-world-portal .another-world-choices button:hover {color: #fff;background: #ffffff0b;}
+#another-world-mask {position: absolute;left: var(--portal-x,50%);top: var(--portal-y,50%);z-index: 3;pointer-events: none;visibility: hidden;
+    border-radius: 50%;transform: translate(-50%,-50%) scale(1);
+    background: radial-gradient(circle closest-side,#000 0%,#000 62%,#000000f5 72%,#000000bf 82%,transparent 100%);}
+#another-world-portal[data-phase="cover"] #another-world-mask {visibility: visible;}
+#another-world-portal[data-phase="cover"] #another-world-question {opacity: 0;transition: opacity .25s;}
+#another-world-stage {position: absolute;inset: 0;background: #000;}
+#another-world-content {position: absolute;inset: 0;}
+#another-world-stage.has-return-mask {
+    --exit-feather: clamp(90px,16vh,180px);
+    bottom: auto;height: calc(100% + var(--exit-feather));
+    -webkit-mask-image: linear-gradient(to bottom,#000 0%,#000 calc(100% - var(--exit-feather)),transparent 100%);
+    mask-image: linear-gradient(to bottom,#000 0%,#000 calc(100% - var(--exit-feather)),transparent 100%);
+}
+#another-world-stage.has-return-mask #another-world-content {bottom: var(--exit-feather);}
+#another-world-terminal, #another-world-display, #another-world-black-hole {position: absolute;inset: 0;overflow: hidden;background: #000;}
+#another-world-horizon-fill {position: absolute;inset: 0;z-index: 1;pointer-events: none;opacity: 0;}
+#another-world-display {isolation: isolate;}
+#another-world-display > canvas, #another-world-black-hole > canvas {position: absolute;inset: 0;display: block;width: 100%;height: 100%;}
+#another-world-display .terminal-render-notice {position: absolute;z-index: 2;top: 30px;left: 24px;right: 24px;color: #aaa;font-size: 12px;}
+#another-world-enter {position: absolute;z-index: 2;left: 50%;top: calc(50% + clamp(94px,19vmin,158px));transform: translateX(-50%);
+    width: clamp(180px,27vw,280px);aspect-ratio: 1410/354;min-height: 44px;display: block;margin: 0;padding: 0;border: 0;border-radius: 0;background: transparent;
+    opacity: 0;visibility: hidden;filter: blur(10px);pointer-events: none;cursor: pointer;touch-action: manipulation;
+    transition: opacity 1s cubic-bezier(.215,.61,.355,1),filter 1s cubic-bezier(.215,.61,.355,1),visibility 1s;}
+#another-world-enter.is-visible {opacity: .94;visibility: visible;filter: blur(0);pointer-events: auto;}
+#another-world-enter.is-leaving {opacity: 0;filter: blur(5px);pointer-events: none;transition-duration: .35s;}
+#another-world-enter img, #another-world-enter canvas {position: absolute;inset: 0;display: block;width: 100%;height: 100%;object-fit: contain;pointer-events: none;
+    filter: drop-shadow(0 1px 1px #000) drop-shadow(0 3px 4px #000000e6) drop-shadow(0 0 10px #000000e6);}
+#another-world-enter canvas {visibility: hidden;}
+#another-world-enter.has-ascii canvas {visibility: inherit;}
+#another-world-enter.has-ascii img {visibility: hidden;}
+#another-world-return {position: absolute;z-index: 2;top: 69%;left: 50%;transform: translateX(-50%);text-align: center;max-width: calc(100% - 32px);width: 350px;
+    opacity: 0;filter: blur(5px);}
+#another-world-return.is-visible {animation: another-world-return-in 1.6s cubic-bezier(.215,.61,.355,1) both;}
+#another-world-return p {font-size: clamp(16px,3.8vw,21px);font-weight: 400;line-height: 1.8;letter-spacing: .13em;margin: 0 0 18px;text-shadow: 0 2px 12px #000;}
+#another-world-return p span {display: inline-block;animation: another-world-glyph-float var(--float-duration,5s) cubic-bezier(.45,0,.55,1) var(--float-delay,0s) infinite alternate both;}
+#another-world-audio-enable,.another-world-source-audio-retry {position: fixed;top: max(16px,env(safe-area-inset-top));right: max(16px,env(safe-area-inset-right));z-index: 11010;min-height: 44px;max-width: calc(100vw - 32px);padding: 8px 14px;background: #202020e6;border: 1px solid #ffffff26;border-radius: 5px;color: #ddd;font: inherit;font-size: 12px;cursor: pointer;}
+#another-world-return .back-to-parent {position: relative;inset: auto;transform: none;margin: 0 auto;display: inline-flex;width: max-content;max-width: 100%;}
+#another-world-return .back-to-parent:hover {transform: translateY(-2px);}
+#another-world-error {position: absolute;inset: 0;z-index: 4;background: #000;display: flex;flex-direction: column;align-items: center;justify-content: center;gap: 12px;}
+@keyframes another-world-question-in {from {opacity: 0;filter: blur(5px);}to {opacity: 1;filter: blur(0);}}
+@keyframes another-world-return-in {from {opacity: 0;filter: blur(5px);}to {opacity: 1;filter: blur(0);}}
+@keyframes another-world-glyph-float {from {transform: translateY(var(--float-up,-2px));}to {transform: translateY(var(--float-down,2px));}}
+@media(max-height: 500px) {#another-world-return {top: 60%;}#another-world-enter {top: calc(50% + 70px);}#another-world-return p {margin-bottom: 8px;}}
+@media(prefers-reduced-motion: reduce) {#another-world-portal *,#another-world-portal *::before,#another-world-portal *::after {animation-duration: .01ms !important;transition-duration: .01ms !important;}}
+@media(prefers-reduced-motion: reduce) {#another-world-return p span {animation: none !important;transform: none;}body.is-another-world-transitioning > * {transition-duration: .01ms !important;}}

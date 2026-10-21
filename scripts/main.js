@@ -1768,6 +1768,11 @@ function updateBountyPosters(
  */
 let isPageVisible =
     !document.hidden;
+let anotherWorldObscuresBackground = false;
+window.addEventListener('another-world-visibility-change', event => {
+    anotherWorldObscuresBackground = Boolean(event.detail?.hidden);
+    previousBackgroundFrameAt = null;
+});
 
 /**
  * 监听页面显示状态。
@@ -1829,7 +1834,7 @@ function animate(
      * 返回页面后会自动恢复，
      * 不会限制前台运行时的最高帧率。
      */
-    if (!isPageVisible) {
+    if (!isPageVisible || anotherWorldObscuresBackground) {
         previousBackgroundFrameAt = null;
         return;
     }

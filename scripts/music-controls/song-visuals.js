@@ -1,4 +1,4 @@
-import { applyShadowflameSong } from "../effects/shadowflame.js?v=26.10.19.1";
+import { applyShadowflameSong } from "../effects/shadowflame.js?v=26.10.21.7";
 
 /* ===========================
    Bossrush 视觉效果

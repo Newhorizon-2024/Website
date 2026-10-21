@@ -3,7 +3,7 @@ import { playlist }
 
 import {
     applySongVisuals
-} from "./song-visuals.js?v=26.10.19.1";
+} from "./song-visuals.js?v=26.10.21.7";
 
 import {
     initializeWakeVolumeSlider

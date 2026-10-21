@@ -2,8 +2,8 @@ import {
     showWorldviewCore,
     hideWorldviewCore,
     transitionWorldviewCoreOut
-} from "../effects/worldview-core.js?v=26.10.21.3";
-import {transitionInnerDomainCubesOut} from "../effects/inner-domain-cubes.js?v=26.10.21.5";
+} from "../effects/worldview-core.js?v=26.10.21.7";
+import {transitionInnerDomainCubesOut} from "../effects/inner-domain-cubes.js?v=26.10.21.7";
 
 import {
     initializeSlingButton

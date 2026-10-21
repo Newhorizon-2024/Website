@@ -2,7 +2,8 @@
    64. Bossrush 眼睛
 =========================== */
 
-/* Bossrush 前景眼睛 */
+/* 背景装饰：与重影同为 z0，并在 HTML 中先于背景画布及正文。
+ * 保持在 body::before 渐变之上，避免使用会被底色吞没的负层级。 */
 #bossrush-eyes {
     animation:
         bossrushFadeIn 1s ease-out,
@@ -19,7 +20,7 @@
         height 0.4s ease,
         width 0.4s ease;
     width: var(--eyes-bg-size);
-    z-index: 1;
+    z-index: 0;
 }
 
 /* Bossrush 前景眼睛图片 */
@@ -51,7 +52,7 @@
         height 0.4s ease,
         width 0.4s ease;
     width: var(--eyes-bg-size);
-    z-index: 1;
+    z-index: 0;
 }
 
 /* Bossrush 眼睛重影图片 */
