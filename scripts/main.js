@@ -12,6 +12,10 @@ window.globalSpeedMultiplier = 1;
 
 /* 方块集合 */
 const cubes = [];
+// 拖拽惯性独立于方块原始随机运动，捕获、重抓及回收时只清理这层附加速度。
+const backgroundCubeThrows = new Map();
+const thrownBackgroundCubes = new Set();
+const BACKGROUND_THROW_DAMPING = 3.8;
 
 /* 3D悬赏令集合 */
 const bountyPosterObjects = [];
@@ -186,6 +190,8 @@ window.material =
 function resetCube(
     cube
 ) {
+    backgroundCubeThrows.delete(cube);
+    thrownBackgroundCubes.delete(cube);
     const size =
         Math.random() * 10 + 3;
 
@@ -398,6 +404,8 @@ function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null
     if (!ranked.length) return null;
     const lease = { id: ++backgroundLeaseSequence, group, active: true, records: [] };
     lease.records = ranked.slice(0, requestedCount).map(({ mesh, index, distance }, rank) => {
+        backgroundCubeThrows.delete(mesh);
+        thrownBackgroundCubes.delete(mesh);
         mesh.updateMatrix();
         const material = mesh.material.clone();
         material.transparent = true;
@@ -528,6 +536,13 @@ window.NewHorizonBackgroundCubes = Object.freeze({
                 (!capturedBackgroundCubes.has(mesh) && (mesh.layers.mask & (1 << FOREGROUND_CUBE_LAYER)) !== 0)).length,
             claimedCount: capturedBackgroundCubes.size,
             leaseCount: activeBackgroundLeases.size,
+            throwCount: backgroundCubeThrows.size,
+            throws: Object.freeze(Array.from(backgroundCubeThrows, ([mesh, motion]) => Object.freeze({
+                id: cubes.indexOf(mesh),
+                velocity: frozenCaptureArray([motion.x, motion.y]),
+                screenVelocity: frozenCaptureArray([motion.x / motion.worldPerPixel, -motion.y / motion.worldPerPixel]),
+                acceleration: frozenCaptureArray(motion.acceleration)
+            }))),
             lease: activeBackgroundLease ? backgroundLeaseSnapshot(activeBackgroundLease) : null,
             drag: backgroundCubeDrag ? Object.freeze({
                 id: backgroundCubeDrag.id,
@@ -558,6 +573,8 @@ window.NewHorizonBackgroundCubes = Object.freeze({
                     scale: frozenCaptureArray(mesh.scale.toArray()),
                     claimed: Boolean(record),
                     dragging: backgroundCubeDrag?.mesh === mesh,
+                    throwVelocity: backgroundCubeThrows.has(mesh)
+                        ? frozenCaptureArray([backgroundCubeThrows.get(mesh).x, backgroundCubeThrows.get(mesh).y]) : null,
                     screen: Object.freeze({ x: screenX, y: screenY }),
                     distance: Math.hypot(screenX - x, screenY - y),
                     originalLayer: record ? record.originalLayer :
@@ -1852,6 +1869,8 @@ function animate(
     }
 
     const backgroundFrameAt = Number.isFinite(timestamp) ? timestamp : performance.now();
+    const throwFrameSeconds = previousBackgroundFrameAt === null ? 1 / 60
+        : Math.min(1 / 20, Math.max(0, (backgroundFrameAt - previousBackgroundFrameAt) / 1000));
     if (previousBackgroundFrameAt !== null) {
         backgroundFrameSeconds = Math.min(1 / 20, Math.max(1 / 240,
             (backgroundFrameAt - previousBackgroundFrameAt) / 1000));
@@ -1881,6 +1900,7 @@ function animate(
         if (!isBeingDragged) {
             cube.position.x -= cube.userData.speedX * speedMultiplier;
             cube.position.y -= cube.userData.speedY * speedMultiplier;
+            updateBackgroundCubeThrow(cube, throwFrameSeconds, speedMultiplier);
         }
 
         cube.rotation.x +=
@@ -1911,7 +1931,8 @@ function animate(
          */
         if (
             !isBeingDragged &&
-            (isOutsideHorizontalBoundary || isOutsideVerticalBoundary)
+            (thrownBackgroundCubes.has(cube) ? isThrownBackgroundCubeOutside(cube)
+                : isOutsideHorizontalBoundary || isOutsideVerticalBoundary)
         ) {
             resetCube(
                 cube
@@ -1944,6 +1965,93 @@ const mousePosition =
 
 const backgroundDragPoint = new THREE.Vector3();
 let suppressedBackgroundClick = null;
+
+function backgroundPointerTime(event) {
+    return Number.isFinite(event.timeStamp) && event.timeStamp >= 0 ? event.timeStamp : performance.now();
+}
+
+function recordBackgroundDragSample(drag, event) {
+    const t = backgroundPointerTime(event);
+    if (!Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) return;
+    const previous = drag.samples[drag.samples.length - 1];
+    // 同时间戳不制造除零尖峰，乱序事件也不能覆写最新采样。
+    if (previous && t <= previous.t) return;
+    if (!previous || event.clientX !== previous.x || event.clientY !== previous.y) drag.lastMotionAt = t;
+    drag.samples.push({ x: event.clientX, y: event.clientY, t });
+    while (drag.samples.length > 32 || (drag.samples.length > 2 && drag.samples[1].t < t - 120)) {
+        drag.samples.shift();
+    }
+}
+
+function getBackgroundThrowMotion(drag, event) {
+    const now = backgroundPointerTime(event);
+    const age = Math.max(0, now - drag.lastMotionAt);
+    if (age >= 100 || !Number.isFinite(drag.lastMotionAt)) return null;
+    // 使用最后一次实际移动，而不是松手时重复的坐标；停住再松手会自然衰减为零。
+    const samples = drag.samples.filter(sample => sample.t >= now - 120 && sample.t <= drag.lastMotionAt);
+    const last = samples[samples.length - 1];
+    if (!last) return null;
+    const before = samples.slice(0, -1).reverse().find(sample => last.t - sample.t >= 12)
+        || samples.find(sample => last.t - sample.t >= 4);
+    if (!before) return null;
+    const dt = (last.t - before.t) / 1000;
+    let x = (last.x - before.x) / dt;
+    let y = (last.y - before.y) / dt;
+    let accelerationX = 0;
+    let accelerationY = 0;
+    const older = samples.slice(0, samples.indexOf(before)).reverse()
+        .find(sample => before.t - sample.t >= 12);
+    if (older) {
+        const olderDt = (before.t - older.t) / 1000;
+        const accelerationDt = (dt + olderDt) / 2;
+        accelerationX = (x - (before.x - older.x) / olderDt) / accelerationDt;
+        accelerationY = (y - (before.y - older.y) / olderDt) / accelerationDt;
+        const acceleration = Math.hypot(accelerationX, accelerationY);
+        const accelerationLimit = Math.min(16000, Math.hypot(x, y) * 0.15 / 0.016);
+        const limit = acceleration > 0 ? Math.min(1, accelerationLimit / acceleration) : 0;
+        accelerationX *= limit;
+        accelerationY *= limit;
+        x += accelerationX * 0.016;
+        y += accelerationY * 0.016;
+    }
+    // 屏幕速度限制让近处、远处方块都有一致手感，不会因高采样率出现瞬间飞走。
+    const speed = Math.hypot(x, y);
+    const gain = Math.min(1, 1800 / Math.max(1, speed)) * Math.pow(1 - age / 100, 2)
+        * (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0.55 : 1);
+    x *= gain;
+    y *= gain;
+    if (Math.hypot(x, y) < 25) return null;
+    const rect = backgroundCanvas.getBoundingClientRect();
+    const worldPerPixel = 2 * Math.abs(camera.position.z - drag.mesh.position.z)
+        * Math.tan(camera.fov * Math.PI / 360) / Math.max(1, rect.height);
+    return { x: x * worldPerPixel, y: -y * worldPerPixel, worldPerPixel,
+        acceleration: [accelerationX, accelerationY] };
+}
+
+function updateBackgroundCubeThrow(mesh, seconds, speedMultiplier) {
+    const motion = backgroundCubeThrows.get(mesh);
+    if (!motion) return;
+    const dt = seconds * Math.max(0, Number(speedMultiplier) || 0);
+    if (!dt) return;
+    const decay = Math.exp(-BACKGROUND_THROW_DAMPING * dt);
+    const travel = (1 - decay) / BACKGROUND_THROW_DAMPING;
+    mesh.position.x += motion.x * travel;
+    mesh.position.y += motion.y * travel;
+    motion.x *= decay;
+    motion.y *= decay;
+    if (Math.hypot(motion.x, motion.y) / motion.worldPerPixel < 2) backgroundCubeThrows.delete(mesh);
+}
+
+function isThrownBackgroundCubeOutside(mesh) {
+    const radius = Math.max(mesh.scale.x, mesh.scale.y, mesh.scale.z) * Math.sqrt(3) / 2;
+    const depth = camera.position.z - mesh.position.z;
+    if (depth <= radius) return false;
+    const tangentY = Math.tan(camera.fov * Math.PI / 360);
+    const tangentX = tangentY * camera.aspect;
+    // 以视锥侧平面到包围球的距离判断，宽屏边缘的透视残角也必须完全离屏才回收。
+    return Math.abs(mesh.position.x - camera.position.x) - depth * tangentX > radius * Math.hypot(1, tangentX)
+        || Math.abs(mesh.position.y - camera.position.y) - depth * tangentY > radius * Math.hypot(1, tangentY);
+}
 
 function backgroundInteractionBlocked() {
     return document.hidden || document.body.matches(
@@ -1986,6 +2094,8 @@ function handleBackgroundPointerDown(event) {
     const mesh = hit.object;
     const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -mesh.position.z);
     if (!raycaster.ray.intersectPlane(plane, backgroundDragPoint)) return;
+    backgroundCubeThrows.delete(mesh);
+    thrownBackgroundCubes.delete(mesh);
     backgroundCubeDrag = {
         id: cubes.indexOf(mesh), mesh, plane,
         offset: mesh.position.clone().sub(backgroundDragPoint),
@@ -1993,12 +2103,14 @@ function handleBackgroundPointerDown(event) {
         target: event.target,
         startX: event.clientX, startY: event.clientY,
         clientX: event.clientX, clientY: event.clientY,
+        samples: [], lastMotionAt: backgroundPointerTime(event),
         moved: false,
         originalDraggable: mesh.userData.draggable,
         originalIsDragging: mesh.userData.isDragging,
         originalCursor: document.documentElement.style.cursor,
         originalUserSelect: document.documentElement.style.userSelect
     };
+    recordBackgroundDragSample(backgroundCubeDrag, event);
     mesh.userData.draggable = true;
     mesh.userData.isDragging = true;
     document.documentElement.style.cursor = 'grabbing';
@@ -2016,6 +2128,19 @@ function updateBackgroundCubeDrag(event) {
     }
     drag.clientX = event.clientX;
     drag.clientY = event.clientY;
+    // 繁忙帧可能合并多次鼠标移动，保留其原始时间采样，而不是把整帧当作一次跳跃。
+    try {
+        const coalesced = event.getCoalescedEvents?.() || [];
+        const eventAt = backgroundPointerTime(event);
+        const count = Math.min(32, coalesced.length);
+        // 均匀保留整帧轨迹，避免高回报率鼠标的最后 32 点只覆盖不足 4ms。
+        for (let index = 0; index < count; index++) {
+            const sample = coalesced[count > 1 ? Math.round(index * (coalesced.length - 1) / (count - 1)) : 0];
+            if ((sample.pointerId === undefined || sample.pointerId === drag.pointerId)
+                && backgroundPointerTime(sample) <= eventAt) recordBackgroundDragSample(drag, sample);
+        }
+    } catch { /* 不支持或拒绝访问时仍使用当前 PointerEvent。 */ }
+    recordBackgroundDragSample(drag, event);
     const threshold = drag.pointerType === 'touch' ? 7 : 4;
     if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < threshold) return;
     drag.moved = true;
@@ -2027,7 +2152,7 @@ function updateBackgroundCubeDrag(event) {
     if (event.cancelable) event.preventDefault();
 }
 
-function finishBackgroundCubeDrag(cancelled = false) {
+function finishBackgroundCubeDrag(cancelled = false, event = null) {
     const drag = backgroundCubeDrag;
     if (!drag) return;
     backgroundCubeDrag = null;
@@ -2039,6 +2164,12 @@ function finishBackgroundCubeDrag(cancelled = false) {
         if (drag.target.hasPointerCapture(drag.pointerId)) drag.target.releasePointerCapture(drag.pointerId);
     } catch { /* The original section may already have been detached. */ }
     if (drag.moved) {
+        const motion = !cancelled && event && !capturedBackgroundCubes.has(drag.mesh)
+            ? getBackgroundThrowMotion(drag, event) : null;
+        if (motion) {
+            backgroundCubeThrows.set(drag.mesh, motion);
+            thrownBackgroundCubes.add(drag.mesh);
+        }
         suppressedBackgroundClick = { x: drag.clientX, y: drag.clientY, until: performance.now() + 400 };
     } else if (!cancelled) {
         // 原有轻点改变方向功能只在真正的轻点后执行，不污染拖拽前的速度。
@@ -2050,7 +2181,7 @@ function finishBackgroundCubeDrag(cancelled = false) {
 function handleBackgroundPointerUp(event) {
     if (backgroundCubeDrag?.pointerId !== event.pointerId) return;
     updateBackgroundCubeDrag(event);
-    finishBackgroundCubeDrag(false);
+    finishBackgroundCubeDrag(false, event);
 }
 
 function handleBackgroundPointerCancel(event) {
@@ -2106,6 +2237,8 @@ let previousViewportHeight =
  */
 function handleWindowResize() {
     finishBackgroundCubeDrag(true);
+    backgroundCubeThrows.clear();
+    thrownBackgroundCubes.clear();
     const nextViewportWidth =
         Math.max(
             1,
