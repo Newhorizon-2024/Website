@@ -1,0 +1,70 @@
+/* 交互文字防误选：只覆盖控件与手势区，正文、名字和普通链接仍可复制。 */
+
+/* 原生按钮及运行时生成的语义控件。 */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+input[type="range"],
+[role="button"],
+[role="tab"],
+[role="slider"],
+summary {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* 按钮中的图片不启动浏览器原生拖影，既有 pointer 拖拽仍由各模块处理。 */
+button img {
+    -webkit-user-drag: none;
+}
+
+/* 使用现有 div/li 实现的按钮、目录节点与播放器读数。 */
+#navbar .tab,
+.bounty-page-link,
+.timeline-item,
+#playlist .playlist-song,
+#progress-bar-container,
+.volume-wake-slider,
+#back-to-home,
+#overlay,
+#countdown,
+#age-tooltip,
+.worldview-directory-labels__hint {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* 触摸长按/拖动时不弹出系统选区或图片菜单，不改变原有滚动和手势规则。 */
+.creator-work,
+.wanted-poster,
+.morph-slider-stage,
+.wanted-morph-stage,
+.organizations-orbit,
+.things-option-wheel,
+.scenes-globe,
+#worldview-canvas,
+.worldview-directory-label,
+.inner-domain-cubes {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* 即使将来嵌在控件内，输入框与可编辑区域也必须保持编辑、选择和复制能力。 */
+input:not([type]),
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="url"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+textarea,
+[contenteditable=""],
+[contenteditable="true"],
+[contenteditable="plaintext-only"] {
+    -webkit-touch-callout: default;
+    -webkit-user-select: text;
+    user-select: text;
+}

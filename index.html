@@ -15,7 +15,7 @@
 
     <link
         rel="stylesheet"
-        href="styles/main.css?v=26.10.21.8"
+        href="styles/main.css?v=26.10.22.2"
     >
     <link rel="stylesheet" href="styles/components/another-world-portal.css?v=26.10.21.7">
 
@@ -367,6 +367,7 @@
 
                     <ul>
                         <li>背景方块支持惯性投掷，甩动后松手即可扔出，动量平滑衰减。</li>
+                        <li>优化按钮、目录及拖拽控件的防误选，正文与普通链接仍可复制。</li>
                     </ul>
                 </article>
 
@@ -2440,6 +2441,7 @@
                 <img
                     src="images/nhn/characters.png"
                     alt=""
+                    draggable="false"
                     width="1000"
                     height="1000"
                     decoding="async"
@@ -2459,6 +2461,7 @@
                 <img
                     src="images/nhn/worldview.png"
                     alt=""
+                    draggable="false"
                     width="1000"
                     height="1000"
                     decoding="async"
@@ -2478,6 +2481,7 @@
                 <img
                     src="images/nhn/chapter.png"
                     alt=""
+                    draggable="false"
                     width="1000"
                     height="1000"
                     decoding="async"
@@ -2752,7 +2756,7 @@
 
         <section
             class="innerworld-testimony"
-            aria-labelledby="innerworld-testimony-title"
+            aria-label="引言"
         >
             <blockquote class="innerworld-quote">
                 <p>
@@ -5277,7 +5281,7 @@
 
             <section
                 class="newworld-archive-section"
-                aria-labelledby="newworld-archive-title"
+                aria-label="新世界档案"
                 data-newworld-reveal
             >
                 <header>
