@@ -1,138 +1,15 @@
 /* Native adaptation of the supplied Cubes component.
  * Credit: inspired by Can Tastemel's lambda.ai work (https://cantastemel.com).
- * Original shading / spring brush / ripple equations retained; occupied cells
+ * Original spring brush / ripple equations retained; occupied cells
  * are borrowed real background cubes, not newly randomized substitutes. */
 import {createWorldviewCapture} from './worldview-capture.js?v=26.10.21.3';
 let controller = null;
 let initialized = false;
-const VERTEX = `#version 300 es
-in vec3 aPosition;
-in vec3 aNormal;
-in vec2 aUv;
-in vec2 aCenter;
-in vec4 aRotation;
-in vec3 aState;
-in vec3 aColor;
-uniform mat4 uProjection;
-uniform float uSize;
-out vec3 vNormal;
-out vec3 vColor;
-out float vFlash;
-out float vReveal;
-
-vec3 turn(vec4 q, vec3 v) {
-  return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
-}
-
-void main() {
-  vec3 local = turn(aRotation, aPosition * uSize * aState.y);
-  vNormal = turn(aRotation, aNormal);
-  vColor = aColor;
-  vFlash = aState.x;
-  vReveal = aState.z;
-  gl_Position = aState.z < 0.00001 ? vec4(2.0, 2.0, 2.0, 1.0) : uProjection * vec4(vec3(aCenter, 0.0) + local, 1.0);
-}`;
-
-const FRAGMENT = `#version 300 es
-precision highp float;
-in vec3 vNormal;
-in vec3 vColor;
-in float vFlash;
-in float vReveal;
-uniform vec3 uRipple;
-uniform vec3 uLight;
-uniform float uShading;
-uniform float uOpacity;
-out vec4 outColor;
-
-void main() {
-  vec3 normal = normalize(vNormal);
-  float side = clamp(1.0 - normal.z, 0.0, 1.0);
-  float toward = clamp(0.6 + 0.6 * dot(normalize(normal.xy + vec2(0.00001)), normalize(uLight.xy)), 0.0, 1.0);
-  // Each cube keeps its borrowed material's RGB. Only face lighting and the
-  // existing temporary ripple remain; no UV border / replacement palette.
-  vec3 face = vColor * (1.0 - side * mix(0.12, 0.42, toward) * uShading);
-  face = mix(face, uRipple, vFlash * 0.22);
-  outColor = vec4(face * uOpacity, uOpacity) * vReveal;
-}`;
-
-const FACES = [
-  [0, 0, 1, 1, 0, 0, 0, 1, 0],
-  [0, 0, -1, -1, 0, 0, 0, 1, 0],
-  [1, 0, 0, 0, 0, -1, 0, 1, 0],
-  [-1, 0, 0, 0, 0, 1, 0, 1, 0],
-  [0, 1, 0, 1, 0, 0, 0, 0, -1],
-  [0, -1, 0, 1, 0, 0, 0, 0, 1]
-];
-
-const buildCube = () => {
-  const vertices = [];
-  const indices = [];
-  FACES.forEach(([nx, ny, nz, ux, uy, uz, vx, vy, vz], face) => {
-    [
-      [0, 0],
-      [1, 0],
-      [1, 1],
-      [0, 1]
-    ].forEach(([u, v]) => {
-      vertices.push(
-        nx * 0.5 + (u - 0.5) * ux + (v - 0.5) * vx,
-        ny * 0.5 + (u - 0.5) * uy + (v - 0.5) * vy,
-        nz * 0.5 + (u - 0.5) * uz + (v - 0.5) * vz,
-        nx,
-        ny,
-        nz,
-        u,
-        v
-      );
-    });
-    const base = face * 4;
-    indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
-  });
-  return { vertices: new Float32Array(vertices), indices: new Uint16Array(indices) };
-};
-
 const INTRO_SECONDS = 1.1;
-// center.xy + rotation.xyzw + flash/scale/reveal + captured material.rgb
+// Simulation state: center.xy + rotation.xyzw + flash/scale/reveal + leased RGB.
 const INSTANCE_FLOATS = 12;
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
-const compile = (gl, type, source) => {
-  const shader = gl.createShader(type);
-  if (!shader) return null;
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return shader;
-  gl.deleteShader(shader);
-  return null;
-};
-
-const link = gl => {
-  const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
-  const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
-  const program = gl.createProgram();
-  if (!vertex || !fragment || !program) return null;
-  gl.attachShader(program, vertex);
-  gl.attachShader(program, fragment);
-  ['aPosition', 'aNormal', 'aUv', 'aCenter', 'aRotation', 'aState', 'aColor'].forEach((name, index) =>
-    gl.bindAttribLocation(program, index, name)
-  );
-  gl.linkProgram(program);
-  gl.deleteShader(vertex);
-  gl.deleteShader(fragment);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    gl.deleteProgram(program);
-    return null;
-  }
-  const uniforms = {};
-  const count = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
-  for (let i = 0; i < count; i++) {
-    const info = gl.getActiveUniform(program, i);
-    if (info) uniforms[info.name] = gl.getUniformLocation(program, info.name);
-  }
-  return { program, uniforms };
-};
 
 const toRotation = (rx, ry, out, offset) => {
   const angle = Math.hypot(rx, ry);
@@ -166,7 +43,6 @@ function project(camera, width, height, scale) {
     camera.aspect = width / height;
     camera.position.z = (height / scale / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
     camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
-    return new Float32Array(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).elements);
 }
 function createEngine(container) {
     const canvas = container.querySelector('canvas');
@@ -175,54 +51,56 @@ function createEngine(container) {
     const showNotice = message => {status.textContent=message;status.hidden=false;};
     if (!gl || !window.THREE) {showNotice('当前浏览器无法启用交互方块，正文仍可正常阅读'); return null;}
     const camera = new THREE.PerspectiveCamera(0.6, 1, 0.1, 10000);
-    const settingsRef = {current:{gridSize:8,gap:0.18,faceOpacity:1,shading:0.6,maxAngle:45,radius:3,speed:1,bounce:0.4,brush:1,perspective:0,autoAnimate:true,rippleOnClick:true,rippleColor:'#ffffff',rippleSpeed:1,intro:true,paused:false}};
-    const shader = link(gl);
-    if (!shader) {showNotice('图形效果暂不可用，正文仍可正常阅读');return null;}
+    const settingsRef = {current:{gridSize:8,gap:0.18,faceOpacity:1,maxAngle:45,radius:3,speed:1,bounce:0.4,brush:1,perspective:0,autoAnimate:true,rippleOnClick:true,rippleColor:'#ffffff',rippleSpeed:1,intro:true,paused:false}};
+    const style = window.NewHorizonBackgroundCubes?.getRenderingStyle?.();
+    if (!style) {showNotice('图形效果暂不可用，正文仍可正常阅读');return null;}
+    // Reuse this canvas's existing context and frame loop. Three now computes
+    // the same StandardMaterial lighting, normals and output as the background.
+    const renderer = new THREE.WebGLRenderer({canvas,context:gl,alpha:true,premultipliedAlpha:true,antialias:true});
+    renderer.setClearColor(0,0);
+    const scene = new THREE.Scene();
+    const material = style.material;
+    const geometry = new THREE.BoxGeometry();
+    const domainState = new THREE.InstancedBufferAttribute(new Float32Array(64*2),2).setUsage(THREE.DynamicDrawUsage);
+    geometry.setAttribute('domainState',domainState);
+    const mesh = new THREE.InstancedMesh(geometry,material,64);
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    mesh.frustumCulled=false;
+    scene.add(mesh);
+    const pose = new THREE.Object3D();
+    const instanceColor = new THREE.Color();
+    const rippleUniform = {value:new THREE.Color()};
+    let lights = [], baseOpacity = 1;
 
-    const cube = buildCube();
-    const vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    const vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, cube.vertices, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 32, 0);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 32, 12);
-    gl.enableVertexAttribArray(2);
-    gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 32, 24);
-    const indexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, cube.indices, gl.STATIC_DRAW);
-    const instanceBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
-    [
-      [3, 2, 0],
-      [4, 4, 8],
-      [5, 3, 24],
-      [6, 3, 36]
-    ].forEach(([location, size, offset]) => {
-      gl.enableVertexAttribArray(location);
-      gl.vertexAttribPointer(location, size, gl.FLOAT, false, INSTANCE_FLOATS * 4, offset);
-      gl.vertexAttribDivisor(location, 1);
-    });
-
-    const probe = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-    const colorCache = new Map();
-    const toRgb = value => {
-      if (colorCache.has(value)) return colorCache.get(value);
-      let rgb = [1, 1, 1];
-      if (probe) {
-        probe.clearRect(0, 0, 1, 1);
-        probe.fillStyle = '#ffffff';
-        probe.fillStyle = value;
-        probe.fillRect(0, 0, 1, 1);
-        const [r, g, b] = probe.getImageData(0, 0, 1, 1).data;
-        rgb = [r / 255, g / 255, b / 255];
-      }
-      colorCache.set(value, rgb);
-      return rgb;
+    function syncRenderingStyle(next = window.NewHorizonBackgroundCubes.getRenderingStyle()) {
+        if (next.material !== material) {material.copy(next.material);next.material.dispose();}
+        baseOpacity=material.opacity;
+        // instanceColor already contains the full leased material RGB.
+        material.color.setRGB(1,1,1);
+        material.transparent=true;
+        material.needsUpdate=true;
+        Object.assign(renderer,next.renderer);
+        lights.forEach(light=>{scene.remove(light);if(light.target)scene.remove(light.target);});
+        lights=next.lights;
+        lights.forEach(light=>{scene.add(light);if(light.target)scene.add(light.target);});
+    }
+    syncRenderingStyle(style);
+    // The only shader additions are the existing per-cell reveal and transient
+    // ripple. StandardMaterial retains its own face lighting and alpha handling.
+    material.onBeforeCompile=shader=>{
+        const output='gl_FragColor = vec4( outgoingLight, diffuseColor.a );';
+        if(shader.fragmentShader.split(output).length!==2)throw new Error('Unsupported StandardMaterial output for inner-domain ripple');
+        shader.uniforms.domainRipple=rippleUniform;
+        shader.vertexShader=shader.vertexShader.replace('#include <common>',
+            '#include <common>\nattribute vec2 domainState;\nvarying vec2 vDomainState;')
+            .replace('#include <begin_vertex>','#include <begin_vertex>\nvDomainState=domainState;');
+        shader.fragmentShader=shader.fragmentShader.replace('#include <common>',
+            '#include <common>\nuniform vec3 domainRipple;\nvarying vec2 vDomainState;')
+            .replace('#include <color_fragment>',
+                '#include <color_fragment>\nif(vDomainState.y<0.00001)discard;\ndiffuseColor.a*=vDomainState.y;')
+            .replace(output,'outgoingLight=mix(outgoingLight,domainRipple,vDomainState.x*0.22);\n'+output);
     };
+    material.customProgramCacheKey=()=> 'inner-domain-background-lighting-v1';
 
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const view = { width: 1, height: 1, ratio: 1, scale: 1 };
@@ -283,43 +161,22 @@ function createEngine(container) {
     const render = () => {
       if (gl.isContextLost()) return;
       const s = settingsRef.current;
-      const width = canvas.width;
-      const height = canvas.height;
-      gl.viewport(0, 0, width, height);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      if (!grid.count) return;
-
-      gl.useProgram(shader.program);
-      gl.bindVertexArray(vao);
-      gl.bindBuffer(gl.ARRAY_BUFFER, instanceBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, instances, gl.DYNAMIC_DRAW);
-      const u = shader.uniforms;
-      gl.uniformMatrix4fv(u.uProjection, false, project(camera, view.width, view.height, view.scale));
-      gl.uniform1f(u.uSize, 1 - s.gap);
-      gl.uniform3fv(u.uRipple, toRgb(s.rippleColor));
-      const light = [-0.42, 0.55, 0.72];
-      const length = Math.hypot(...light);
-      gl.uniform3f(u.uLight, light[0] / length, light[1] / length, light[2] / length);
-      gl.uniform1f(u.uShading, s.shading);
-      gl.uniform1f(u.uOpacity, s.faceOpacity);
-
-      gl.enable(gl.DEPTH_TEST);
-      gl.enable(gl.CULL_FACE);
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-      if (s.faceOpacity >= 0.999) {
-        gl.depthMask(true);
-        gl.cullFace(gl.BACK);
-        gl.drawElementsInstanced(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0, grid.count);
-      } else {
-        gl.depthMask(false);
-        gl.cullFace(gl.FRONT);
-        gl.drawElementsInstanced(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0, grid.count);
-        gl.cullFace(gl.BACK);
-        gl.drawElementsInstanced(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0, grid.count);
-        gl.depthMask(true);
+      mesh.count=grid.count;
+      material.opacity=baseOpacity*s.faceOpacity;
+      rippleUniform.value.set(s.rippleColor);
+      for(let i=0;i<grid.count;i++){
+        const base=i*INSTANCE_FLOATS;
+        pose.position.set(instances[base],instances[base+1],0);
+        pose.quaternion.fromArray(instances,base+2).normalize();
+        pose.scale.setScalar(Math.max(0.0001,(1-s.gap)*instances[base+7]));
+        pose.updateMatrix();mesh.setMatrixAt(i,pose.matrix);
+        mesh.setColorAt(i,instanceColor.fromArray(instances,base+9));
+        domainState.setXY(i,instances[base+6],instances[base+8]);
       }
+      mesh.instanceMatrix.needsUpdate=true;
+      if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
+      domainState.needsUpdate=true;
+      renderer.render(scene,camera);
     };
 
     const step = dt => {
@@ -531,12 +388,13 @@ function createEngine(container) {
     function resize(){
         view.width=Math.max(1,container.clientWidth);view.height=Math.max(1,container.clientHeight);
         view.ratio=Math.min(devicePixelRatio||1,2);view.scale=Math.min(view.width,view.height)/(settingsRef.current.gridSize+.9);
-        canvas.width=Math.round(view.width*view.ratio);canvas.height=Math.round(view.height*view.ratio);
+        renderer.setPixelRatio(view.ratio);renderer.setSize(view.width,view.height,false);
         project(camera,view.width,view.height,view.scale);allocate(settingsRef.current.gridSize);wake();
     }
     function activate(){
         if(exiting||contextLost)return;
         if(!active){
+            syncRenderingStyle();
             captureEvents=[];rings.length=0;clock=0;introClock=99;
             rx.fill(0);ry.fill(0);wx.fill(0);wy.fill(0);glow.fill(0);
             pointer.inside=false;cursor.primed=false;cursor.weight=0;nextCaptureAt=0;
@@ -566,7 +424,12 @@ function createEngine(container) {
     resize();
     return {activate,leave,getState(){return {active,exiting,contextLost,pending:!!raf,view:{...view},count:cells.filter(cell=>cell.capture?.hasLease()).length,
         gpuError:gl.getError(),colorSource:'captured-material',edgeStyle:'none',ripples:rings.length,angles:Array.from(rx).map((x,index)=>[x,ry[index]]),
-        captureEvents:[...captureEvents],cells:cells.filter(cell=>cell.capture).map(cell=>({index:cell.index,id:cell.id,color:cell.color?.toArray()||null,targetDeterminant:cell.root.matrixWorld.determinant(),capture:cell.capture.getState()}))};}};
+        lighting:{source:'background-scene',material:{type:material.type,color:material.color.toArray(),roughness:material.roughness,metalness:material.metalness,opacity:material.opacity},
+            lights:lights.map(light=>({type:light.type,color:light.color.toArray(),intensity:light.intensity,position:light.position.toArray(),target:light.target?.position.toArray()||null})),
+            renderer:{outputEncoding:renderer.outputEncoding,toneMapping:renderer.toneMapping,toneMappingExposure:renderer.toneMappingExposure,physicallyCorrectLights:renderer.physicallyCorrectLights},instanceCount:mesh.count},
+        captureEvents:[...captureEvents],cells:cells.filter(cell=>cell.capture).map(cell=>({index:cell.index,id:cell.id,color:cell.color?.toArray()||null,
+            instanceColor:mesh.instanceColor?Array.from(mesh.instanceColor.array.slice(cell.index*3,cell.index*3+3)):null,reveal:instances[cell.index*INSTANCE_FLOATS+8],
+            targetDeterminant:cell.root.matrixWorld.determinant(),capture:cell.capture.getState()}))};}};
 }
 
 export function transitionInnerDomainCubesOut(){return controller?.leave()||Promise.resolve();}

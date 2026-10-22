@@ -506,6 +506,25 @@ function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null
 /* 仅返回当前借用记录的只读快照，不泄露整个可变背景数组。 */
 window.NewHorizonBackgroundCubes = Object.freeze({
     claimNearest: claimNearestBackgroundCubes,
+    // Detached copies let another canvas use the same Three lighting pipeline
+    // without exposing the background's live material, lights or renderer.
+    getRenderingStyle() {
+        return Object.freeze({
+            material: window.material.clone(),
+            lights: Object.freeze([directionalLight, ambientLight].map(light => {
+                const copy = light.clone();
+                light.getWorldPosition(copy.position);
+                if (light.target) light.target.getWorldPosition(copy.target.position);
+                return copy;
+            })),
+            renderer: Object.freeze({
+                outputEncoding: renderer.outputEncoding,
+                toneMapping: renderer.toneMapping,
+                toneMappingExposure: renderer.toneMappingExposure,
+                physicallyCorrectLights: renderer.physicallyCorrectLights
+            })
+        });
+    },
     findNearby({ left, top, right, bottom, margin = 64 }) {
         const rect = backgroundCanvas.getBoundingClientRect();
         camera.updateMatrixWorld(true);

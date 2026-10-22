@@ -15,7 +15,7 @@
 #worldview-canvas {
     display: block;
     height: 100%;
-    touch-action: none;
+    touch-action: pan-y pinch-zoom;
     width: 100%;
 }
 
@@ -128,7 +128,7 @@
     position: absolute;
     text-shadow: 0 1px 5px #111, 0 0 12px rgba(0, 0, 0, 0.8);
     top: 0;
-    touch-action: none;
+    touch-action: pan-y pinch-zoom;
     user-select: none;
     white-space: nowrap;
     -webkit-tap-highlight-color: transparent;

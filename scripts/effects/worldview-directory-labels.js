@@ -10,7 +10,8 @@ export function createWorldviewDirectoryLabels({
     container,
     orbiters,
     camera,
-    onOpen
+    onOpen,
+    onDragStart
 }) {
     const media = window.matchMedia(
         "(max-width: 768px), (hover: none), (pointer: coarse)"
@@ -28,35 +29,14 @@ export function createWorldviewDirectoryLabels({
 
     const hint = document.createElement("p");
     hint.className = "worldview-directory-labels__hint";
-    hint.textContent = "轻触名称进入 · 拖动旋转";
+    hint.textContent = "轻触名称进入 · 横向拖动旋转";
     root.appendChild(hint);
     container.appendChild(root);
 
-    const canvas = container.querySelector("#worldview-canvas");
     const backButton = container.querySelector(".worldview-back-button");
     let canOpen = false;
     let gesture = null;
     let suppressPointerClickUntil = 0;
-
-    // 沿用真实活动指针的 ID，交接后后续原生事件由画布捕获。
-    // 单纯轻触标签不会给画布补发事件，因此不会错误打开其后方的方块。
-    const forwardPointer = (type, source) => {
-        if (!canvas || typeof PointerEvent === "undefined") return false;
-        canvas.dispatchEvent(new PointerEvent(type, {
-            bubbles: true,
-            cancelable: true,
-            composed: true,
-            pointerId: source.pointerId,
-            pointerType: source.pointerType,
-            isPrimary: source.isPrimary,
-            clientX: source.clientX,
-            clientY: source.clientY,
-            button: source.button,
-            buttons: source.buttons,
-            pressure: source.pressure || 0
-        }));
-        return true;
-    };
 
     const records = orbiters.map(group => {
         const name = group.userData.name || "未命名目录";
@@ -116,47 +96,10 @@ export function createWorldviewDirectoryLabels({
             try { button.setPointerCapture(event.pointerId); } catch {}
         });
 
-        button.addEventListener("pointermove", event => {
-            const current = gesture;
-            if (!current || current.record !== record || current.pointerId !== event.pointerId) return;
-            if (!current.dragging && Math.hypot(
-                event.clientX - current.clientX,
-                event.clientY - current.clientY
-            ) >= DRAG_THRESHOLD) {
-                current.dragging = true;
-                suppressPointerClickUntil = performance.now() + 500;
-                forwardPointer("pointerdown", current);
-            }
-            if (current.dragging) {
-                suppressPointerClickUntil = performance.now() + 500;
-                forwardPointer("pointermove", event);
-            }
-        });
-
-        const finishPointer = event => {
-            const current = gesture;
-            if (!current || current.record !== record || current.pointerId !== event.pointerId) return;
-            gesture = null;
-            if (current.dragging) {
-                suppressPointerClickUntil = performance.now() + 500;
-                forwardPointer(event.type === "pointercancel" ? "pointercancel" : "pointerup", event);
-            } else if (event.type === "pointercancel") {
-                suppressPointerClickUntil = performance.now() + 500;
-            }
-            try {
-                if (button.hasPointerCapture(event.pointerId)) button.releasePointerCapture(event.pointerId);
-            } catch {}
-            if (!current.dragging && event.type === "pointerup" && canOpen) {
-                // A moving label can leave the original tap point before the browser's
-                // delayed click. Commit the captured tap here; never retarget it to a cube.
-                suppressPointerClickUntil = performance.now() + 500;
-                onOpen?.(group);
-            }
-        };
-        button.addEventListener("pointerup", finishPointer);
-        button.addEventListener("pointercancel", finishPointer);
         button.addEventListener("lostpointercapture", event => {
-            if (gesture?.record === record && gesture.pointerId === event.pointerId) {
+            // Transfer to the canvas is intentional after horizontal intent.
+            if (gesture?.record === record && gesture.pointerId === event.pointerId && !gesture.dragging && !gesture.cancelled) {
+                suppressPointerClickUntil = performance.now() + 500;
                 gesture = null;
             }
         });
@@ -170,11 +113,67 @@ export function createWorldviewDirectoryLabels({
         return record;
     });
 
+    const releaseLabelCapture = current => {
+        try {
+            if (current.record.button.hasPointerCapture(current.pointerId)) {
+                current.record.button.releasePointerCapture(current.pointerId);
+            }
+        } catch {}
+    };
+
+    // Decide intent before handing the real active pointer to the canvas. No
+    // synthetic PointerEvents: the core's window listeners receive this same
+    // move after this listener, then own all following capture / release events.
+    window.addEventListener("pointermove", event => {
+        const current = gesture;
+        if (!current || current.pointerId !== event.pointerId || current.dragging || current.cancelled) return;
+        const dx = Math.abs(event.clientX - current.clientX);
+        const dy = Math.abs(event.clientY - current.clientY);
+        const touch = current.pointerType === "touch";
+        if (touch && dy >= DRAG_THRESHOLD && dy >= dx * 0.9) {
+            current.cancelled = true;
+            suppressPointerClickUntil = performance.now() + 500;
+            releaseLabelCapture(current);
+            return;
+        }
+        if (touch ? dx < 10 || dx < dy * 1.25 : Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+        current.dragging = true;
+        suppressPointerClickUntil = performance.now() + 500;
+        if (!onDragStart?.(current)) gesture = null;
+        releaseLabelCapture(current);
+    }, {passive: true});
+
+    const finishPointer = event => {
+        const current = gesture;
+        if (!current || current.pointerId !== event.pointerId) return;
+        gesture = null;
+        suppressPointerClickUntil = performance.now() + 500;
+        releaseLabelCapture(current);
+        const moved = Math.hypot(event.clientX - current.clientX, event.clientY - current.clientY) >= DRAG_THRESHOLD;
+        if (!current.dragging && !current.cancelled && !moved && event.type === "pointerup" && canOpen) {
+            // Freeze the captured label while tapping; never open a moving cube
+            // underneath it or navigate after a cancelled / scrolling gesture.
+            onOpen?.(current.record.group);
+        }
+    };
+    window.addEventListener("pointerup", finishPointer);
+    window.addEventListener("pointercancel", finishPointer);
+    window.addEventListener("blur", () => {
+        const current = gesture;
+        gesture = null;
+        if (current) {
+            suppressPointerClickUntil = performance.now() + 500;
+            releaseLabelCapture(current);
+        }
+    });
+
     const hide = () => {
         root.hidden = true;
         canOpen = false;
         root.dataset.interactive = "false";
+        const current = gesture;
         gesture = null;
+        if (current) releaseLabelCapture(current);
         records.forEach(record => {
             record.button.disabled = true;
             record.button.hidden = true;

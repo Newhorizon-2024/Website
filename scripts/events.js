@@ -33,7 +33,7 @@ import {
 import {
     initializeInnerDomainSection
 } from "./effects/inner-domain-section.js";
-import {initializeInnerDomainCubes} from "./effects/inner-domain-cubes.js?v=26.10.21.7";
+import {initializeInnerDomainCubes} from "./effects/inner-domain-cubes.js?v=26.10.23.1";
 
 import {
     initializeMineashSection
@@ -65,7 +65,7 @@ import {
 
 import {
     initializeWorldviewCore
-} from "./effects/worldview-core.js?v=26.10.21.7";
+} from "./effects/worldview-core.js?v=26.10.23.1";
 
 import {
     initializeWorldviewOrganizations
@@ -73,7 +73,7 @@ import {
 
 import {
     initializeWorldviewTargetCursor
-} from "./effects/worldview-target-cursor.js?v=26.10.19.2";
+} from "./effects/worldview-target-cursor.js?v=26.10.23.1";
 
 import {
     initializeWorldviewUnavailableSignal

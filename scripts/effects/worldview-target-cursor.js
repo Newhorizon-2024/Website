@@ -164,12 +164,6 @@ export function initializeWorldviewTargetCursor() {
         );
     }
 
-    function updateCrosshairBounds() {
-        const rect = worldviewSection.getBoundingClientRect();
-        crosshair.style.clipPath = `inset(${Math.max(0, rect.top)}px ${Math.max(0, window.innerWidth - rect.right)}px ${Math.max(0, window.innerHeight - rect.bottom)}px ${Math.max(0, rect.left)}px)`;
-        return rect;
-    }
-
     function resetCrosshair() {
         lineAnimations.forEach(animation => animation.cancel());
         lineAnimations = [];
@@ -196,7 +190,6 @@ export function initializeWorldviewTargetCursor() {
             true;
         suspended = false;
         pointerInside = false;
-        updateCrosshairBounds();
     }
 
 
@@ -250,7 +243,8 @@ export function initializeWorldviewTargetCursor() {
             return;
         }
 
-        const rect = updateCrosshairBounds();
+        // 目录范围只决定何时启用光标；十字线保留 fixed/inset:0 的全视口长度。
+        const rect = worldviewSection.getBoundingClientRect();
         const wasInside = pointerInside;
         pointerInside = event.clientX >= rect.left && event.clientX <= rect.right &&
             event.clientY >= rect.top && event.clientY <= rect.bottom &&
@@ -807,7 +801,7 @@ export function initializeWorldviewTargetCursor() {
     document.documentElement.addEventListener("pointerleave", hidePointer);
     window.addEventListener("blur", hidePointer);
     window.addEventListener("pagehide", hidePointer);
-    window.addEventListener("resize", () => { updateCrosshairBounds(); hidePointer(); });
+    window.addEventListener("resize", hidePointer);
     window.addEventListener("scroll", hidePointer, { passive: true });
     document.addEventListener("visibilitychange", () => { if (document.hidden) hidePointer(); });
     finePointerQuery.addEventListener("change", () => {

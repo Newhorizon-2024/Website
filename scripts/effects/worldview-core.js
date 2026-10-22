@@ -5,7 +5,7 @@
 
 import {
     createWorldviewDirectoryLabels
-} from "./worldview-directory-labels.js?v=26.10.21.2";
+} from "./worldview-directory-labels.js?v=26.10.23.1";
 import { createWorldviewCapture } from "./worldview-capture.js?v=26.10.21.3";
 
 
@@ -242,6 +242,7 @@ let lastY =
     0;
 
 let activePointerId = null;
+let activePointerType = null;
 let dragStartX = 0;
 let dragStartY = 0;
 
@@ -579,7 +580,7 @@ function applyCanvasStyles() {
         canvas.style,
         {
             cursor:
-                "grab",
+                "default",
 
             display:
                 "block",
@@ -597,7 +598,7 @@ function applyCanvasStyles() {
                 "absolute",
 
             touchAction:
-                "none",
+                "pan-y pinch-zoom",
 
             width:
                 "100%",
@@ -1799,7 +1800,7 @@ function updateHoverState() {
     if (
         !active ||
         !interactionEnabled ||
-        dragging
+        activePointerId !== null
     ) {
         return;
     }
@@ -1874,7 +1875,7 @@ function updateHoverState() {
         hoveredCore ||
         hoveredOrbiter
             ? "pointer"
-            : "grab";
+            : "default";
 }
 
 
@@ -2004,13 +2005,46 @@ function openWorldviewOrbiter(
    27. 指针移动
 =========================== */
 
+// Only the visible cubes (plus a small touch allowance) may start a rotation.
+// The canvas remains full-sized for rendering; its empty margins are not a
+// hidden drag handle. Reuse the portal's independent raycaster so picking does
+// not disturb the live hover ray or create another render / animation owner.
+function pickWorldviewGesture(event) {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 1 || rect.height <= 1 ||
+        event.clientX < rect.left || event.clientX > rect.right ||
+        event.clientY < rect.top || event.clientY > rect.bottom) return false;
+    const objects = [
+        ...(coreRoot.visible ? getCoreInteractiveObjects() : []),
+        ...(orbitRoot.visible ? orbiterMeshes : [])
+    ];
+    const allowance = event.pointerType === "touch" ? 14 : 6;
+    const offsets = [[0, 0], [allowance, 0], [-allowance, 0],
+        [0, allowance], [0, -allowance],
+        [allowance * 0.7, allowance * 0.7], [-allowance * 0.7, allowance * 0.7],
+        [allowance * 0.7, -allowance * 0.7], [-allowance * 0.7, -allowance * 0.7]];
+    scene.updateMatrixWorld(true);
+    camera.updateMatrixWorld(true);
+    for (const [x, y] of offsets) {
+        portalMouse.set((event.clientX + x - rect.left) / rect.width * 2 - 1,
+            1 - (event.clientY + y - rect.top) / rect.height * 2);
+        portalRaycaster.setFromCamera(portalMouse, camera);
+        if (portalRaycaster.intersectObjects(objects, false).length) {
+            mouse.copy(portalMouse);
+            return true;
+        }
+    }
+    return false;
+}
+
 function handlePointerMove(
     event
 ) {
     if (
         !active ||
         !interactionEnabled ||
-        (dragging && event.pointerId !== activePointerId)
+        (activePointerId === null && event.target !== canvas) ||
+        (activePointerId !== null && event.pointerId !== activePointerId)
     ) {
         return;
     }
@@ -2019,9 +2053,29 @@ function handlePointerMove(
         event
     );
 
-    if (!dragging) {
+    if (activePointerId === null) {
         updateHoverState();
         return;
+    }
+
+    const touch = activePointerType === "touch";
+    const totalX = event.clientX - dragStartX;
+    const totalY = event.clientY - dragStartY;
+    if (!dragging) {
+        // A vertical or near-diagonal touch belongs to normal page scrolling.
+        // Never rotate first and try to undo it after native pointercancel.
+        if (touch && Math.abs(totalY) >= 8 && Math.abs(totalY) >= Math.abs(totalX) * 0.9) {
+            handlePointerCancel(event);
+            return;
+        }
+        if (touch
+            ? Math.abs(totalX) < 10 || Math.abs(totalX) < Math.abs(totalY) * 1.25
+            : Math.hypot(totalX, totalY) < 4) return;
+        dragging = true;
+        moved = true;
+        canvas.style.cursor = "grabbing";
+        dispatchCursorSuspend();
+        try { canvas.setPointerCapture?.(event.pointerId); } catch {}
     }
 
     const deltaX =
@@ -2056,17 +2110,19 @@ function handlePointerMove(
             WORLDVIEW_CORE_CONFIG
                 .dragSensitivity;
 
-        targetManualRotationX +=
-            deltaY *
-            WORLDVIEW_CORE_CONFIG
-                .dragSensitivity;
+        if (!touch) {
+            targetManualRotationX +=
+                deltaY *
+                WORLDVIEW_CORE_CONFIG
+                    .dragSensitivity;
+        }
 
         rotationVelocityY =
             deltaX *
             WORLDVIEW_CORE_CONFIG
                 .inertiaStrength;
 
-        rotationVelocityX =
+        rotationVelocityX = touch ? 0 :
             deltaY *
             WORLDVIEW_CORE_CONFIG
                 .inertiaStrength;
@@ -2092,7 +2148,8 @@ function handlePointerMove(
 =========================== */
 
 function handlePointerDown(
-    event
+    event,
+    fromLabel = false
 ) {
     if (
         !active ||
@@ -2104,16 +2161,13 @@ function handlePointerDown(
         return;
     }
 
-    updateMouse(
-        event
-    );
+    if (!fromLabel && !pickWorldviewGesture(event)) return false;
+    if (fromLabel) updateMouse(event);
 
     updateHoverState();
 
-    dragging =
-        true;
-
     activePointerId = event.pointerId;
+    activePointerType = event.pointerType;
     dragStartX = event.clientX;
     dragStartY = event.clientY;
 
@@ -2135,14 +2189,10 @@ function handlePointerDown(
     rotationVelocityZ =
         0;
 
-    canvas.style.cursor =
-        "grabbing";
-
-    dispatchCursorSuspend();
-
-    canvas.setPointerCapture?.(
-        event.pointerId
-    );
+    // Native scrolling / pinch-zoom must remain available until the user's
+    // horizontal intent is clear. A stationary core hold still reaches the
+    // existing 2.5-second portal listener unchanged.
+    return true;
 }
 
 
@@ -2157,7 +2207,10 @@ function handlePointerUp(
         return;
     }
 
+    const wasTouch = activePointerType === "touch";
+    if (Math.hypot(event.clientX - dragStartX, event.clientY - dragStartY) > (wasTouch ? 8 : 4)) moved = true;
     activePointerId = null;
+    activePointerType = null;
 
     dragging =
         false;
@@ -2212,6 +2265,7 @@ function handlePointerUp(
 function handlePointerCancel(event) {
     if (event.pointerId !== activePointerId) return;
     activePointerId = null;
+    activePointerType = null;
     dragging = false;
     moved = true;
     if (canvas.hasPointerCapture?.(event.pointerId)) {
@@ -2220,6 +2274,7 @@ function handlePointerCancel(event) {
     hoveredCore = false;
     clearHoveredOrbiter();
     mouse.set(2, 2);
+    canvas.style.cursor = "default";
     dispatchCursorResume();
 }
 
@@ -2229,7 +2284,7 @@ function handlePointerCancel(event) {
 =========================== */
 
 function handlePointerLeave(event) {
-    if (dragging && canvas.hasPointerCapture?.(event.pointerId)) return;
+    if (activePointerId !== null) return;
     dragging =
         false;
 
@@ -2250,7 +2305,7 @@ function handlePointerLeave(event) {
 
     if (canvas) {
         canvas.style.cursor =
-            "grab";
+            "default";
     }
 
     dispatchCursorClear();
@@ -2262,7 +2317,7 @@ function handlePointerLeave(event) {
 =========================== */
 
 function bindEvents() {
-    canvas.addEventListener(
+    window.addEventListener(
         "pointermove",
         handlePointerMove
     );
@@ -2272,12 +2327,12 @@ function bindEvents() {
         handlePointerDown
     );
 
-    canvas.addEventListener(
+    window.addEventListener(
         "pointerup",
         handlePointerUp
     );
 
-    canvas.addEventListener(
+    window.addEventListener(
         "pointercancel",
         handlePointerCancel
     );
@@ -2310,8 +2365,14 @@ function bindEvents() {
         containerResizeObserver = new ResizeObserver(resizeWorldviewCore);
     }
 
+    window.addEventListener("blur", () => {
+        if (activePointerId !== null) handlePointerCancel({pointerId: activePointerId});
+    });
     document.addEventListener("visibilitychange", () => {
-        if (document.hidden) pauseCoreAnimation();
+        if (document.hidden) {
+            if (activePointerId !== null) handlePointerCancel({pointerId: activePointerId});
+            pauseCoreAnimation();
+        }
         else resumeCoreAnimation();
     });
 }
@@ -3052,7 +3113,8 @@ export function initializeWorldviewCore() {
         container,
         orbiters: orbiters.map(item => item.group),
         camera,
-        onOpen: openWorldviewOrbiter
+        onOpen: openWorldviewOrbiter,
+        onDragStart: event => handlePointerDown(event, true)
     });
     bindEvents();
 
@@ -3200,6 +3262,7 @@ export function transitionWorldviewCoreOut() {
     endWorldviewPortalFocus();
     if (portalSuspended) setWorldviewPortalSuspended(false);
 
+    if (activePointerId !== null) handlePointerCancel({pointerId: activePointerId});
     interactionEnabled = false;
     dragging = false;
     activePointerId = null;
@@ -3242,6 +3305,7 @@ export function hideWorldviewCore() {
         return;
     }
 
+    if (activePointerId !== null) handlePointerCancel({pointerId: activePointerId});
     if (showFrameId !== null) {
         window.cancelAnimationFrame(showFrameId);
         showFrameId = null;
@@ -3257,6 +3321,7 @@ export function hideWorldviewCore() {
     directoryLabels?.hide();
     containerResizeObserver?.disconnect();
     activePointerId = null;
+    activePointerType = null;
 
     window.dispatchEvent(
         new CustomEvent(

@@ -3,7 +3,7 @@
 import {hitWorldviewCore, getWorldviewCoreScreenPosition,
     setWorldviewPortalSuspended, renderWorldviewPortalFocus,
     beginWorldviewPortalFocus, endWorldviewPortalFocus
-} from './worldview-core.js?v=26.10.21.7';
+} from './worldview-core.js?v=26.10.23.1';
 import {createAnotherWorldRuntime} from './another-world/portal-runtime.js?v=26.10.21.6';
 import {createPortalAudioSession} from './another-world/portal-audio.js?v=26.10.21.7';
 
