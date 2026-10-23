@@ -15,7 +15,7 @@
 
     <link
         rel="stylesheet"
-        href="styles/main.css?v=26.10.23.1"
+        href="styles/main.css?v=26.10.23.2"
     >
     <link rel="stylesheet" href="styles/components/another-world-portal.css?v=26.10.21.7">
 
@@ -130,7 +130,24 @@
 </head>
 
 <body class="locked">
-    <!-- Bossrush 双眼是背景装饰：前置到画布与正文之前，避免同层后绘制遮挡。 -->
+    <!-- ===========================
+         Three.js 背景画布
+    =========================== -->
+
+    <canvas id="background-3d"></canvas>
+
+    <!-- 同为 z0：先压暗背景方块，再绘制双眼，正文与功能控件仍位于其后。 -->
+    <div id="bossrush-filter">
+        <img
+            src="images/bossrush-eyes/black-picture.png"
+            alt=""
+            width="1920"
+            height="1080"
+            decoding="async"
+            loading="lazy"
+        >
+    </div>
+
     <div id="bossrush-eyes">
         <img
             src="images/bossrush-eyes/bossrush-eyes.png"
@@ -152,12 +169,6 @@
             loading="lazy"
         >
     </div>
-
-    <!-- ===========================
-         Three.js 背景画布
-    =========================== -->
-
-    <canvas id="background-3d"></canvas>
 
     <!-- ===========================
          主页基础内容
@@ -6442,21 +6453,6 @@
                 loading="lazy"
             >
         </div>
-    </div>
-
-    <!-- ===========================
-         Boss Rush 装饰效果
-    =========================== -->
-
-    <div id="bossrush-filter">
-        <img
-            src="images/bossrush-eyes/black-picture.png"
-            alt=""
-            width="1920"
-            height="1080"
-            decoding="async"
-            loading="lazy"
-        >
     </div>
 
     <!-- ===========================

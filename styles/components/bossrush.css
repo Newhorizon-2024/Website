@@ -2,8 +2,9 @@
    64. Bossrush 眼睛
 =========================== */
 
-/* 背景装饰：与重影同为 z0，并在 HTML 中先于背景画布及正文。
- * 保持在 body::before 渐变之上，避免使用会被底色吞没的负层级。 */
+/* 保持 z0 背景层级；HTML 按画布 → 黑色滤镜 → 双眼 → 正文排列。
+ * 滤镜仍压暗背景，但不覆盖双眼；默认 auto 层级的详情正文也在其上。
+ * 不使用负层级，避免被 body::before 的 z0 渐变吞没。 */
 #bossrush-eyes {
     animation:
         bossrushFadeIn 1s ease-out,
@@ -35,7 +36,7 @@
    65. Bossrush 眼睛重影
 =========================== */
 
-/* Bossrush 眼睛背景重影 */
+/* Bossrush 眼睛背景重影：与主眼睛一起避开黑色滤镜。 */
 #bossrush-eyes-bg {
     animation:
         bossrushFadeIn 1.2s ease-out,
