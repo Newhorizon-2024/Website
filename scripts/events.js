@@ -97,7 +97,7 @@ import {
 
 import {
     initializeInlineSectionLinks
-} from "./navigation/inline-section-links.js";
+} from "./navigation/inline-section-links.js?v=26.11.12.1";
 
 import {
     initializeNhnAccordion
@@ -105,7 +105,7 @@ import {
 
 import {
     initializeNhnTimeline
-} from "./navigation/nhn-timeline.js?v=26.10.18.4";
+} from "./navigation/nhn-timeline.js?v=26.11.12.1";
 
 import {
     initializeWorkFeed

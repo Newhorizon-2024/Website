@@ -1469,7 +1469,8 @@ export function initializeNhnTimeline() {
 
             if (
                 !clickedItem &&
-                !clickedDetail
+                !clickedDetail &&
+                !event.target.closest("[data-timeline-event]")
             ) {
                 hideTimelineDetails();
             }
@@ -1664,6 +1665,29 @@ export function initializeNhnTimeline() {
     /* ===========================
        24. 对外接口
     =========================== */
+
+    // 正文链接指定事件时直接展开，重复进入不会将详情切回关闭状态。
+    window.openTimelineEvent = targetId => {
+        if (!timelineSection.classList.contains("is-active")) return false;
+        const item = Array.from(timelineItems).find(item => item.dataset.target === targetId);
+        const detail = document.getElementById(targetId);
+        if (!item || !detail || !timelineSection.contains(detail)) return false;
+
+        showTimelineDetail(item, detail);
+        resizeThreadsCanvas();
+        updateNodeFocusPosition(item, true);
+        if (timelineScroll && timelineScroll.scrollWidth > timelineScroll.clientWidth) {
+            const itemRect = item.getBoundingClientRect();
+            const scrollRect = timelineScroll.getBoundingClientRect();
+            timelineScroll.scrollTo({
+                left: timelineScroll.scrollLeft + itemRect.left - scrollRect.left +
+                    itemRect.width / 2 - timelineScroll.clientWidth / 2,
+                behavior: reducedMotion ? "instant" : "smooth"
+            });
+        }
+        window.lenis?.resize?.();
+        return true;
+    };
 
     window.hideTimelineDetails =
         hideTimelineDetails;

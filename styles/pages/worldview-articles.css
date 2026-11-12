@@ -1,0 +1,60 @@
+/* 世界观文字档案：复用Section、行内导航和真实历史返回。 */
+.worldview-article-section.section {
+    background: transparent;
+    box-sizing: border-box;
+    color: #eeeeee;
+    min-height: 100vh;
+    padding: clamp(72px, 9vw, 128px) clamp(18px, 4vw, 40px) 72px;
+    position: relative;
+    text-align: center;
+    width: 100%;
+    z-index: 2;
+}
+
+.worldview-article-header {
+    margin: 0 auto;
+    max-width: 900px;
+}
+
+.worldview-article-header h1 {
+    font-size: clamp(32px, 5.4vw, 72px);
+    font-weight: 400;
+    line-height: 1.4;
+    margin: 0;
+    overflow-wrap: break-word;
+}
+
+.worldview-article-title-en {
+    color: rgba(238, 238, 238, 0.58);
+    font-size: clamp(13px, 1.2vw, 18px);
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    line-height: 1.6;
+    margin: 14px 0 0;
+}
+
+.worldview-article-copy {
+    line-height: 1.9;
+    margin: 68px auto;
+    max-width: 900px;
+    overflow-wrap: break-word;
+    text-align: left;
+}
+
+.worldview-article-copy p {
+    margin: 0 0 1.1em;
+}
+
+.worldview-article-group + .worldview-article-group {
+    margin-top: clamp(42px, 6vw, 76px);
+}
+
+.worldview-article-group > :last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+    .worldview-article-copy {
+        margin: 48px auto;
+    }
+}

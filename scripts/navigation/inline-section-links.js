@@ -27,12 +27,16 @@ export function initializeInlineSectionLinks() {
 
             event.preventDefault();
 
-            await window.showSection(targetId, {
+            const shown = await window.showSection(targetId, {
                 transitionType: "slide",
                 direction: "forward",
                 scrollMode: "top",
                 historyMode: "push"
             });
+
+            if (shown && link.dataset.timelineEvent) {
+                window.openTimelineEvent?.(link.dataset.timelineEvent);
+            }
         });
     });
 }

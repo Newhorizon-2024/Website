@@ -210,6 +210,15 @@
         text-shadow 0.25s ease;
 }
 
+.timeline-event-en {
+    color: rgba(238, 238, 238, 0.56);
+    display: block;
+    font-size: 10px;
+    font-weight: 300;
+    line-height: 1.4;
+    margin-top: 6px;
+}
+
 /* 当前选中的事件文字 */
 .timeline-item.active .timeline-text {
     text-shadow:
@@ -276,6 +285,15 @@
 /* 时间轴详情标题 */
 .timeline-detail h1 {
     margin-top: 0;
+}
+
+.timeline-detail-en {
+    color: rgba(238, 238, 238, 0.6);
+    font-size: clamp(12px, 1.2vw, 16px);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    margin: -6px 0 24px;
 }
 
 /* 时间轴详情最后一个元素 */

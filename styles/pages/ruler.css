@@ -6,11 +6,12 @@
 #the-ruler-info-section {
     background-image:
         url(
-            "../../images/nhn/worldview/the-ruler/the-ruler-from-newhorizon.png"
+            "../../images/nhn/worldview/the-ruler/the-ruler-from-newhorizon-vector.svg?v=26.11.12.3"
         );
-    background-position: center;
+    background-position: center clamp(260px, 24vw, 460px);
     background-repeat: no-repeat;
-    background-size: cover;
+    /* 矢量轮廓横向贴合页面两端；高度保持比例，独立于正文长度。 */
+    background-size: 100% auto;
     height: auto;
     padding: 40px;
     position: relative;
@@ -109,9 +110,74 @@
     text-align: left;
 }
 
+/* 正文按语义分段，不为未命名的段落添加额外标题。 */
+#the-ruler-info-section .ruler-content {
+    line-height: 1.9;
+    margin: 68px auto 0;
+    max-width: 900px;
+    overflow-wrap: break-word;
+    text-align: left;
+}
+
+#the-ruler-info-section .ruler-content p {
+    margin: 0 0 1.1em;
+}
+
+#the-ruler-info-section .ruler-topic {
+    margin-top: clamp(42px, 6vw, 76px);
+}
+
+#the-ruler-info-section .ruler-topic-title {
+    font-size: clamp(23px, 2.5vw, 32px);
+    font-weight: 500;
+    margin: 0 0 28px;
+    padding: 0;
+    text-align: left;
+}
+
+/* 诗体按实际内容宽度居中，行内左对齐；保留原字号与左右引号位置。 */
+#the-ruler-info-section .ruler-prophecy {
+    box-sizing: border-box;
+    margin: 68px auto 48px;
+    max-width: 100%;
+    padding: 0 1.5ch;
+    position: relative;
+    text-align: left;
+    width: fit-content;
+}
+
+#the-ruler-info-section .ruler-prophecy h2 {
+    margin-top: 0;
+    padding: 0;
+}
+
+#the-ruler-info-section .ruler-prophecy h2:last-child {
+    margin-bottom: 0;
+}
+
+#the-ruler-info-section .ruler-prophecy::before,
+#the-ruler-info-section .ruler-prophecy::after {
+    font-size: 12.5px;
+    font-style: italic;
+    font-weight: 300;
+    position: absolute;
+}
+
+#the-ruler-info-section .ruler-prophecy::before {
+    content: "“";
+    left: 0;
+    top: 0;
+}
+
+#the-ruler-info-section .ruler-prophecy::after {
+    bottom: 0;
+    content: "”";
+    right: 0;
+}
+
 @media (max-width: 768px) {
     #the-ruler-info-section {
-        background-position: center top;
+        background-position: center 300px;
         padding: 32px 18px;
     }
 

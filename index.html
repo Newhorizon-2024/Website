@@ -15,7 +15,7 @@
 
     <link
         rel="stylesheet"
-        href="styles/main.css?v=26.10.23.2"
+        href="styles/main.css?v=26.11.12.4"
     >
     <link rel="stylesheet" href="styles/components/another-world-portal.css?v=26.10.21.7">
 
@@ -371,6 +371,16 @@
                 class="website-update-log"
                 aria-label="New Horizon 网站更新记录"
             >
+                <article class="website-update-entry">
+                    <time datetime="2026-11-12T20:19:54+08:00">
+                        2026年11月12日 20:19:54
+                    </time>
+
+                    <ul>
+                        <li>更新了世界观介绍</li>
+                    </ul>
+                </article>
+
                 <article class="website-update-entry">
                     <time datetime="2026-10-23">
                         2026年10月23日
@@ -3379,6 +3389,30 @@
                 >
                     <span>悬赏令</span>
                 </button>
+
+                <button
+                    type="button"
+                    class="things-wheel-option"
+                    data-things-id="energy-conservation"
+                    data-section-id="energy-conservation-section"
+                    role="option"
+                    aria-selected="false"
+                    tabindex="-1"
+                >
+                    <span>能量守恒定律</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="things-wheel-option"
+                    data-things-id="observer-effect"
+                    data-section-id="observer-effect-section"
+                    role="option"
+                    aria-selected="false"
+                    tabindex="-1"
+                >
+                    <span>观察者效应</span>
+                </button>
             </div>
 
             <!-- 当前项目确认按钮 -->
@@ -3388,7 +3422,7 @@
                 aria-label="打开Bossrush档案"
             >
                 <span class="things-wheel-index">
-                    01 / 06
+                    01 / 08
                 </span>
 
                 <canvas
@@ -4891,7 +4925,7 @@
                     class="organization-orbit-item"
                     data-organization-id="demon-remnants"
                     data-organization-name="魔君残党"
-                    data-section-id=""
+                    data-section-id="demon-remnants-section"
                     role="option"
                     aria-selected="false"
                     tabindex="-1"
@@ -5368,7 +5402,8 @@
                     <div class="timeline-dot"></div>
 
                     <p class="timeline-text">
-                        去月球
+                        <span>去月球</span>
+                        <span class="timeline-event-en" lang="en">To the Moon</span>
                     </p>
                 </div>
 
@@ -5379,7 +5414,8 @@
                     <div class="timeline-dot"></div>
 
                     <p class="timeline-text">
-                        世蛛网大爆发
+                        <span>世蛛网大爆发</span>
+                        <span class="timeline-event-en" lang="en">The Worldweb Explosion</span>
                     </p>
                 </div>
 
@@ -5390,7 +5426,8 @@
                     <div class="timeline-dot"></div>
 
                     <p class="timeline-text">
-                        灾疫
+                        <span>灾疫</span>
+                        <span class="timeline-event-en" lang="en">The Plague</span>
                     </p>
                 </div>
 
@@ -5401,7 +5438,8 @@
                     <div class="timeline-dot"></div>
 
                     <p class="timeline-text">
-                        第一次魔君登录
+                        <span>第一次魔君登录</span>
+                        <span class="timeline-event-en" lang="en">The Ruler's First Login</span>
                     </p>
                 </div>
 
@@ -5412,7 +5450,8 @@
                     <div class="timeline-dot"></div>
 
                     <p class="timeline-text">
-                        魔君残党开始规模肆虐
+                        <span>魔君残党开始规模肆虐</span>
+                        <span class="timeline-event-en" lang="en">The Ruler's Remnants Crisis</span>
                     </p>
                 </div>
             </div>
@@ -5425,6 +5464,7 @@
                 class="timeline-detail"
             >
                 <h1>去月球</h1>
+                <p class="timeline-detail-en" lang="en">To the Moon</p>
                 <h2>1969年</h2>
 
                 <p>
@@ -5442,6 +5482,7 @@
                 class="timeline-detail"
             >
                 <h1>世蛛网大爆发</h1>
+                <p class="timeline-detail-en" lang="en">The Worldweb Explosion</p>
                 <h2>2007年</h2>
 
                 <p>
@@ -5459,6 +5500,7 @@
                 class="timeline-detail"
             >
                 <h1>灾疫</h1>
+                <p class="timeline-detail-en" lang="en">The Plague</p>
                 <h2>2019年12月</h2>
 
                 <p>
@@ -5480,6 +5522,7 @@
                 class="timeline-detail"
             >
                 <h1>第一次魔君登录</h1>
+                <p class="timeline-detail-en" lang="en">The Ruler's First Login</p>
                 <h2>2025年2月</h2>
 
                 <p>？？？</p>
@@ -5491,6 +5534,7 @@
                 class="timeline-detail"
             >
                 <h1>魔君残党开始规模肆虐</h1>
+                <p class="timeline-detail-en" lang="en">The Ruler's Remnants Crisis</p>
                 <h2>2025年7月</h2>
 
                 <p>
@@ -6250,49 +6294,60 @@
             The Ruler
         </p>
 
-        <p>&nbsp;</p>
+        <div class="ruler-content">
+            <p>在《里世界》中，“现实”被人格化，自宇宙诞生以来一直以某种用逻辑难以解释的方式，影响包括生命在内的现世一切运转。</p>
+            <div class="ruler-topic">
+                <h2 class="ruler-topic-title">概念</h2>
+                <p>魔君最初并非为《里世界》而创造，而是一种有关现实、因果、命运与生命存在的哲学假想，可能受到“拉普拉斯妖”思想实验的启发。</p>
+                <p>拉普拉斯妖假设某种智慧能够完全掌握宇宙中所有事物的状态与运行规律，那么在经典决定论的理想条件下，它便有可能推算过去与未来。</p>
+                <p>这一思想实验所讨论的，是宇宙是否具有确定的因果结构，以及认识者能否完整理解它。</p>
+                <p>在《里世界》中，人们尝试将难以完整认识的现实人格化，并有越来越多的人以“魔君”称呼这种存在或现象。</p>
+                <p>然而，这并不意味着魔君已经被证明是现实本身、某种规律的集合，或一个具有独立意识的生命。</p>
+                <p>上述说法都只是理解它的不同方式。</p>
+            </div>
+            <div class="ruler-topic">
+                <p>人类在漫长的历史中，始终试图理解那些无法掌控的事物。</p>
+                <p>疾病、灾难、死亡、命运、偶然事件，以及人的思想与行为，都可能在不同历史时期获得不同的解释。</p>
+                <p>随着知识体系发展，人们能够解释越来越多的现象，却也不断发现自身认知的局限。</p>
+                <p>进入现代后，信息传播、社会联系与记录技术的发展，使大量原本彼此孤立的经历能够被共同观察和比较。</p>
+                <p>在里世界，2007年的“世蛛网大爆发”尤其改变了意识之间的联系。</p>
+                <p>某些曾被视为个人异常的现象，开始进入更广泛的公共讨论。</p>
+                <p>此后的一系列社会危机，以及<a class="inline-section-link bold-text" href="#timeline-section" data-section-link="timeline-section" data-timeline-event="event-detail-4">“第一次魔君登录”</a>，是使“魔君”成为越来越难以回避的话题。</p>
+                <p>它可能早已存在，也可能是现代意识为了描述一系列无法理解的现象，而逐渐形成的概念。</p>
+                <p>历史传说、异常事件与魔君之间是否存在联系，仍缺乏足够证据。</p>
+            </div>
+            <div class="ruler-topic">
+                <p>魔君的本质没有人能够确定。</p>
+                <p>它不具有已知且固定的容器、性别、语言或生命形态。</p>
+                <p>它甚至未必具备人们所理解的自我意识。</p>
+                <p>人们常用“魔君的思想”“魔君的意志”或“魔君的目的”描述它的活动。</p>
+                <p>然而，这些表述并不证明它真的像人一样思考。</p>
+                <p>它们可能只是意识试图理解魔君影响时，借用的近似概念。</p>
+                <p>魔君能够通过不同形式呈现或产生影响，但任何一种已知表现，都未必是它的真正形态。</p>
+                <p>因此，魔君既不能简单等同于邪恶，也不能被认定为所有异常、灾难与苦难的共同来源。</p>
+            </div>
+            <div class="ruler-topic">
+                <p>部分受到魔君影响的意识与事物，会出现异常变化。</p>
+                <p>其中一种具有代表性的现象，是强烈的思想印记。</p>
+                <p>受到影响的意识，其原有的愿望、恐惧、思想或信念可能不断强化，并逐渐改变自身对世界的认识和行为方式。</p>
+                <p>这种变化不一定立即发生，也未必具有相同的表现。</p>
+                <p>部分意识还会获得远超原有水平的能力。</p>
+                <p>但这些能力从何而来、是否符合已知的创造法则，以及它们与思想变化之间究竟存在何种联系，仍有待研究。</p>
+            </div>
+            <div class="ruler-topic">
+                <p>目前没有确定魔君是否能够被消灭。</p>
+                <p>即使某种被认为属于魔君的形态遭到摧毁，也无法由此证明魔君本身已经消亡。</p>
+                <p>同样，某种影响仍在持续，也不能单独证明魔君仍然以某种生命形式存在。</p>
+                <p>人们能够确认的是事件、变化和后果。</p>
+                <p>至于这些现象背后是否存在一个可以被彻底消灭的主体，仍然未知。</p>
+            </div>
+        </div>
 
-        <p>
-            严格来说，这个概念并不为《里世界》所做，实质上兴许是对哲学模型的一种假想。
-        </p>
-
-        <p>
-            它难以被直接具体为某一名角色或生命形态，也许是 拉普拉斯妖 的一种延伸。
-        </p>
-
-        <p>&nbsp;</p>
-
-        <p>
-            在《里世界》中，现实因世界观投射为了一个人格化的存在，其名曰 魔君 。
-        </p>
-
-        <p>
-            由于魔君是现实的化身，它可能以任何一种体态、性别或语言的形式干涉外界，这极大地影响了里世界的运行规律和人文精神。
-        </p>
-
-        <p>
-            譬如受它所影响的事物和人，会被刻下某种与之共鸣的，强烈的思想印记，这会导致生命朝向难以，甚至不可逆转的不归路。
-        </p>
-
-        <p class="ruler-bg">
-            &nbsp;
-        </p>
-
-        <p>
-            受魔君影响的个体，通常都被赋予了强大的能力。但它们无一例外地，受到魔君意志的影响尝试改变这个世界的运转，成为它万中的麾下之一——
-            <span class="bold-text">
-                魔君残党
-            </span>
-            。
-        </p>
-
-        <p>&nbsp;</p>
-        <p>&nbsp;</p>
-
+        <blockquote class="ruler-prophecy">
         <h2>
             <small>
                 <i>
-                    “它给予人善意，也给予人苦难。
+                    它给予人善意，也给予人苦难。
                 </i>
             </small>
         </h2>
@@ -6332,12 +6387,11 @@
         <h2>
             <small>
                 <i>
-                    所言其表也只是一个容器，或许直至宇宙灭亡，也不会有人见过它长什么样。”
+                    所言其表也只是一个容器，或许直至宇宙灭亡，也不会有人见过它长什么样。
                 </i>
             </small>
         </h2>
-
-        <p>&nbsp;</p>
+        </blockquote>
 
         <button
             type="button"
@@ -6363,39 +6417,28 @@
             The Monarch
         </p>
 
-        <p>&nbsp;</p>
-
-        <p>
-            这里所述的君主，意指《里世界》中强烈对立于<a
-                class="inline-section-link"
-                href="#the-ruler-info-section"
-                data-section-link="the-ruler-info-section"
-            >魔君</a>的强大存在。
-        </p>
-
-        <p>
-            君主这一概念，最初是作为对“魔君”体系的一种回应而诞生的。
-        </p>
-
-        <p>
-            在《里世界》中，当一名角色深陷囹圄，决意置身投入对抗魔君的压制和解构时，便会获得前所未有的，乃至于能够在魔君面前守护他人的强大力量。
-        </p>
-
-        <p>
-            目前尚所未能找到这份力量从何而来，也许这与他们与生俱来的一切有所联系，还是说——这也是受魔君带来的影响之一？
-        </p>
-
-        <p>&nbsp;</p>
-
-        <p>
-            我们把拥有这种力量的意识称作了 “君主” 这一身份标识。
-        </p>
-
-        <p>
-            一旦识得创作者的角色拥有能承担其重的特质，便可能成为君主......
-        </p>
-
-        <p>&nbsp;</p>
+        <div class="worldview-article-copy">
+            <div class="worldview-article-group">
+                <p>君主是《里世界》中一种特殊的身份标识，用于描述那些能够与<a class="inline-section-link bold-text" href="#the-ruler-info-section" data-section-link="the-ruler-info-section">“魔君”</a>的影响强烈对抗，并展现出非凡力量的意识。</p>
+                <p>这一概念最初作为对魔君体系的回应而出现。</p>
+                <p>魔君代表着某种难以理解、难以摆脱的现实影响；君主则体现了部分意识在这种影响面前产生的抗争能力。</p>
+                <p>君主并非传统意义上的国家统治者，也不一定拥有领土、军队或政治权力。</p>
+                <p>“君主”首先是一种与生命状态、能力和行为特征有关的身份。</p>
+            </div>
+            <div class="worldview-article-group">
+                <p>当一名意识陷入极其艰难的处境，仍然决意抵抗魔君带来的压制，并试图保护其他生命时，便可能展现出前所未有的力量。</p>
+                <p>这种力量有时足以使其在魔君面前守护他人。</p>
+                <p>然而，单纯拥有勇气、强烈信念或对魔君的敌意，并不保证一个意识必然成为君主。</p>
+                <p>在创作者构建的不同人物中，部分意识都有可能表现出足以承担这一身份的特质。</p>
+            </div>
+            <div class="worldview-article-group">
+                <p>君主的力量来源于哪里，目前尚无定论。</p>
+                <p>一种可能是，君主的力量与意识本身的生命结构、经历、信念及成长有关。</p>
+                <p>另一种可能是，这种力量同样与魔君的影响存在某种联系。</p>
+                <p>但二者都尚未得到证实。</p>
+                <p>因此，君主不应被简单定义为魔君的绝对反面，也不能直接视为一种完全不受魔君影响的生命。</p>
+            </div>
+        </div>
 
         <button
             type="button"
@@ -6404,6 +6447,88 @@
             <span>返回上一级</span>
         </button>
     </div>
+
+    <section
+        id="demon-remnants-section"
+        class="section worldview-article-section"
+        aria-labelledby="demon-remnants-section-title"
+    >
+        <header class="worldview-article-header">
+            <h1 id="demon-remnants-section-title">魔君残党</h1>
+            <p class="worldview-article-title-en" lang="en">The Ruler's Remnants</p>
+        </header>
+        <div class="worldview-article-copy">
+            <div class="worldview-article-group">
+                <p>魔君残党是人们对一批与魔君存在直接或间接关联的特殊意识及势力的统称。</p>
+                <p>其中一些意识受到魔君力量的影响，形成强烈的思想印记，并试图依据自身逐渐强化的信念改变里世界的运行。</p>
+                <p>他们可能拥有强大的能力，也可能建立组织、控制内域，或以普通居民的身份参与社会活动。</p>
+                <p>大部分强大的残党在<a class="inline-section-link bold-text" href="#timeline-section" data-section-link="timeline-section" data-timeline-event="event-detail-4">“第一次魔君登录”</a>中被消灭。</p>
+                <p>魔君残党不一定拥有完全统一的组织结构。</p>
+                <p>不同个体可能具有不同的目的，甚至彼此敌对。</p>
+                <p>某些残党认为自己正在改变不合理的现实，而非主动制造灾难。</p>
+                <p>但这种自我认识并不意味着他们的行为没有造成伤害。</p>
+                <p>当然，不能仅仅因为一个人具有极端思想、异常能力或严重的存在困惑，就认定其属于魔君残党。</p>
+                <p>魔君与这些个体之间究竟存在怎样的支配关系，目前仍难以完整解释。</p>
+            </div>
+            <div class="worldview-article-group">
+                <p>“第一次魔君登录”之后，里世界逐渐确认了与魔君相关的多种特殊势力。</p>
+                <p>2025年7月，<a class="inline-section-link bold-text" href="#timeline-section" data-section-link="timeline-section" data-timeline-event="event-detail-5">魔君残党的规模性活动</a>成为值得关注的社会问题。</p>
+                <p>不过，部分相关现象可能早在此前就已经存在。</p>
+                <p>因此，魔君残党的历史不一定始于魔君登录这一事件。</p>
+            </div>
+        </div>
+        <button type="button" class="back-to-parent">
+            <span>返回上一级</span>
+        </button>
+    </section>
+
+    <section
+        id="energy-conservation-section"
+        class="section worldview-article-section"
+        aria-labelledby="energy-conservation-section-title"
+    >
+        <header class="worldview-article-header">
+            <h1 id="energy-conservation-section-title">“能量守恒定律”</h1>
+        </header>
+        <div class="worldview-article-copy">
+            <div class="worldview-article-group">
+                <p>里世界的意识无法仅凭想象，无限制地创造任何需要的事物。</p>
+                <p>创造必须具有相应的来源、条件与转化过程。</p>
+                <p>例如，创造火焰不仅需要意识能够想象火的形态，还可能需要其思想、生命特征与火产生某种特殊共鸣。</p>
+                <p>但共鸣本身并不等同于无限的物理能源。</p>
+                <p>火焰的形成、维持和变化仍然涉及资源与代价。</p>
+                <p>因此，强烈的愿望不能直接等同于强大的创造能力。</p>
+                <p>这项原则与现实中的能量守恒思想存在关联，但不能简单地将情绪或信念换算成物理能量。</p>
+            </div>
+        </div>
+        <button type="button" class="back-to-parent">
+            <span>返回上一级</span>
+        </button>
+    </section>
+
+    <section
+        id="observer-effect-section"
+        class="section worldview-article-section"
+        aria-labelledby="observer-effect-section-title"
+    >
+        <header class="worldview-article-header">
+            <h1 id="observer-effect-section-title">“观察者效应”</h1>
+        </header>
+        <div class="worldview-article-copy">
+            <div class="worldview-article-group">
+                <p>里世界中的能力通常不存在绝对统一的数值标准。</p>
+                <p>不同意识对彼此的认识，能够影响共同空间中能力的表现。</p>
+                <p>当两名意识处于同一空间时，各自的认知差异可能导致能力发生变化。</p>
+                <p>观察距离是重要影响因素之一。</p>
+                <p>一般而言，距离越远，观察产生的影响越弱。</p>
+                <p>在多人共同观察的环境中，能力表现会受到更多因素影响。</p>
+                <p>观察者数量与影响强度之间，不能简单地建立固定比例。</p>
+            </div>
+        </div>
+        <button type="button" class="back-to-parent">
+            <span>返回上一级</span>
+        </button>
+    </section>
 
     <!-- ===========================
          返回主页按钮
@@ -6503,7 +6628,7 @@
 
     <script
         type="module"
-        src="scripts/events.js?v=26.10.23.1"
+        src="scripts/events.js?v=26.11.12.1"
     ></script>
     <script type="module" src="scripts/effects/another-world-portal.js?v=26.10.23.1"></script>
 </body>
