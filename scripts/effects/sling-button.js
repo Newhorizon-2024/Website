@@ -1,43 +1,30 @@
-/* SlingButton 的原生适配：不引入 React / Motion，导航仅通过 onSend 触发。 */
+import { attachHomeCube } from "./home-cube.js?v=26.11.18.5";
+
 const initializedRoots = new WeakSet();
-const CONFIG = { size: 56, stroke: 3, armAt: 48, maxPull: 160, launchSpeed: 2600, particles: 14, flight: 120, spread: 60 };
+const CONFIG = { armAt: 48, maxPull: 160, launchSpeed: 2600 };
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-const EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
 
 export function initializeSlingButton({ root, onSend }) {
     if (!root || initializedRoots.has(root)) return;
     const pad = root.querySelector(".sling-button__pad");
     const move = root.querySelector(".sling-button__move");
-    const icon = root.querySelector(".sling-button__icon");
-    const tension = root.querySelector(".sling-button__tension");
-    const band = root.querySelector(".sling-button__band");
-    const hot = root.querySelector(".sling-button__band--hot");
-    const arc = root.querySelector(".sling-button__arc");
+    const tether = root.querySelector(".sling-button__tether");
+    const charge = root.querySelector(".sling-button__charge");
     const hint = root.querySelector(".sling-button__hint");
     const hintLeft = hint?.querySelector(".sling-button__hint-left");
     const hintRight = hint?.querySelector(".sling-button__hint-right");
-    if (![pad, move, icon, tension, band, hot, arc, hintLeft, hintRight].every(Boolean)) return;
+    if (![pad, move, tether, charge, hintLeft, hintRight].every(Boolean)) return;
     initializedRoots.add(root);
 
     const controller = new AbortController();
     const listen = (target, type, callback, options = {}) => target.addEventListener(type, callback, { ...options, signal: controller.signal });
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
-    const wellR = CONFIG.size / 2 + 4 + CONFIG.stroke;
-    const padR = CONFIG.size / 2 - CONFIG.stroke / 2;
-    const dots = Array.from({ length: CONFIG.particles }, () => {
-        const dot = document.createElement("span");
-        dot.className = "sling-button__dot";
-        dot.setAttribute("aria-hidden", "true");
-        root.insertBefore(dot, move);
-        return dot;
-    });
     let x = 0, y = 0, vx = 0, vy = 0;
     let direction = { ux: 0, uy: 1 };
     let grip = null;
     let armed = false;
-    let frame = 0, lastTime = 0, dotTimer = 0, clickTimer = 0, sendTimer = 0;
-    let pendingDots = false, power = 0, skipClick = false;
-    const animations = new Set();
+    let frame = 0, lastTime = 0, clickTimer = 0, sendTimer = 0;
+    let skipClick = false;
     const available = () => root.getClientRects().length > 0 && !document.hidden && !document.body.classList.contains("is-section-transitioning");
     const maxPull = () => Math.min(CONFIG.maxPull, Math.max(64, (innerWidth - 80) / 2));
 
@@ -54,78 +41,45 @@ export function initializeSlingButton({ root, onSend }) {
         if (hintRight.textContent !== right) hintRight.textContent = right;
     }
 
-    function relaxIcon() {
-        icon.style.transition = motion.matches ? "none" : `transform 360ms ${EASE_OUT}`;
-        icon.style.transform = "rotate(0deg)";
+    function resetHintOpacity() {
+        hintLeft.style.removeProperty("opacity");
+        hintRight.style.removeProperty("opacity");
     }
 
-    function animateDot(dot, keyframes, options) {
-        const animation = dot.animate(keyframes, options);
-        animations.add(animation);
-        const done = () => animations.delete(animation);
-        animation.onfinish = done;
-        animation.oncancel = done;
-    }
-
-    function launchDots() {
-        if (!pendingDots) return;
-        pendingDots = false;
-        clearTimeout(dotTimer);
-        dotTimer = 0;
-        relaxIcon();
-        if (motion.matches || !available()) return;
-        const { ux, uy } = direction;
-        const base = Math.atan2(-uy, -ux);
-        const cone = CONFIG.spread * Math.PI / 180;
-        const rect = root.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        dots.forEach((dot, index) => {
-            const lead = index === 0;
-            const angle = base + (lead ? 0 : (Math.random() + Math.random() - 1) * cone / 2);
-            const cx = Math.cos(angle), cy = Math.sin(angle);
-            const reach = (lead ? CONFIG.flight : CONFIG.flight * (0.3 + Math.random())) * (0.85 + 0.35 * power);
-            const drift = lead ? 0 : (Math.random() - 0.5) * CONFIG.flight * 0.4;
-            const scale = lead ? 1 : 0.3 + Math.random() * 0.6;
-            const duration = lead ? 300 : 300 * (0.7 + Math.random());
-            const delay = lead ? 0 : Math.random() * 70;
-            const endX = clamp(cx * (wellR + reach) - cy * drift, 8 - centerX, innerWidth - 8 - centerX);
-            animateDot(dot, [
-                { transform: `translate(${cx * wellR}px, ${cy * wellR}px) scale(${scale})`, opacity: 1 },
-                { opacity: 1, offset: 0.55 },
-                { transform: `translate(${endX}px, ${cy * (wellR + reach) + cx * drift}px) scale(${lead ? 0.6 : scale * 0.3})`, opacity: 0 }
-            ], { duration, delay, easing: EASE_OUT, fill: "none" });
-        });
+    function updateHintOpacity(cube) {
+        if (!grip?.moved) return;
+        const { clientX, clientY } = grip;
+        for (const hint of [hintLeft, hintRight]) {
+            const rect = hint.getBoundingClientRect();
+            const pointerGap = Math.hypot(
+                Math.max(rect.left - clientX, clientX - rect.right, 0),
+                Math.max(rect.top - clientY, clientY - rect.bottom, 0)
+            );
+            const cubeGap = Math.hypot(
+                Math.max(rect.left - cube.right, cube.left - rect.right, 0),
+                Math.max(rect.top - cube.bottom, cube.top - rect.bottom, 0)
+            );
+            const t = clamp(Math.min(pointerGap, cubeGap) / 26, 0, 1);
+            hint.style.opacity = String(t * t * (3 - 2 * t));
+        }
     }
 
     function paint() {
         move.style.transform = `translate(${x}px, ${y}px)`;
+        const distance = Math.hypot(x, y);
+        const pull = clamp(distance / CONFIG.armAt, 0, 1);
         const { ux, uy } = direction;
-        const projection = x * ux + y * uy;
-        const p = clamp(projection / CONFIG.armAt, 0, 1);
-        const dist = Math.hypot(x, y);
-        let path = "";
-        if (dist > 0.5) {
-            const a = Math.atan2(y, x);
-            const b = Math.acos(clamp((wellR - padR) / dist, -1, 1));
-            path = [a + b, a - b].map(angle => {
-                const cx = Math.cos(angle), cy = Math.sin(angle);
-                return `M${(wellR * cx).toFixed(2)},${(wellR * cy).toFixed(2)}L${(x + padR * cx).toFixed(2)},${(y + padR * cy).toFixed(2)}`;
-            }).join("");
+        // A single suspended filament drops from the socket, then straightens under tension.
+        const slack = (1 - pull) * 10;
+        const tailX = x - ux * Math.min(13, distance * 0.4);
+        const tailY = y - uy * Math.min(13, distance * 0.4);
+        const path = `M0 20 Q${tailX * 0.48} ${(20 + tailY) / 2 + slack} ${tailX} ${tailY}`;
+        tether.setAttribute("d", path);
+        tether.style.opacity = String(pull * 0.78);
+        charge.style.opacity = String(pull);
+        if (grip?.moved && !root.hasAttribute("data-cube-field")) {
+            updateHintOpacity(pad.querySelector(".sling-button__fallback").getBoundingClientRect());
         }
-        band.setAttribute("d", path);
-        hot.setAttribute("d", path);
-        hot.style.opacity = String(p);
-        tension.style.opacity = String(clamp(projection / 6, 0, 1));
-        arc.setAttribute("stroke-dasharray", `${p} ${1 - p}`);
-        arc.setAttribute("stroke-dashoffset", String(p / 2));
-        arc.style.opacity = p > 0.01 ? "1" : "0";
-        arc.setAttribute("transform", `rotate(${Math.atan2(-uy, -ux) * 180 / Math.PI})`);
-        if (grip) {
-            icon.style.transition = "none";
-            const angle = Math.atan2(-uy, -ux) * 180 / Math.PI + 90;
-            icon.style.transform = `rotate(${angle * clamp(dist / 12, 0, 1)}deg)`;
-        }
-        if (pendingDots && projection <= CONFIG.size / 4) launchDots();
     }
 
     function stopFrame() {
@@ -135,16 +89,12 @@ export function initializeSlingButton({ root, onSend }) {
 
     function reset() {
         stopFrame();
-        clearTimeout(dotTimer);
         clearTimeout(sendTimer);
         sendTimer = 0;
-        pendingDots = false;
-        for (const animation of animations) animation.cancel();
-        animations.clear();
         x = y = vx = vy = 0;
         root.removeAttribute("data-launching");
         setArmed(false);
-        relaxIcon();
+        resetHintOpacity();
         paint();
     }
 
@@ -208,15 +158,11 @@ export function initializeSlingButton({ root, onSend }) {
         const handFactor = Math.min(1, 6000 / Math.max(1, Math.hypot(velocityX, velocityY)));
         velocityX *= handFactor;
         velocityY *= handFactor;
-        relaxIcon();
+        resetHintOpacity();
         setArmed(false);
         if (!g.moved && !cancelled) send();
         if (fire) {
             if (!motion.matches) {
-                power = clamp((Math.min(p, 1.5) - 1) / 0.5, 0, 1);
-                pendingDots = true;
-                dotTimer = setTimeout(launchDots, 150);
-                // 先呈现一次短促的发射反馈，再使用原有导航入口。
                 root.setAttribute("data-launching", "");
                 setHint("正在返回", "主页");
                 sendTimer = setTimeout(() => {
@@ -234,15 +180,13 @@ export function initializeSlingButton({ root, onSend }) {
     listen(pad, "pointerdown", event => {
         if (!available() || pad.disabled || grip || sendTimer || event.button !== 0 || event.isPrimary === false) return;
         stopFrame();
-        pendingDots = false;
-        clearTimeout(dotTimer);
         const rect = root.getBoundingClientRect();
         const scale = rect.width / (root.offsetWidth || rect.width) || 1;
         const R = maxPull();
         const distance = Math.hypot(x, y);
         const clamped = Math.min(distance, 0.95 * R);
         const raw = distance > 0.5 ? R * clamped / (R - clamped) : 0;
-        grip = { id: event.pointerId, startX: event.clientX, startY: event.clientY, scale, moved: false, history: [],
+        grip = { id: event.pointerId, startX: event.clientX, startY: event.clientY, scale, moved: false, history: [], clientX: event.clientX, clientY: event.clientY,
             rawX: distance > 0.5 ? raw * x / distance : 0, rawY: distance > 0.5 ? raw * y / distance : 0,
             slop: event.pointerType === "touch" ? 8 : 4 };
         pad.setPointerCapture(event.pointerId);
@@ -255,6 +199,8 @@ export function initializeSlingButton({ root, onSend }) {
         const g = grip;
         if (!g || g.id !== event.pointerId) return;
         if (event.cancelable) event.preventDefault();
+        g.clientX = event.clientX;
+        g.clientY = event.clientY;
         const dx = (event.clientX - g.startX) / g.scale;
         const dy = (event.clientY - g.startY) / g.scale;
         if (Math.hypot(dx, dy) > g.slop) g.moved = true;
@@ -292,5 +238,6 @@ export function initializeSlingButton({ root, onSend }) {
         clearTimeout(clickTimer);
         if (!event.persisted) controller.abort();
     });
+    attachHomeCube({ pad, motion, signal: controller.signal, onBounds: updateHintOpacity, needsBounds: () => Boolean(grip?.moved) });
     paint();
 }

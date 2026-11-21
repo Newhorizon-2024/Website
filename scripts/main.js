@@ -350,6 +350,7 @@ const capturedBackgroundCubes = new Map();
 let backgroundCubeDrag = null;
 let activeBackgroundLease = null;
 const activeBackgroundLeases = new Set();
+const backgroundFrameListeners = new Set();
 let backgroundLeaseSequence = 0;
 let backgroundFrameSeconds = 1 / 60;
 let previousBackgroundFrameAt = null;
@@ -385,8 +386,8 @@ function backgroundLeaseSnapshot(lease) {
     });
 }
 
-function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null, maxDistance = Infinity } = {}) {
-    if (activeBackgroundLease && (!group || activeBackgroundLease.group !== group)) return null;
+function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null, maxDistance = Infinity, independent = false, preferVisible = false, allowBackLayer = false } = {}) {
+    if (!independent && activeBackgroundLease && (!group || activeBackgroundLease.group !== group)) return null;
     const requestedCount = Math.min(cubes.length, Math.max(0, Math.floor(Number(count) || 0)));
     if (!requestedCount) return null;
     const rect = backgroundCanvas.getBoundingClientRect();
@@ -399,11 +400,14 @@ function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null
         projected.copy(mesh.position).project(camera);
         const screenX = rect.left + (projected.x + 1) * rect.width / 2;
         const screenY = rect.top + (1 - projected.y) * rect.height / 2;
-        return { mesh, index, distance: Math.hypot(screenX - centerX, screenY - centerY) };
-    }).filter(item => item && item.distance <= maxDistance).sort((a, b) => a.distance - b.distance || a.index - b.index);
+        const inView = Math.abs(projected.x) <= 1 && Math.abs(projected.y) <= 1 && Math.abs(projected.z) <= 1;
+        return { mesh, index, inView, distance: Math.hypot(screenX - centerX, screenY - centerY) };
+    }).filter(item => item && item.distance <= maxDistance).sort((a, b) =>
+        (preferVisible ? Number(b.inView) - Number(a.inView) : 0) || a.distance - b.distance || a.index - b.index);
     if (!ranked.length) return null;
-    const lease = { id: ++backgroundLeaseSequence, group, active: true, records: [] };
+    const lease = { id: ++backgroundLeaseSequence, group, independent, active: true, records: [] };
     lease.records = ranked.slice(0, requestedCount).map(({ mesh, index, distance }, rank) => {
+        const throwMotion = backgroundCubeThrows.get(mesh);
         backgroundCubeThrows.delete(mesh);
         thrownBackgroundCubes.delete(mesh);
         mesh.updateMatrix();
@@ -420,20 +424,22 @@ function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null
             originalMatrixAutoUpdate: mesh.matrixAutoUpdate,
             originalVisible: mesh.visible,
             originalRandom: Object.freeze({ ...mesh.userData }),
+            throwMotion: throwMotion ? Object.freeze({x: throwMotion.x, y: throwMotion.y, damping: BACKGROUND_THROW_DAMPING}) : null,
             sourcePosition: mesh.position.clone(),
             sourceQuaternion: mesh.quaternion.clone(),
             sourceScale: mesh.scale.clone(),
             sourceMatrix: mesh.matrix.clone(),
-            opacity: 1, frontMix: 0, visible: mesh.visible
+            opacity: 1, frontMix: mesh.layers.mask & (1 << FOREGROUND_CUBE_LAYER) ? 1 : 0, visible: mesh.visible
         };
         mesh.material = material;
         mesh.matrixAutoUpdate = false;
         if (record.originalLayer === BACKGROUND_CUBE_LAYER) mesh.layers.enable(FOREGROUND_CUBE_LAYER);
+        if (allowBackLayer) mesh.layers.enable(BACKGROUND_CUBE_LAYER);
         capturedBackgroundCubes.set(mesh, record);
         return record;
     });
     activeBackgroundLeases.add(lease);
-    activeBackgroundLease ||= lease;
+    if (!independent) activeBackgroundLease ||= lease;
     const entries = Object.freeze(lease.records.map(record => Object.freeze({
         id: record.id,
         mesh: record.mesh,
@@ -441,6 +447,7 @@ function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null
         originalLayerMask: record.originalLayerMask,
         distance: record.distance,
         originalRandom: record.originalRandom,
+        throwMotion: record.throwMotion,
         sourcePosition: record.sourcePosition.clone(),
         sourceQuaternion: record.sourceQuaternion.clone(),
         sourceScale: record.sourceScale.clone(),
@@ -497,15 +504,163 @@ function claimNearestBackgroundCubes({ x, y, count = 7, group = null, ids = null
                 record.material.dispose();
             }
             activeBackgroundLeases.delete(lease);
-            if (activeBackgroundLease === lease) activeBackgroundLease = activeBackgroundLeases.values().next().value || null;
+            if (activeBackgroundLease === lease) activeBackgroundLease = Array.from(activeBackgroundLeases).find(item => !item.independent) || null;
         },
         getState() { return backgroundLeaseSnapshot(lease); }
     });
 }
 
+// 碎纸生成的方块共用场景、材质和时钟，拥有独立的有界循环池。
+const paperCubes = [];
+const paperCubeLimit = 96;
+let nextPaperCube = 0;
+
+function releasePaperCube(x, y, pixels) {
+    const rect = backgroundCanvas.getBoundingClientRect();
+    if (!rect.width || !rect.height || document.hidden || ![x, y, pixels].every(Number.isFinite)) return;
+    let mesh;
+    if (paperCubes.length < paperCubeLimit) {
+        mesh = new THREE.Mesh(cubeGeometry, window.material);
+        paperCubes.push(mesh);
+        scene.add(mesh);
+    } else {
+        // 优先重用已离屏的纸屑；连续撕碎时按生成顺序轮换。
+        mesh = paperCubes.find(isThrownBackgroundCubeOutside) || paperCubes[nextPaperCube];
+        nextPaperCube = (paperCubes.indexOf(mesh) + 1) % paperCubeLimit;
+    }
+    resetCube(mesh);
+    const depth = 95 + Math.random() * 10;
+    const worldPerPixel = 2 * depth * Math.tan(camera.fov * Math.PI / 360) / rect.height;
+    mesh.position.set(camera.position.x + (x - rect.left - rect.width / 2) * worldPerPixel,
+        camera.position.y - (y - rect.top - rect.height / 2) * worldPerPixel, camera.position.z - depth);
+    mesh.scale.setScalar(Math.max(3, Math.min(14, pixels)) * worldPerPixel);
+    mesh.rotation.set(.1, .15, 0);
+    mesh.layers.set(FOREGROUND_CUBE_LAYER);
+}
+
+function driftBackgroundCube(cube, speed) {
+    cube.position.x -= cube.userData.speedX * speed;
+    cube.position.y -= cube.userData.speedY * speed;
+}
+
+function turnBackgroundCube(cube, speed) {
+    cube.rotation.x += cube.userData.rotationSpeedX * speed;
+    cube.rotation.y += cube.userData.rotationSpeedY * speed;
+}
+
+function advancePaperCubes(speed) {
+    for (const mesh of paperCubes) {
+        driftBackgroundCube(mesh, speed);
+        turnBackgroundCube(mesh, speed);
+        if (mesh.position.x < -innerWidth / 2 || mesh.position.y < -innerHeight / 2) {
+            const size = mesh.scale.x;
+            resetCube(mesh);
+            mesh.scale.setScalar(size);
+            mesh.layers.set(BACKGROUND_CUBE_LAYER);
+        }
+    }
+}
+
 /* 仅返回当前借用记录的只读快照，不泄露整个可变背景数组。 */
+// Reuse one unlit skin and soft halo; the cube keeps its native material and motion.
+let cubePulseSkin = null;
+let lastPulsedCube = null;
+let cubePulseStarted = 0;
+const cubePulsePoint = new THREE.Vector3();
+
+function createCubePulseSkin() {
+    const skin = new THREE.Mesh(cubeGeometry, new THREE.MeshBasicMaterial({
+        color: 0xffffff, transparent: true, depthWrite: false, toneMapped: false,
+        polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1
+    }));
+    const texture = document.createElement("canvas");
+    texture.width = texture.height = 64;
+    const brush = texture.getContext("2d");
+    const falloff = brush.createRadialGradient(32,32,0,32,32,32);
+    falloff.addColorStop(0,"rgba(255,255,255,.85)");
+    falloff.addColorStop(.45,"rgba(255,255,255,.58)");
+    falloff.addColorStop(.72,"rgba(255,255,255,.17)");
+    falloff.addColorStop(1,"rgba(255,255,255,0)");
+    brush.fillStyle = falloff;
+    brush.fillRect(0,0,64,64);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: new THREE.CanvasTexture(texture), transparent: true, depthWrite: false, toneMapped: false
+    }));
+    halo.scale.set(2.8,2.8,1);
+    skin.add(halo);
+    return skin;
+}
+
+function clearCubePulse() {
+    if (cubePulseSkin?.parent) cubePulseSkin.parent.remove(cubePulseSkin);
+}
+
+function pulseVisibleCube() {
+    if (backgroundInteractionBlocked() || renderer.getContext().isContextLost()) return;
+    const rect = backgroundCanvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    camera.updateMatrixWorld(true);
+    const visible = [];
+    let previous = null;
+    for (const cube of cubes) {
+        if (!cube.visible || capturedBackgroundCubes.has(cube) || cube === backgroundCubeDrag?.mesh) continue;
+        const p = cubePulsePoint.copy(cube.position).project(camera);
+        if (Math.abs(p.x)>=1 || Math.abs(p.y)>=1 || Math.abs(p.z)>=1) continue;
+        if (cube === lastPulsedCube) previous = cube;
+        else visible.push(cube);
+    }
+    // Only hit-test until we find a visible candidate; panels can cover the back layer.
+    function isExposed(mesh) {
+        if (foregroundContext && (mesh.layers.mask & (1 << FOREGROUND_CUBE_LAYER))) return true;
+        const p = cubePulsePoint.copy(mesh.position).project(camera);
+        return isBackgroundPointerTarget(document.elementFromPoint(
+            rect.left+(1+p.x)*rect.width/2,rect.top+(1-p.y)*rect.height/2));
+    }
+    let cube = null;
+    while (visible.length && !cube) {
+        const index = Math.floor(Math.random()*visible.length);
+        const candidate = visible[index];
+        visible[index] = visible[visible.length-1];
+        visible.pop();
+        if (isExposed(candidate)) cube = candidate;
+    }
+    if (!cube) {
+        if (!previous || !isExposed(previous)) return;
+        cube = previous;
+    }
+    if (!cubePulseSkin) cubePulseSkin = createCubePulseSkin();
+    clearCubePulse();
+    cubePulseSkin.layers.mask = cube.layers.mask;
+    cubePulseSkin.children[0].layers.mask = cube.layers.mask;
+    cube.add(cubePulseSkin);
+    lastPulsedCube = cube;
+    cubePulseStarted = null;
+}
+
+function paintCubePulse() {
+    const cube = cubePulseSkin?.parent;
+    if (!cube) return;
+    const now = performance.now();
+    if (cubePulseStarted === null) cubePulseStarted = now;
+    const age = now-cubePulseStarted;
+    if (age>=340 || capturedBackgroundCubes.has(cube) || cube === backgroundCubeDrag?.mesh) {
+        clearCubePulse();
+        return;
+    }
+    const remaining = 1-Math.max(0,age-42)/298;
+    cubePulseSkin.material.opacity = remaining*remaining;
+    cubePulseSkin.children[0].material.opacity = .85*remaining*remaining;
+}
+
 window.NewHorizonBackgroundCubes = Object.freeze({
+    pulseVisibleCube,
+    clearCubePulse,
     claimNearest: claimNearestBackgroundCubes,
+    releasePaperCube,
+    beforeRender(callback) {
+        backgroundFrameListeners.add(callback);
+        return () => backgroundFrameListeners.delete(callback);
+    },
     // Detached copies let another canvas use the same Three lighting pipeline
     // without exposing the background's live material, lights or renderer.
     getRenderingStyle() {
@@ -547,8 +702,10 @@ window.NewHorizonBackgroundCubes = Object.freeze({
         if (!document.hidden) renderBackgroundLayers();
     },
     getState(options = {}) {
+        const firstLease = activeBackgroundLease || activeBackgroundLeases.values().next().value;
         const state = {
             totalCount: cubes.length,
+            paperCount: paperCubes.length,
             backgroundCount: cubes.filter(mesh => capturedBackgroundCubes.get(mesh)?.originalLayer === BACKGROUND_CUBE_LAYER ||
                 (!capturedBackgroundCubes.has(mesh) && (mesh.layers.mask & (1 << BACKGROUND_CUBE_LAYER)) !== 0)).length,
             foregroundCount: cubes.filter(mesh => capturedBackgroundCubes.get(mesh)?.originalLayer === FOREGROUND_CUBE_LAYER ||
@@ -562,7 +719,7 @@ window.NewHorizonBackgroundCubes = Object.freeze({
                 screenVelocity: frozenCaptureArray([motion.x / motion.worldPerPixel, -motion.y / motion.worldPerPixel]),
                 acceleration: frozenCaptureArray(motion.acceleration)
             }))),
-            lease: activeBackgroundLease ? backgroundLeaseSnapshot(activeBackgroundLease) : null,
+            lease: firstLease ? backgroundLeaseSnapshot(firstLease) : null,
             drag: backgroundCubeDrag ? Object.freeze({
                 id: backgroundCubeDrag.id,
                 pointerType: backgroundCubeDrag.pointerType,
@@ -609,9 +766,13 @@ window.NewHorizonBackgroundCubes = Object.freeze({
 function prepareCapturedBackgroundLayer(layer) {
     for (const record of capturedBackgroundCubes.values()) {
         if (record.originalMaterial.color) record.material.color.copy(record.originalMaterial.color);
-        const layerOpacity = !foregroundContext || record.originalLayer === FOREGROUND_CUBE_LAYER
-            ? 1 : layer === FOREGROUND_CUBE_LAYER ? record.frontMix : 1 - record.frontMix;
-        record.material.opacity = record.opacity * layerOpacity * record.originalMaterial.opacity;
+        const alpha = record.opacity * record.originalMaterial.opacity;
+        const splitLayer = foregroundContext && (record.mesh.layers.mask & (1 << BACKGROUND_CUBE_LAYER)) !== 0;
+        const frontAlpha = alpha * record.frontMix;
+        // In source-over compositing the front copy hides part of the back copy.
+        // Compensate it so the layer transfer does not dim the cube halfway.
+        record.material.opacity = !splitLayer ? alpha : layer === FOREGROUND_CUBE_LAYER ? frontAlpha
+            : (alpha - frontAlpha) / Math.max(0.000001, 1 - frontAlpha);
         record.mesh.visible = record.visible && record.material.opacity > 0.0001;
     }
 }
@@ -1846,6 +2007,7 @@ document.addEventListener(
  * 保持与底层完全相同的灯光、材质、速度和相机投影。
  */
 function renderBackgroundLayers() {
+    paintCubePulse();
     if (foregroundContext) {
         if (renderer.getContext().isContextLost()) return;
         prepareCapturedBackgroundLayer(FOREGROUND_CUBE_LAYER);
@@ -1917,20 +2079,11 @@ function animate(
 
         const isBeingDragged = backgroundCubeDrag?.mesh === cube;
         if (!isBeingDragged) {
-            cube.position.x -= cube.userData.speedX * speedMultiplier;
-            cube.position.y -= cube.userData.speedY * speedMultiplier;
+            driftBackgroundCube(cube, speedMultiplier);
             updateBackgroundCubeThrow(cube, throwFrameSeconds, speedMultiplier);
         }
 
-        cube.rotation.x +=
-            cube.userData
-                .rotationSpeedX *
-            speedMultiplier;
-
-        cube.rotation.y +=
-            cube.userData
-                .rotationSpeedY *
-            speedMultiplier;
+        turnBackgroundCube(cube, speedMultiplier);
 
         const isOutsideHorizontalBoundary =
             cube.position.x <
@@ -1959,10 +2112,12 @@ function animate(
         }
     }
 
+    advancePaperCubes(speedMultiplier);
     updateBountyPosters(
         timestamp
     );
 
+    for (const update of backgroundFrameListeners) update(backgroundFrameAt, throwFrameSeconds);
     renderBackgroundLayers();
 }
 

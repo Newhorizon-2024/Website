@@ -1,3 +1,5 @@
+import { observeType } from "./text-type.js?v=26.11.19.3";
+
 /* 世界观触屏目录：标签跟随现有 Three.js 对象，不建立额外动画循环。 */
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -59,6 +61,7 @@ export function createWorldviewDirectoryLabels({
         text.textContent = name;
         button.appendChild(text);
         root.appendChild(button);
+        observeType(text);
 
         const line = document.createElementNS(SVG_NS, "line");
         line.setAttribute("vector-effect", "non-scaling-stroke");

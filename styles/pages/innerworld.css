@@ -9,11 +9,6 @@
     --innerworld-wide-width:
         1280px;
 
-    --innerworld-reveal-delay:
-        0ms;
-
-    --innerworld-reveal-duration:
-        900ms;
 
     background:
         transparent;
@@ -468,100 +463,6 @@
 
 
 /* ===========================
-   5. Scroll Reveal 文字
-=========================== */
-
-/*
- * 章节容器不再整体浮入。
- * 容器始终存在，具体文字由单词级进度控制。
- */
-.innerworld-chapter,
-.innerworld-testimony,
-.innerworld-ending {
-    opacity: 1;
-    transform: none;
-}
-
-/*
- * JS 自动生成的单词。
- */
-.innerworld-reveal-word {
-    --innerworld-word-blur: 10px;
-    --innerworld-word-opacity: 0.12;
-    --innerworld-word-shift: 10px;
-
-    display: inline;
-    filter:
-        blur(
-            var(--innerworld-word-blur)
-        );
-    opacity:
-        var(--innerworld-word-opacity);
-    transform:
-        translate3d(
-            0,
-            var(--innerworld-word-shift),
-            0
-        );
-    transition:
-        filter 90ms linear,
-        opacity 90ms linear,
-        transform 90ms linear;
-    will-change: auto;
-}
-
-.innerworld-reveal-word.is-word-animating {
-    will-change:
-        filter,
-        opacity,
-        transform;
-}
-
-/*
- * 保留拆分前后的普通空格。
- */
-.innerworld-reveal-space {
-    white-space: pre;
-}
-
-/*
- * 标题的模糊范围略小，
- * 避免大字号初始状态过于散乱。
- */
-.innerworld-title
-.innerworld-reveal-word,
-.innerworld-chapter-header
-.innerworld-reveal-word,
-.innerworld-testimony-header
-.innerworld-reveal-word,
-.innerworld-ending
-> h2
-.innerworld-reveal-word {
-    --innerworld-word-blur: 7px;
-    --innerworld-word-shift: 8px;
-}
-
-/*
- * 引文使用更缓慢的显现质感。
- */
-.innerworld-quote
-.innerworld-reveal-word {
-    --innerworld-word-opacity: 0.08;
-    --innerworld-word-blur: 9px;
-}
-
-/*
- * 已彻底清晰的词。
- * 实际过程仍由 JS 写入内联变量。
- */
-.innerworld-reveal-word.is-word-revealed {
-    --innerworld-word-blur: 0px;
-    --innerworld-word-opacity: 1;
-    --innerworld-word-shift: 0px;
-}
-
-
-/* ===========================
    6. 通用插图
 =========================== */
 
@@ -839,28 +740,6 @@
         absolute;
     z-index:
         -1;
-}
-
-/* 收束句 */
-.innerworld-conclusion-line {
-    color:
-        rgba(
-            255,
-            255,
-            255,
-            0.88
-        )
-        !important;
-    font-size:
-        clamp(
-            18px,
-            2vw,
-            26px
-        )
-        !important;
-    margin-top:
-        3em
-        !important;
 }
 
 
@@ -1355,10 +1234,4 @@
             none;
     }
 
-    .innerworld-reveal-word {
-        filter: none !important;
-        opacity: 1 !important;
-        transform: none !important;
-        transition: none !important;
-    }
 }

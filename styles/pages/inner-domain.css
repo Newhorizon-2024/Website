@@ -108,6 +108,17 @@
     height: 100%;
 }
 
+.inner-domain-cubes .domain-scan-room {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse 74% 75% at center, #000 48%, transparent 96%);
+}
+.inner-domain-cubes canvas:not(.domain-scan-room) { position: relative; }
+.inner-domain-cubes:focus-visible { outline: 1px solid #aaa; outline-offset: 3px; }
+.inner-domain-cubes:is([data-assembly="vortex"], [data-assembly="solid"]) { cursor: grab; }
+.inner-domain-cubes:is([data-assembly="vortex"], [data-assembly="solid"]):active { cursor: grabbing; }
+
 .inner-domain-lead .inner-domain-cubes-status {
     position: absolute;
     bottom: 0;

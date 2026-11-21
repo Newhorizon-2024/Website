@@ -249,8 +249,8 @@ function connectAudio(audio) {
             engine.setState({ reducedMotion: reduced.matches, pageVisible: true });
         } else if (layer) {
             layer.classList.remove("is-visible");
-            engine?.setState({ paused: true, reducedMotion: reduced.matches, pageVisible: !document.hidden });
-            if (document.hidden || reduced.matches) destroy();
+            engine?.suspend();
+            if (document.hidden) destroy();
             else if (hideTimer === null) hideTimer = setTimeout(destroy,550);
         }
     };

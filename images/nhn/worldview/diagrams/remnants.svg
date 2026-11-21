@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" role="img" aria-labelledby="title description">
+<title id="title">魔君残党的不同活动形式</title><desc id="description">三组彼此分离的痕迹，分别对应组织、内域和居民身份。</desc>
+<defs><linearGradient id="trace"><stop stop-color="#7f7876"/><stop offset=".6" stop-color="#eee4de"/><stop offset="1" stop-color="#958c89"/></linearGradient></defs>
+<g stroke="url(#trace)" fill="none" stroke-width="1.7" stroke-linejoin="round">
+ <path d="M30 220Q65 214 97 169T167 126M52 143L97 169l34 37m-34-37 16-44m14 14 22 20"/>
+ <path d="m212 203 66-43 72 24-62 45z M212 192l66-44 72 24 M212 181l66-45 72 24 M212 170l66-45 72 24"/>
+ <path d="M389 216Q430 201 456 163t83-58" stroke-dasharray="2 7"/>
+</g>
+<g fill="#c5bdb9"><circle cx="30" cy="220" r="3"/><circle cx="52" cy="143" r="5"/><circle cx="97" cy="169" r="8"/><circle cx="167" cy="126" r="4"/><circle cx="113" cy="125" r="3"/><circle cx="131" cy="206" r="4"/><circle cx="149" cy="159" r="3"/>
+ <path d="m442 170 12-8 13 5-12 9z"/><circle cx="399" cy="208" r="2"/><circle cx="495" cy="128" r="4"/><circle cx="536" cy="106" r="4"/></g>
+<g stroke="#aea4a0" fill="none"><circle cx="97" cy="169" r="17" opacity=".5"/><ellipse cx="454" cy="169" rx="46" ry="20" transform="rotate(-34 454 169)" opacity=".7"/></g>
+<style>@media (max-width:420px){text{font-size:28px}}</style>
+<g font-family="sans-serif" font-size="25" fill="#ddd6d1" text-anchor="middle"><text x="99" y="282">建立组织</text><text x="281" y="282">控制内域</text><text x="461" y="282">以居民身份活动</text></g>
+</svg>

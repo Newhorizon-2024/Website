@@ -53,6 +53,65 @@
     margin-bottom: 0;
 }
 
+.observer-relief {
+    width: min(1200px, 95vw);
+    margin: clamp(26px, 5vw, 66px) 0;
+    margin-left: calc(50% - min(600px, 47.5vw));
+}
+.observer-relief canvas {
+    display: block; width: 100%; height: clamp(245px, 42vw, 480px);
+    touch-action: pan-y; mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.observer-relief figcaption { color: #aaa; margin-top: .4em; font-size: .8em; text-align: center; }
+@media print, (forced-colors: active) { .observer-relief { display: none; } }
+
+/* “能量”档案：银灰流体沿正文两侧展开，独立于文字显现动画。 */
+#energy-section .worldview-article-copy {
+    position: relative;
+    isolation: isolate;
+}
+
+.energy-field {
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    user-select: none;
+    top: -1.5rem;
+    bottom: -1.5rem;
+    left: 50%;
+    width: min(calc(100% + 22vw), calc(100vw - 36px));
+    transform: translateX(-50%);
+    overflow: hidden;
+}
+
+.energy-field svg {
+    position: absolute;
+    display: block;
+    width: min(46%, 480px);
+    height: auto;
+    pointer-events: none;
+}
+
+.energy-field__physical { right: -2%; top: 7%; opacity: .86; }
+.energy-field__vital { left: -2%; bottom: 0; }
+.energy-vital-copy { mix-blend-mode: difference; } /* White lettering turns dark only over the lit fluid. */
+
+/* Touch readers have no hover. Color the source itself, including in reduced-motion mode. */
+@media (hover: none) and (pointer: coarse) {
+    .energy-field__vital #energy-vital-surface { fill: #fff; stroke: #fff; }
+}
+
+@media (max-width: 600px) {
+    .energy-field svg { width: 62%; }
+    .energy-field__physical { opacity: .72; }
+    .energy-field__physical { right: -8%; top: 19%; }
+    .energy-field__vital { left: -8%; bottom: 5%; }
+}
+
+@media print, (forced-colors: active) {
+    .energy-field { display: none; }
+}
+
 @media (max-width: 600px) {
     .worldview-article-copy {
         margin: 48px auto;

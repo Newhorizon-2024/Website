@@ -15,7 +15,7 @@
 
     <link
         rel="stylesheet"
-        href="styles/main.css?v=26.11.12.4"
+        href="styles/main.css?v=26.11.21.10"
     >
     <link rel="stylesheet" href="styles/components/another-world-portal.css?v=26.10.21.7">
 
@@ -209,40 +209,40 @@
     =========================== -->
 
     <div id="navbar">
-        <div
+        <button type="button"
             class="tab"
             data-target="home-section"
         >
             主页
-        </div>
+        </button>
 
-        <div
+        <button type="button"
             class="tab"
             data-target="bounty-board-section"
         >
             悬赏令
-        </div>
+        </button>
 
-        <div
+        <button type="button"
             class="tab"
             data-target="creators-section"
         >
             创作者们
-        </div>
+        </button>
 
-        <div
+        <button type="button"
             class="tab"
             data-target="nhn-section"
         >
             情报署
-        </div>
+        </button>
 
-        <div
+        <button type="button"
             class="tab"
             data-target="works-section"
         >
             作品
-        </div>
+        </button>
 
         <div id="nav-indicator"></div>
     </div>
@@ -259,6 +259,7 @@
             </span>
 
             <div id="progress-elastic-track">
+                <canvas id="track-waveform" aria-hidden="true"></canvas>
                 <input
                     id="progress-bar"
                     type="range"
@@ -372,46 +373,69 @@
                 aria-label="New Horizon 网站更新记录"
             >
                 <article class="website-update-entry">
+                    <time datetime="2026-11-21T15:18:52+08:00">
+                        2026年11月21日 15:18:52
+                    </time>
+
+                    <ul>
+                        <li>新增“能量”、“能量守恒定律”、“观察者效应”等内容的介绍，补充档案之间的关联导航；档案检索支持按名称、类别或年份查找。</li>
+                        <li>“事物”目录加入时钟效果和新的视觉动画。</li>
+                        <li>“场景”目录新增绕行的月球；为已开放的场景添加了进入效果。</li>
+                        <li>新增了“内域”方块阵列的更多效果表现。</li>
+                        <li>介绍内容的标题新增描边填充效果、正文滚动显现和时间线节点文字的效果。</li>
+                        <li>减轻了浏览“里世界”时的卡顿。</li>
+                        <li>统一目录的进场和退场动画，并为再次点击当前导航栏目加入了弹性反馈。</li>
+                        <li>基本重做了创作者模块；修复返回浏览器后重复播放捕获动画，以及没有图片描述时预览位置跳动的问题。</li>
+                        <li>现在作品与悬赏令预览的形变转场不再是单一角度。</li>
+                        <li>返回主页按钮改为可拉动的旋转方块，靠近一侧提示时，文字会逐渐淡出。</li>
+                        <li>作品动态新增四星评分、爱心点赞和气泡评论的图标交互。</li>
+                        <li>进度条可查看整首歌的强弱起伏，音量条随实时频谱产生运动。</li>
+                        <li>优化了歌单曲目的按钮表现。</li>
+                        <li>游戏曲新增包含特殊效果的《Reach for the Summit》。</li>
+                    </ul>
+                </article>
+
+                <article class="website-update-entry">
                     <time datetime="2026-11-12T20:19:54+08:00">
                         2026年11月12日 20:19:54
                     </time>
 
                     <ul>
-                        <li>更新了世界观介绍</li>
+                        <li>更新了世界观介绍。</li>
                     </ul>
                 </article>
 
                 <article class="website-update-entry">
-                    <time datetime="2026-10-23">
-                        2026年10月23日
+                    <time datetime="2026-10-23T00:43:16+08:00">
+                        2026年10月23日 00:43:16
                     </time>
 
                     <ul>
-                        <li>优化世界观目录拖动范围与移动端滑动，十字线延伸至全屏。</li>
-                        <li>统一“内域”交互方块与背景方块的光照渲染。</li>
+                        <li>优化世界观目录拖动范围与移动端滑动，十字线的效果延伸至全屏。</li>
+                        <li>“内域”交互方块能够与背景方块的光照渲染保持一致。</li>
                     </ul>
                 </article>
 
                 <article class="website-update-entry">
-                    <time datetime="2026-10-22">
-                        2026年10月22日
+                    <time datetime="2026-10-22T23:47:45+08:00">
+                        2026年10月22日 23:47:45
                     </time>
 
                     <ul>
-                        <li>背景方块支持惯性投掷，甩动后松手即可扔出，动量平滑衰减。</li>
-                        <li>优化按钮、目录及拖拽控件的防误选，正文与普通链接仍可复制。</li>
+                        <li>背景方块现在支持惯性投掷，甩动后松手即可扔出。</li>
+                        <li>优化按钮、目录及拖拽控件的防误选。</li>
                     </ul>
                 </article>
 
                 <article class="website-update-entry">
-                    <time datetime="2026-10-21">
-                        2026年10月21日
+                    <time datetime="2026-10-21T23:06:45+08:00">
+                        2026年10月21日 23:06:45
                     </time>
 
                     <ul>
                         <li>现在背景方块可以被拽动。</li>
                         <li>世界观目录模块新增“彩蛋”。</li>
-                        <li>细化了 Bossrush 双眼背景层级，减少对页面内容的遮挡。</li>
+                        <li>细化了 Bossrush 双眼背景层级。</li>
                     </ul>
                 </article>
 
@@ -459,7 +483,7 @@
                                 <li>优化了“事物”部件的错乱效果。</li>
                                 <li>优化了音量控件、进度条与歌单滚轮的表现。</li>
                                 <li>重做返回主页按钮。</li>
-                                <li>播放《Stained, Brutal Calamity》改变背景元素，暂停或切歌后退出。</li>
+                                <li>播放《Stained, Brutal Calamity》时添加了背景元素。</li>
                                 <li>统一首页面板宽度，优化后台动画暂停及减少动态效果适配。</li>
                             </ul>
                         </article>
@@ -535,7 +559,7 @@
                             </time>
 
                             <ul>
-                                <li>New Horizon 网站建立，上线首页、启动界面、音乐、语言切换与动态背景。</li>
+                                <li>New Horizon 网站建立，仓库部署首页、启动界面、音乐、语言切换与动态背景。</li>
                             </ul>
                         </article>
                     </div>
@@ -886,6 +910,16 @@
 
             <img
                 class="wanted-poster"
+                src="images/wanted/nightdust-wanted.png"
+                alt="NightDust"
+                width="1080"
+                height="1440"
+                decoding="async"
+                loading="lazy"
+            >
+
+            <img
+                class="wanted-poster"
                 src="images/wanted/omega-g-wanted.png"
                 alt="Omega"
                 width="5400"
@@ -999,6 +1033,7 @@
                 class="creator-card"
                 data-creator="adm_6322"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -1100,6 +1135,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 02 -->
@@ -1107,6 +1143,7 @@
                 class="creator-card"
                 data-creator="ast3r"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -1293,6 +1330,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 03 -->
@@ -1300,6 +1338,7 @@
                 class="creator-card"
                 data-creator="chclmii1"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -1401,6 +1440,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 04 -->
@@ -1408,6 +1448,7 @@
                 class="creator-card"
                 data-creator="chrislight"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -1509,6 +1550,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 05 -->
@@ -1516,6 +1558,7 @@
                 class="creator-card"
                 data-creator="cold_fronthk"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -1668,6 +1711,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 06 -->
@@ -1675,6 +1719,7 @@
                 class="creator-card"
                 data-creator="diamond_block"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -1759,6 +1804,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 07 -->
@@ -1766,6 +1812,7 @@
                 class="creator-card"
                 data-creator="l1nf_bl2e"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -1867,6 +1914,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 08 -->
@@ -1874,6 +1922,7 @@
                 class="creator-card"
                 data-creator="秋無聲緒"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -1975,6 +2024,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 09 -->
@@ -1982,6 +2032,7 @@
                 class="creator-card"
                 data-creator="mgal_lay"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -2066,6 +2117,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 10 -->
@@ -2073,6 +2125,7 @@
                 class="creator-card"
                 data-creator="sallet"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -2119,10 +2172,11 @@
 
                     <div class="creator-description">
                         <p>
-                            闲余之时制作了很多优质的线性动画，在与自我创作之间取得了良好的平衡。
+                            闲余之时制作了很多优质的动画，在与自我表达和创作之间取得了良好的平衡。
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 11 -->
@@ -2130,6 +2184,7 @@
                 class="creator-card"
                 data-creator="絲卡の緋落櫻"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -2197,6 +2252,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
 
             <!-- 创作者 12 -->
@@ -2204,6 +2260,7 @@
                 class="creator-card"
                 data-creator="twrkoinocap"
             >
+              <div class="creator-spread">
                 <div class="creator-identity">
                     <img
                         class="creator-avatar"
@@ -2390,6 +2447,7 @@
                         </p>
                     </div>
                 </div>
+              </div>
             </article>
         </div>
     </div>
@@ -2464,30 +2522,27 @@
         id="nhn-section"
         class="section"
     >
-        <img
-            class="nhn-logo"
-            src="images/nhn/new-horizon-news-logo-white.png"
-            alt="New Horizon News"
-            width="1316"
-            height="282"
-            decoding="async"
-            loading="lazy"
-        >
-
-        <h1>欢迎来到 新视界·情报署</h1>
-        <h1>New Horizon News!</h1>
-
-        <p>&nbsp;</p>
-
-        <p>
-            “在下是神秘的社长...我在这里记下了联动该网站的另一个宇宙《里世界》有关的信息，请按需寻找你想看到的东西吧！:P”
-        </p>
-
-        <p>&nbsp;</p>
+        <header class="nhn-masthead">
+            <div>
+                <img
+                    class="nhn-logo"
+                    src="images/nhn/new-horizon-news-logo-white.png"
+                    alt="New Horizon News"
+                    width="1316"
+                    height="282"
+                    decoding="async"
+                    loading="lazy"
+                >
+                <h1>欢迎来到 新视界·情报署</h1>
+                <p class="nhn-english" lang="en">New Horizon News!</p>
+            </div>
+            <blockquote>“在下是神秘的社长...我在这里记下了联动该网站的另一个宇宙《里世界》有关的信息，请按需寻找你想看到的东西吧！:P”</blockquote>
+        </header>
 
         <div class="accordion-menu">
             <button
                 class="accordion-menu-option"
+                aria-label="角色，尚未开放"
                 type="button"
             >
                 <img
@@ -2507,6 +2562,7 @@
 
             <button
                 class="accordion-menu-option"
+                aria-label="世界观，有关这个世界的记录"
                 type="button"
                 data-target="worldview-section"
             >
@@ -2527,6 +2583,7 @@
 
             <button
                 class="accordion-menu-option"
+                aria-label="篇章，历史上所发生的故事"
                 type="button"
                 data-target="timeline-section"
             >
@@ -2545,6 +2602,15 @@
                 </p>
             </button>
         </div>
+
+        <details class="nhn-archive-index" hidden>
+            <summary>档案检索</summary>
+            <div class="nhn-search-field">
+                <input type="search" aria-label="按名称、类别或年份检索档案" placeholder="名称、类别或年份，虽然档案现在真没多少。" autocomplete="off">
+                <span role="status" aria-live="polite"></span>
+            </div>
+            <nav class="nhn-index-results" aria-label="档案检索结果"></nav>
+        </details>
     </div>
 
     <!-- ===========================
@@ -2602,7 +2668,7 @@
     =========================== -->
 
     <section
-        id="innerworld-section"
+        id="innerworld-section" data-archive-article
         class="section innerworld-section"
         aria-labelledby="innerworld-title"
     >
@@ -2648,7 +2714,7 @@
                 </p>
 
                 <p>
-                    它并非另一个与现实毫无关联的宇宙，也不是凭空构筑的幻想。这里所存在的一切，都来自某个现实世界；只是当现实穿过意识、记忆与情绪之后，它原本客观的形态被重新解释，最终投射成了另一副模样。
+                    这里所存在的一切，都来自某个现实世界；现实穿过意识、记忆与情绪之后，它原本客观的形态被重新解释，最终投射成了另一副模样。
                 </p>
 
                 <p>
@@ -2669,7 +2735,7 @@
                 </div>
 
                 <figcaption>
-                    现实是客观的，而它的影子是主观的。
+                    客观的现实，主观的影子。
                 </figcaption>
             </figure>
 
@@ -2736,10 +2802,6 @@
                 <p>
                     这个世界拥有接近地球的重力。除此之外，它没有预设好的文明，没有完整的生态，也没有天然存在的意义。
                 </p>
-
-                <p>
-                    后来出现的一切，都是现实与意识在其上留下的痕迹。
-                </p>
             </div>
         </article>
 
@@ -2757,20 +2819,16 @@
                     02
                 </p>
 
-                <h2>为什么是灰色的？</h2>
+                <h2>这里为什么是灰色的？</h2>
             </header>
 
             <div class="innerworld-copy">
-                <p class="innerworld-lead">
-                    因为世界从来不是非黑即白。
-                </p>
-
                 <p>
                     生活可以美好，也可以糟糕；人能够善良，也能够残忍。希望与绝望、正确与错误、自由与束缚，并不会始终处于彼此分离的两端。
                 </p>
 
                 <p>
-                    它们时常纠缠在一起。
+                    它们时常纠缠在一起，试图告诉你世界并不是非黑即白。
                 </p>
 
                 <p>
@@ -2778,25 +2836,15 @@
                 </p>
 
                 <p class="innerworld-emphasis">
-                    这让灰色不是黑与白的平均值。
+                    这让灰色反而不是某种黑与白的平均值。
                 </p>
-
-                <p></p>
 
                 <p>
                     它更像是无数相互冲突的结果叠加之后，留下的最终颜色。
                 </p>
 
                 <p>
-                    在里世界中，魔君也许正是使这片灰色不断向天平一端倾斜的染料之一。
-                </p>
-
-                <p class="innerworld-conclusion-line">
-                    而灰色意味着这种极端的黑色尚未完成。
-                </p>
-
-                <p>
-                    看上去世界似乎仍有被重新定义的余地。
+                    在里世界中，魔君也许正是使这片灰色不断向天平一端倾斜极端的染料。
                 </p>
             </div>
         </article>
@@ -2903,12 +2951,6 @@
                 <p class="innerworld-emphasis">
                     它们更像是现实经过意识折射后，形成的人格化投影。
                 </p>
-
-                <p></p>
-
-                <p>
-                    一部分属于原型，一部分属于创造者，还有一部分，只属于它们自己。
-                </p>
             </div>
         </article>
 
@@ -2926,11 +2968,11 @@
 
             <div class="innerworld-copy">
                 <p>
-                    让那些无法直接被看见的事物，拥有可以被观察的形状。
+                    无法直接被看见的事物，拥有了可以被观察的形状。
                 </p>
 
                 <p>
-                    现实中的冲突在这里成为战争，情绪成为天气，记忆成为地貌，思想成为角色，而无法摆脱的命运，则成为维系世界运行的法则。
+                    现实中的冲突在这里成为战争，情绪成为天气，记忆成为地貌，思想成为角色，而无法摆脱的命运，则可能成为了维系世界运行的养料。
                 </p>
 
                 <p>
@@ -2938,11 +2980,11 @@
                 </p>
 
                 <p class="innerworld-ending-statement">
-                    这场足以颠覆世界于巨变的战斗
+                    “这场足以颠覆世界于巨变的战斗”
                 </p>
 
                 <p class="innerworld-ending-answer">
-                    将被载入史册并为人千古传颂
+                    “将被载入史册并为人千古传颂”
                 </p>
             </div>
         </footer>
@@ -2965,7 +3007,7 @@
     =========================== -->
 
     <section
-        id="power-system-section"
+        id="power-system-section" data-archive-article
         class="section power-system-section"
         aria-labelledby="power-system-title"
     >
@@ -2982,7 +3024,7 @@
             </p>
 
             <h1 id="power-system-title">
-                战斗力
+                “战斗力”
             </h1>
 
             <div
@@ -3017,7 +3059,6 @@
 
             <div
                 class="power-origin-copy"
-                data-power-reveal="right"
             >
                 <p>
                     在里世界中，由于每一位个体意识不仅决定了其自己的形象、
@@ -3034,7 +3075,6 @@
 
         <section
             class="power-definition"
-            data-power-reveal
             aria-label="战斗力的定义"
         >
             <p>
@@ -3059,7 +3099,6 @@
 
         <section
             class="power-transition-copy"
-            data-power-reveal
         >
             <p>
                 同样的，这等能力的成长方式也十分有趣。
@@ -3097,7 +3136,6 @@
 
         <section
             class="power-growth-copy"
-            data-power-reveal
         >
             <p>
                 首先是最基础的增长方式——当意识随着时间推移，
@@ -3150,7 +3188,6 @@
 
             <div
                 class="power-form-copy"
-                data-power-reveal
             >
                 <p>
                     就像肌肉经过一再训练，变得更加强劲。
@@ -3189,7 +3226,6 @@
 
                 <div
                     class="power-recovery-copy"
-                    data-power-reveal="right"
                 >
                     <p>
                         尝试从这种状态中得到恢复时，
@@ -3216,7 +3252,6 @@
 
                 <div
                     class="power-recovery-copy"
-                    data-power-reveal="left"
                 >
                     <p>
                         如同伤口结痂，
@@ -3233,7 +3268,6 @@
 
         <section
             class="power-conclusion"
-            data-power-reveal
         >
             <p>
                 目前能够发现的是，战力的增长还是非常不稳定。
@@ -3295,25 +3329,31 @@
                 class="things-wheel-stage"
                 aria-hidden="true"
             >
-                <div class="things-shape-blur">
-                    <span
-                        class="things-shape-layer
-                        things-shape-layer-a"
-                    ></span>
-
-                    <span
-                        class="things-shape-layer
-                        things-shape-layer-b"
-                    ></span>
-
-                    <span
-                        class="things-shape-layer
-                        things-shape-layer-c"
-                    ></span>
+                <div class="things-shape-blur"></div>
+                <div class="things-wheel-ring">
+                    <svg class="things-orbit-lines" aria-hidden="true" viewBox="-120 -120 240 240">
+                        <defs>
+                            <linearGradient id="things-orbit-silver" x1="0" y1="0" x2=".9" y2="1">
+                                <stop stop-color="#dddddf" stop-opacity=".12"/>
+                                <stop offset=".49" stop-color="#ccccd0" stop-opacity=".22"/>
+                                <stop offset="1" stop-color="#ffffff" stop-opacity=".72"/>
+                            </linearGradient>
+                            <linearGradient id="things-clock-silver" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-47">
+                                <stop offset="0" stop-color="#c8cbd0" stop-opacity=".12"/>
+                                <stop offset=".47" stop-color="#c8cbd0" stop-opacity=".33"/>
+                                <stop offset="1" stop-color="#e3e5e8" stop-opacity=".65"/>
+                            </linearGradient>
+                        </defs>
+                        <g class="things-clock-hands">
+                            <line class="things-clock-hour" x1="0" y1="0" x2="0" y2="-49"/>
+                            <line class="things-clock-minute" x1="0" y1="0" x2="0" y2="-71"/>
+                            <line class="things-clock-second" x1="0" y1="0" x2="0" y2="-89"/>
+                        </g>
+                        <path class="things-orbit-echo"/>
+                        <path class="things-orbit-contour"/>
+                        <path class="things-orbit-glint"/>
+                    </svg>
                 </div>
-
-                <div class="things-wheel-ring"></div>
-                <div class="things-wheel-axis"></div>
             </div>
 
             <!-- 圆周选项 -->
@@ -3327,7 +3367,7 @@
                     aria-selected="true"
                     tabindex="0"
                 >
-                    <span>Bossrush</span>
+                    <span>“Bossrush”</span>
                 </button>
 
                 <button
@@ -3339,7 +3379,7 @@
                     aria-selected="false"
                     tabindex="-1"
                 >
-                    <span>内域</span>
+                    <span>“内域”</span>
                 </button>
 
                 <button
@@ -3351,7 +3391,7 @@
                     aria-selected="false"
                     tabindex="-1"
                 >
-                    <span>魔君</span>
+                    <span>“魔君”</span>
                 </button>
 
                 <button
@@ -3363,7 +3403,7 @@
                     aria-selected="false"
                     tabindex="-1"
                 >
-                    <span>君主</span>
+                    <span>“君主”</span>
                 </button>
 
                 <button
@@ -3375,7 +3415,7 @@
                     aria-selected="false"
                     tabindex="-1"
                 >
-                    <span>Mineash</span>
+                    <span>“Mineash”</span>
                 </button>
 
                 <button
@@ -3387,7 +3427,7 @@
                     aria-selected="false"
                     tabindex="-1"
                 >
-                    <span>悬赏令</span>
+                    <span>“悬赏令”</span>
                 </button>
 
                 <button
@@ -3399,7 +3439,7 @@
                     aria-selected="false"
                     tabindex="-1"
                 >
-                    <span>能量守恒定律</span>
+                    <span>“能量守恒定律”</span>
                 </button>
 
                 <button
@@ -3411,7 +3451,19 @@
                     aria-selected="false"
                     tabindex="-1"
                 >
-                    <span>观察者效应</span>
+                    <span>“观察者效应”</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="things-wheel-option"
+                    data-things-id="energy"
+                    data-section-id="energy-section"
+                    role="option"
+                    aria-selected="false"
+                    tabindex="-1"
+                >
+                    <span>“能量”</span>
                 </button>
             </div>
 
@@ -3419,10 +3471,10 @@
             <button
                 type="button"
                 class="things-wheel-center"
-                aria-label="打开Bossrush档案"
+                aria-label="打开“Bossrush”档案"
             >
                 <span class="things-wheel-index">
-                    01 / 08
+                    01 / 09
                 </span>
 
                 <canvas
@@ -3434,7 +3486,7 @@
                 <span
                     class="things-wheel-current-accessible"
                 >
-                    Bossrush
+                    “Bossrush”
                 </span>
 
                 <span class="things-wheel-status">
@@ -3460,7 +3512,7 @@
     =========================== -->
 
     <section
-        id="bossrush-section"
+        id="bossrush-section" data-archive-article
         class="section bossrush-page"
         aria-labelledby="bossrush-page-title"
     >
@@ -3482,12 +3534,12 @@
                     INNERWORLD · CHALLENGE PROTOCOL
                 </p>
 
-                <h1 id="bossrush-page-title">Bossrush</h1>
+                <h1 id="bossrush-page-title">“Bossrush”</h1>
             </div>
         </header>
 
         <article class="bossrush-page-content">
-            <section class="bossrush-page-copy bossrush-page-intro" data-bossrush-reveal>
+            <section class="bossrush-page-copy bossrush-page-intro">
                 <p>
                     第一次魔君登录结束后，为防范下一次可能到来的魔君登录，又亦或者未知的危险，并使后来者能够提前获得面对强大个体时的经验，一批先驱共同建立了名为“Bossrush”的挑战机制，仅限于登录过“新世界”的人员使用。
                 </p>
@@ -3511,7 +3563,7 @@
                 <figcaption>SUMMONING OBJECT</figcaption>
             </figure>
 
-            <section class="bossrush-page-copy" data-bossrush-reveal>
+            <section class="bossrush-page-copy">
                 <p>
                     召唤物被使用后，系统会将挑战者当前所处的场景视为战斗场地，并根据环境与即将发生的挑战，对周围空间进行必要的检定与调整。
                 </p>
@@ -3535,7 +3587,7 @@
                 <figcaption>INNERWORLD BOSSRUSH · ACTIVE FIELD</figcaption>
             </figure>
 
-            <section class="bossrush-page-copy" data-bossrush-reveal>
+            <section class="bossrush-page-copy">
                 <p>
                     随后，与召唤物上相同的一双白色眼睛会出现在天空之中，凝视整个战斗场地。这也成为了Bossrush开始时最具代表性的现象。
                 </p>
@@ -3560,7 +3612,7 @@
                         >
                     </figure>
 
-                    <div class="bossrush-page-copy bossrush-page-poster-copy" data-bossrush-reveal>
+                    <div class="bossrush-page-copy bossrush-page-poster-copy">
                         <p>
                             Bossrush中的被挑战者主要来自先驱与后来创造者所留下的人物记录，也可以来自挑战者自身所拟想的其他人物。
                         </p>
@@ -3570,7 +3622,7 @@
                         </p>
 
                         <p>
-                            分身并不是被记录者本人。
+                            一般情况下，分身不是被记录者本人。
                         </p>
 
                         <p>
@@ -3580,7 +3632,7 @@
                 </div>
             </section>
 
-            <section class="bossrush-page-copy" data-bossrush-reveal>
+            <section class="bossrush-page-copy">
                 <p>
                     同时会为参与者赋予一次用于此次挑战的生命，使这场对抗能够按照面对“本体”的标准进行，而无需真正承担永久死亡的结果。
                 </p>
@@ -3590,7 +3642,7 @@
                 </p>
 
                 <p>
-                    因此，Bossrush所模拟的不仅限于肢体冲突的战斗。根据被挑战者本身的性质，挑战也可能表现为精神向的形式。
+                    Bossrush所模拟的不仅限于肢体冲突的战斗。根据被挑战者本身的性质，挑战也可能表现为精神向的形式。
                 </p>
 
                 <p>
@@ -3633,7 +3685,7 @@
     =========================== -->
 
     <section
-        id="inner-domain-section"
+        id="inner-domain-section" data-archive-article
         class="section inner-domain-section"
         aria-labelledby="inner-domain-title"
     >
@@ -3642,23 +3694,23 @@
                 INNERWORLD · SPATIAL DOMAIN
             </p>
 
-            <h1 id="inner-domain-title">内域</h1>
+            <h1 id="inner-domain-title">“内域”</h1>
 
             <p class="inner-domain-title-en">Inner Domain</p>
         </header>
 
         <article class="inner-domain-content">
-            <section class="inner-domain-lead" data-inner-domain-reveal>
+            <section class="inner-domain-lead">
                 <p>
                     当一名或多名意识做好了充足的准备，他们便有可能创造出一片受自己控制，并能够长期存在、持续运营的场景。这些由意识建立并拥有独立空间与规则的区域，被称为“内域”。
                 </p>
-                <div id="inner-domain-cubes" class="inner-domain-cubes" role="group" aria-label="内域方块：背景方块逐一汇入，移动指针或轻触产生涟漪">
+                <div id="inner-domain-cubes" class="inner-domain-cubes" role="button" tabindex="0" aria-label="内域方块：点按三次或按三次回车聚合。旋风开始后即可拖动或按方向键旋转视角，点按成形的方块可产生涟漪。">
                     <canvas aria-hidden="true"></canvas>
                     <p class="inner-domain-cubes-status" hidden></p>
                 </div>
             </section>
 
-            <section class="inner-domain-copy" data-inner-domain-reveal>
+            <section class="inner-domain-copy">
                 <p>
                     内域的规模与用途并不固定。它可以是一处由单独意识创造的小型私人空间，也可以在漫长的发展中不断扩张，由众多创造者共同构成规模庞大的公共场所。
                 </p>
@@ -3672,7 +3724,7 @@
                 </p>
             </section>
 
-            <section class="inner-domain-principle" data-inner-domain-reveal>
+            <section class="inner-domain-principle">
                 <div class="inner-domain-heading">
                     <span>OWNERSHIP</span>
                 </div>
@@ -3684,7 +3736,7 @@
                 </div>
             </section>
 
-            <section class="inner-domain-closing" data-inner-domain-reveal>
+            <section class="inner-domain-closing">
                 <p>
                     随着里世界社会的发展，内域也逐渐不再只是意识创造出的“场景”。
                 </p>
@@ -3705,18 +3757,18 @@
     =========================== -->
 
     <section
-        id="mineash-section"
+        id="mineash-section" data-archive-article
         class="section mineash-section"
         aria-labelledby="mineash-title"
     >
         <header class="mineash-header" data-mineash-reveal>
             <p class="mineash-eyebrow">INNERWORLD · COMMON CURRENCY</p>
-            <h1 id="mineash-title">米内什</h1>
+            <h1 id="mineash-title">“米内什”</h1>
             <p class="mineash-title-en">Mineash</p>
         </header>
 
         <article class="mineash-content">
-            <section class="mineash-lead" data-mineash-reveal>
+            <section class="mineash-lead">
                 <p>
                     Mineash是从里世界最初的交易体系中逐渐演变而来的通用货币，也是如今连接各个内域经济活动的主要结算媒介。
                 </p>
@@ -3735,7 +3787,7 @@
                 <figcaption>BANKNOTES AND COINS · MINEASH</figcaption>
             </figure>
 
-            <section class="mineash-copy" data-mineash-reveal>
+            <section class="mineash-copy">
                 <p>
                     在极早期的里世界，活跃的意识数量十分有限。人们可以直接交换彼此拥有的事物，相互赠予，又或者依赖意识本身的创造能力满足需求，因此并不存在建立统一货币体系的迫切需要。
                 </p>
@@ -3767,7 +3819,7 @@
                     <figcaption>SYSTEM OF MINEASH</figcaption>
                 </figure>
 
-                <div class="mineash-system-copy" data-mineash-reveal>
+                <div class="mineash-system-copy">
                     <div class="mineash-heading">
                         <span>ISSUANCE & RECOGNITION</span>
                     </div>
@@ -3784,7 +3836,7 @@
                 </div>
             </section>
 
-            <section class="mineash-settlement" data-mineash-reveal>
+            <section class="mineash-settlement">
                 <div class="mineash-heading">
                     <span>SETTLEMENT</span>
                 </div>
@@ -3829,7 +3881,7 @@
             </h1>
 
             <p class="scenes-description">
-                并非静止的背景。
+                其名曰背景。
             </p>
         </header>
 
@@ -4031,6 +4083,34 @@
                         “大航路”
                     </span>
                 </button>
+
+                <!-- 十二向日 -->
+                <button
+                    type="button"
+                    class="scene-node"
+                    data-scene-id="twelve-suns"
+                    data-scene-name="“十二向日”"
+                    data-latitude="47.82575"
+                    data-longitude="88.1291666667"
+                    data-section-id=""
+                    aria-label="选择十二向日"
+                >
+                    <span class="scene-node-marker">
+                        <img
+                            src="images/nhn/characters/unknown/unknown-not-found.png"
+                            alt=""
+                            draggable="false"
+                            width="2560"
+                            height="2560"
+                            decoding="async"
+                            loading="lazy"
+                        >
+                    </span>
+
+                    <span class="scene-node-name">
+                        “十二向日”
+                    </span>
+                </button>
             </div>
 
 
@@ -4044,7 +4124,7 @@
                 aria-label="打开当前场景"
             >
                 <span class="scenes-current-index">
-                    01 / 05
+                    01 / 07
                 </span>
 
                 <span class="scenes-current-name">
@@ -4092,7 +4172,7 @@
 =========================== -->
 
 <section
-    id="colosseum-section"
+    id="colosseum-section" data-archive-article
     class="section colosseum-section"
     aria-labelledby="colosseum-title"
 >
@@ -4163,7 +4243,6 @@
 
     <section
         class="colosseum-intro colosseum-text-block"
-        data-colosseum-reveal
     >
         <p>
             “罗马斗兽场”是里世界中一处历史悠久的大型公共<strong><a
@@ -4207,7 +4286,6 @@
     <section class="colosseum-history">
         <div
             class="colosseum-text-block"
-            data-colosseum-reveal
         >
             <p>
                 建筑作者
@@ -4223,7 +4301,6 @@
 
         <div
             class="colosseum-text-block"
-            data-colosseum-reveal
         >
             <p>
                 创造者赋予了该内域特殊的性质，使参与者能够在受到保护的环境中体验外界难以实现的竞技活动。
@@ -4283,7 +4360,6 @@
 
         <div
             class="colosseum-text-block"
-            data-colosseum-reveal
         >
             <p>
                 “罗马斗兽场”整体围绕中央竞技区域建立，
@@ -4294,7 +4370,6 @@
         <div class="colosseum-levels">
             <article
                 class="colosseum-level"
-                data-colosseum-reveal="left"
             >
                 <span class="colosseum-level-index">
                     UPPER
@@ -4312,7 +4387,6 @@
 
             <article
                 class="colosseum-level"
-                data-colosseum-reveal="right"
             >
                 <span class="colosseum-level-index">
                     LOWER
@@ -4367,7 +4441,6 @@
 
     <section
         class="colosseum-text-block colosseum-access-copy"
-        data-colosseum-reveal
     >
         <p>
             由于“罗马斗兽场”本身属于内域，
@@ -4401,7 +4474,6 @@
 
         <div
             class="colosseum-text-block"
-            data-colosseum-reveal
         >
             <p>
                 整个建筑的中心及之下都为竞技场的延伸。
@@ -4445,7 +4517,6 @@
 
     <section
         class="colosseum-text-block"
-        data-colosseum-reveal
     >
         <p>
             不同赛事举行时，竞技场的环境、设施乃至部分空间条件，
@@ -4485,7 +4556,6 @@
 
             <div
                 class="colosseum-server-copy"
-                data-colosseum-reveal
             >
                 <p>
                     为了容纳来自不同地域的大量意识同时参与活动，
@@ -4498,8 +4568,8 @@
                 </p>
 
                 <p>
-                    因此，即使大量意识在同一时间进入斗兽场，
-                    也不意味着所有人都会出现在完全相同的场景之中。
+                    所以即使大量意识在同一时间进入斗兽场，
+                    所有人不一定都会出现在相同的场景之中。
                 </p>
 
                 <p>
@@ -4544,7 +4614,6 @@
 
         <article
             class="colosseum-game"
-            data-colosseum-reveal
         >
             <div class="colosseum-game-index">
                 01
@@ -4575,7 +4644,6 @@
 
         <article
             class="colosseum-game"
-            data-colosseum-reveal
         >
             <div class="colosseum-game-index">
                 02
@@ -4606,7 +4674,6 @@
 
         <article
             class="colosseum-game"
-            data-colosseum-reveal
         >
             <div class="colosseum-game-index">
                 03
@@ -4655,7 +4722,6 @@
 
         <div
             class="colosseum-text-block"
-            data-colosseum-reveal
         >
             <p>
                 经过长期发展，
@@ -4672,7 +4738,6 @@
 
         <div
             class="colosseum-currency"
-            data-colosseum-reveal
         >
             <span>
                 SETTLEMENT
@@ -4728,7 +4793,7 @@
             </h1>
 
             <p class="organizations-description">
-                个体因共同意志而汇聚。
+                汇聚。
             </p>
         </header>
 
@@ -4804,7 +4869,7 @@
                     "
                     data-organization-id="grays"
                     data-organization-name="Grays"
-                    data-section-id=""
+                    data-section-id="grays-section"
                     role="option"
                     aria-selected="true"
                     tabindex="0"
@@ -5161,8 +5226,8 @@
 
             <button
                 type="button"
-                class="organizations-current is-unavailable"
-                aria-label="Grays 尚未开放"
+                class="organizations-current"
+                aria-label="打开Grays档案"
             >
                 <span class="organizations-current-index">
                     01 / 03
@@ -5173,7 +5238,7 @@
                 </span>
 
                 <span class="organizations-current-status">
-                    尚未开放
+                    进入档案
                 </span>
             </button>
 
@@ -5216,7 +5281,7 @@
     =========================== -->
 
     <section
-        id="newworld-section"
+        id="newworld-section" data-archive-article
         class="section newworld-section"
         aria-labelledby="newworld-title"
     >
@@ -5233,7 +5298,7 @@
             </p>
 
             <h1 id="newworld-title">
-                新世界
+                “新世界”
             </h1>
 
             <p class="newworld-subtitle">
@@ -5256,7 +5321,6 @@
                 newworld-copy
                 newworld-copy-before-gallery
             "
-            data-newworld-reveal
         >
             <p>
                 这个世界由 Grays 的一名领袖所造，
@@ -5313,7 +5377,6 @@
                 newworld-copy
                 newworld-copy-after-gallery
             "
-            data-newworld-reveal
         >
             <p>
                 目前这里聚集了部分与众不同的意识，
@@ -5322,7 +5385,7 @@
 
             <p>
                 里世界少有的强者也守护在这里，
-                魔君残党们因而不敢贸然来犯。
+                <a class="inline-section-link bold-text" href="#demon-remnants-section" data-section-link="demon-remnants-section">魔君残党</a>因而不敢贸然来犯。
             </p>
         </div>
 
@@ -5334,7 +5397,6 @@
         <article class="newworld-content">
             <div
                 class="newworld-statement"
-                data-newworld-reveal
             >
                 <span
                     class="newworld-statement-index"
@@ -5402,7 +5464,7 @@
                     <div class="timeline-dot"></div>
 
                     <p class="timeline-text">
-                        <span>去月球</span>
+                        <span>“去月球”</span>
                         <span class="timeline-event-en" lang="en">To the Moon</span>
                     </p>
                 </div>
@@ -5414,7 +5476,7 @@
                     <div class="timeline-dot"></div>
 
                     <p class="timeline-text">
-                        <span>世蛛网大爆发</span>
+                        <span>“世蛛网大爆发”</span>
                         <span class="timeline-event-en" lang="en">The Worldweb Explosion</span>
                     </p>
                 </div>
@@ -5426,7 +5488,7 @@
                     <div class="timeline-dot"></div>
 
                     <p class="timeline-text">
-                        <span>灾疫</span>
+                        <span>“灾疫”</span>
                         <span class="timeline-event-en" lang="en">The Plague</span>
                     </p>
                 </div>
@@ -5438,7 +5500,7 @@
                     <div class="timeline-dot"></div>
 
                     <p class="timeline-text">
-                        <span>第一次魔君登录</span>
+                        <span>“第一次魔君登录”</span>
                         <span class="timeline-event-en" lang="en">The Ruler's First Login</span>
                     </p>
                 </div>
@@ -5463,7 +5525,7 @@
                 id="event-detail-1"
                 class="timeline-detail"
             >
-                <h1>去月球</h1>
+                <h1>“去月球”</h1>
                 <p class="timeline-detail-en" lang="en">To the Moon</p>
                 <h2>1969年</h2>
 
@@ -5481,7 +5543,7 @@
                 id="event-detail-2"
                 class="timeline-detail"
             >
-                <h1>世蛛网大爆发</h1>
+                <h1>“世蛛网大爆发”</h1>
                 <p class="timeline-detail-en" lang="en">The Worldweb Explosion</p>
                 <h2>2007年</h2>
 
@@ -5499,7 +5561,7 @@
                 id="event-detail-3"
                 class="timeline-detail"
             >
-                <h1>灾疫</h1>
+                <h1>“灾疫”</h1>
                 <p class="timeline-detail-en" lang="en">The Plague</p>
                 <h2>2019年12月</h2>
 
@@ -5521,7 +5583,7 @@
                 id="event-detail-4"
                 class="timeline-detail"
             >
-                <h1>第一次魔君登录</h1>
+                <h1>“第一次魔君登录”</h1>
                 <p class="timeline-detail-en" lang="en">The Ruler's First Login</p>
                 <h2>2025年2月</h2>
 
@@ -5567,7 +5629,7 @@
 
         <div class="works-feed">
 
-            <article class="work-post">
+            <article class="work-post" data-work-id="ast3r-picture9">
                 <header class="work-post-author">
                     <img
                         class="work-post-avatar"
@@ -5617,7 +5679,7 @@
                     <button
                         class="work-post-stat"
                         type="button"
-                        data-stat="comment"
+                        data-stat="like"
                         data-min="100"
                         data-max="1000"
                     >
@@ -5656,7 +5718,7 @@
                 </footer>
             </article>
 
-            <article class="work-post">
+            <article class="work-post" data-work-id="絲卡の緋落櫻-picture1">
                 <header class="work-post-author">
                     <img
                         class="work-post-avatar"
@@ -5706,7 +5768,7 @@
                     <button
                         class="work-post-stat"
                         type="button"
-                        data-stat="comment"
+                        data-stat="like"
                         data-min="100"
                         data-max="1000"
                     >
@@ -5745,7 +5807,7 @@
                 </footer>
             </article>
 
-            <article class="work-post">
+            <article class="work-post" data-work-id="twrkoinocap-picture1">
                 <header class="work-post-author">
                     <img
                         class="work-post-avatar"
@@ -5795,7 +5857,7 @@
                     <button
                         class="work-post-stat"
                         type="button"
-                        data-stat="comment"
+                        data-stat="like"
                         data-min="100"
                         data-max="1000"
                     >
@@ -5834,7 +5896,7 @@
                 </footer>
             </article>
 
-            <article class="work-post">
+            <article class="work-post" data-work-id="秋無聲緒-picture1">
                 <header class="work-post-author">
                     <img
                         class="work-post-avatar"
@@ -5884,7 +5946,7 @@
                     <button
                         class="work-post-stat"
                         type="button"
-                        data-stat="comment"
+                        data-stat="like"
                         data-min="100"
                         data-max="1000"
                     >
@@ -5923,7 +5985,7 @@
                 </footer>
             </article>
 
-            <article class="work-post">
+            <article class="work-post" data-work-id="d1arn0ud_13lock-picture1">
                 <header class="work-post-author">
                     <img
                         class="work-post-avatar"
@@ -5973,7 +6035,7 @@
                     <button
                         class="work-post-stat"
                         type="button"
-                        data-stat="comment"
+                        data-stat="like"
                         data-min="100"
                         data-max="1000"
                     >
@@ -6012,7 +6074,7 @@
                 </footer>
             </article>
 
-            <article class="work-post">
+            <article class="work-post" data-work-id="mgal_lay-picture2">
                 <header class="work-post-author">
                     <img
                         class="work-post-avatar"
@@ -6062,7 +6124,7 @@
                     <button
                         class="work-post-stat"
                         type="button"
-                        data-stat="comment"
+                        data-stat="like"
                         data-min="100"
                         data-max="1000"
                     >
@@ -6101,7 +6163,7 @@
                 </footer>
             </article>
 
-            <article class="work-post">
+            <article class="work-post" data-work-id="l1nf_bl2e-picture1">
                 <header class="work-post-author">
                     <img
                         class="work-post-avatar"
@@ -6151,7 +6213,7 @@
                     <button
                         class="work-post-stat"
                         type="button"
-                        data-stat="comment"
+                        data-stat="like"
                         data-min="100"
                         data-max="1000"
                     >
@@ -6196,80 +6258,67 @@
          悬赏令说明区块
     =========================== -->
 
-    <div
-        id="wanted-info-section"
-        class="section"
-    >
-        <h1>悬赏令</h1>
-
-        <p>
-            这里所展示的悬赏令来自《里世界》的世界观设定。
-        </p>
-
-        <p>
-            最初的设计目的，是一种叙事角色手法之一。
-        </p>
-
-        <p>&nbsp;</p>
-
-        <p>
-            它的原始功能是：标记悬赏令中该角色在里世界中的重要性级别，同时体现角色在剧情中的关键作用。
-        </p>
-
-        <p>
-            其通缉方试图通过以
-            <a
-                class="go-to-the-ruler inline-section-link"
-                href="#the-ruler-info-section"
-                data-section-link="the-ruler-info-section"
-            >
-                魔君
-            </a>
-            视角来拟定该角色的悬赏金数额，单位为世界观特有的交易货币
-            <a
-                class="bold-text inline-section-link"
-                href="#mineash-section"
-                data-section-link="mineash-section"
-            >
-                Mineash
-            </a>
-            。
-        </p>
-
-        <p>
-            但是据情报署社长所述……他本人只是参考了货币而不负责真的会发放它们。
-        </p>
-
-        <p>
-            总的来说，悬赏令最初不是为了“通缉”，而是为了强调角色在世界中的存在感与影响力。
-        </p>
-
-        <p>&nbsp;</p>
-
-        <p>
-            同时在实际制作中，悬赏令演变成一种艺术加工后的角色海报，随着普及，它逐渐成为了社区内创作者们展示自己原创角色的一种方式。
-        </p>
-
-        <p>
-            并以“悬赏令”形式包装其角色形象，赏金数额可能取自它们创作者相关平台的账号ID，化为了一种“角色 × 创作者”的联动符号
-        </p>
-
-        <p>&nbsp;</p>
-
-        <p>
-            因此，悬赏令同时具有叙事意义与创作意义：
-        </p>
-
-        <p>
-            它既是世界观中的角色档案，也是现实中的角色海报。
-        </p>
-
-        <p>
-            这两者共同构成了悬赏令的完整概念。
-        </p>
-
-        <p>&nbsp;</p>
-
+    <div id="wanted-info-section" data-archive-article class="section worldview-article-section nhn-dossier" aria-labelledby="wanted-info-section-title">
+        <header class="worldview-article-header">
+            <h1 id="wanted-info-section-title">“悬赏令”</h1>
+            <p class="worldview-article-title-en" lang="en">Wanted</p>
+            <p class="archive-lead">
+                这里所展示的悬赏令来自《里世界》的世界观设定。
+            </p>
+        </header>
+        <div class="worldview-article-copy">
+            <div class="worldview-article-group">
+                <p>
+                    最初的设计目的，是一种叙事角色手法之一。
+                </p>
+                <p>
+                    它的原始功能是：标记悬赏令中该角色在里世界中的重要性级别，同时体现角色在剧情中的关键作用。
+                </p>
+                <p>
+                    其通缉方试图通过以
+                    <a
+                        class="go-to-the-ruler inline-section-link"
+                        href="#the-ruler-info-section"
+                        data-section-link="the-ruler-info-section"
+                    >
+                        魔君
+                    </a>
+                    视角来拟定该角色的悬赏金数额，单位为世界观特有的交易货币
+                    <a
+                        class="bold-text inline-section-link"
+                        href="#mineash-section"
+                        data-section-link="mineash-section"
+                    >
+                        Mineash
+                    </a>
+                    。
+                </p>
+                <p>
+                    但是据情报署社长所述……他本人只是参考了货币而不负责真的会发放它们。
+                </p>
+                <p>
+                    总的来说，悬赏令最初不是为了“通缉”，而是为了强调角色在世界中的存在感与影响力。
+                </p>
+            </div>
+            <div class="worldview-article-group">
+                <p>
+                    同时在实际制作中，悬赏令演变成一种艺术加工后的角色海报，随着普及，它逐渐成为了社区内创作者们展示自己原创角色的一种方式。
+                </p>
+                <p>
+                    并以“悬赏令”形式包装其角色形象，赏金数额可能取自它们创作者相关平台的账号ID，化为了一种“角色 × 创作者”的联动符号
+                </p>
+                <p>
+                    同时具有叙事意义与创作意义：
+                </p>
+                <p>
+                    既是世界观中的角色档案，也是现实中的角色海报。
+                </p>
+                <p>
+                    这两者共同构成了悬赏令的完整概念。
+                </p>
+            </div>
+        </div>
+        <p><a class="inline-section-link" href="#bounty-board-section" data-section-link="bounty-board-section">查看悬赏令展板</a></p>
         <button
             type="button"
             class="back-to-parent"
@@ -6283,11 +6332,11 @@
     =========================== -->
 
     <div
-        id="the-ruler-info-section"
+        id="the-ruler-info-section" data-archive-article
         class="section"
     >
-        <h1 data-text="魔君">
-            魔君
+        <h1 data-text="“魔君”">
+            “魔君”
         </h1>
 
         <p class="ruler-title-en">
@@ -6302,7 +6351,7 @@
                 <p>拉普拉斯妖假设某种智慧能够完全掌握宇宙中所有事物的状态与运行规律，那么在经典决定论的理想条件下，它便有可能推算过去与未来。</p>
                 <p>这一思想实验所讨论的，是宇宙是否具有确定的因果结构，以及认识者能否完整理解它。</p>
                 <p>在《里世界》中，人们尝试将难以完整认识的现实人格化，并有越来越多的人以“魔君”称呼这种存在或现象。</p>
-                <p>然而，这并不意味着魔君已经被证明是现实本身、某种规律的集合，或一个具有独立意识的生命。</p>
+                <p>然而，这却不意味着魔君已经被证明是现实本身、某种规律的集合，或一个具有独立意识的生命。</p>
                 <p>上述说法都只是理解它的不同方式。</p>
             </div>
             <div class="ruler-topic">
@@ -6314,32 +6363,26 @@
                 <p>某些曾被视为个人异常的现象，开始进入更广泛的公共讨论。</p>
                 <p>此后的一系列社会危机，以及<a class="inline-section-link bold-text" href="#timeline-section" data-section-link="timeline-section" data-timeline-event="event-detail-4">“第一次魔君登录”</a>，是使“魔君”成为越来越难以回避的话题。</p>
                 <p>它可能早已存在，也可能是现代意识为了描述一系列无法理解的现象，而逐渐形成的概念。</p>
-                <p>历史传说、异常事件与魔君之间是否存在联系，仍缺乏足够证据。</p>
             </div>
             <div class="ruler-topic">
-                <p>魔君的本质没有人能够确定。</p>
-                <p>它不具有已知且固定的容器、性别、语言或生命形态。</p>
+                <p>没有人能够确定魔君的本质。</p>
+                <p>目前，它不具有已知且固定的容器、性别、语言或生命形态。</p>
                 <p>它甚至未必具备人们所理解的自我意识。</p>
                 <p>人们常用“魔君的思想”“魔君的意志”或“魔君的目的”描述它的活动。</p>
-                <p>然而，这些表述并不证明它真的像人一样思考。</p>
+                <p>然而这些表述并不可以直接拿来证明它真的能像人一样思考。</p>
                 <p>它们可能只是意识试图理解魔君影响时，借用的近似概念。</p>
                 <p>魔君能够通过不同形式呈现或产生影响，但任何一种已知表现，都未必是它的真正形态。</p>
-                <p>因此，魔君既不能简单等同于邪恶，也不能被认定为所有异常、灾难与苦难的共同来源。</p>
+                <p>魔君既不能简单等同于邪恶，也不能被认定为所有异常、灾难与苦难的共同来源。</p>
             </div>
             <div class="ruler-topic">
                 <p>部分受到魔君影响的意识与事物，会出现异常变化。</p>
                 <p>其中一种具有代表性的现象，是强烈的思想印记。</p>
                 <p>受到影响的意识，其原有的愿望、恐惧、思想或信念可能不断强化，并逐渐改变自身对世界的认识和行为方式。</p>
-                <p>这种变化不一定立即发生，也未必具有相同的表现。</p>
                 <p>部分意识还会获得远超原有水平的能力。</p>
-                <p>但这些能力从何而来、是否符合已知的创造法则，以及它们与思想变化之间究竟存在何种联系，仍有待研究。</p>
+                <p>这些能力从何而来、是否符合已知的创造法则，以及它们与思想变化之间究竟存在何种联系，有待探讨。</p>
             </div>
             <div class="ruler-topic">
                 <p>目前没有确定魔君是否能够被消灭。</p>
-                <p>即使某种被认为属于魔君的形态遭到摧毁，也无法由此证明魔君本身已经消亡。</p>
-                <p>同样，某种影响仍在持续，也不能单独证明魔君仍然以某种生命形式存在。</p>
-                <p>人们能够确认的是事件、变化和后果。</p>
-                <p>至于这些现象背后是否存在一个可以被彻底消灭的主体，仍然未知。</p>
             </div>
         </div>
 
@@ -6406,11 +6449,11 @@
     =========================== -->
 
     <div
-        id="the-monarch-info-section"
+        id="the-monarch-info-section" data-archive-article
         class="section"
     >
-        <h1 data-text="君主">
-            君主
+        <h1 data-text="“君主”">
+            “君主”
         </h1>
 
         <p class="monarch-title-en">
@@ -6420,23 +6463,22 @@
         <div class="worldview-article-copy">
             <div class="worldview-article-group">
                 <p>君主是《里世界》中一种特殊的身份标识，用于描述那些能够与<a class="inline-section-link bold-text" href="#the-ruler-info-section" data-section-link="the-ruler-info-section">“魔君”</a>的影响强烈对抗，并展现出非凡力量的意识。</p>
-                <p>这一概念最初作为对魔君体系的回应而出现。</p>
-                <p>魔君代表着某种难以理解、难以摆脱的现实影响；君主则体现了部分意识在这种影响面前产生的抗争能力。</p>
+                <p>这一概念最初是想作为对魔君体系的回应。</p>
+                <p>但实质上魔君代表着某种难以理解、难以摆脱现实的复杂影响；君主不单单作为这种存在，它则体现了部分意识在这种影响面前产生的抗争能力。</p>
                 <p>君主并非传统意义上的国家统治者，也不一定拥有领土、军队或政治权力。</p>
                 <p>“君主”首先是一种与生命状态、能力和行为特征有关的身份。</p>
             </div>
             <div class="worldview-article-group">
                 <p>当一名意识陷入极其艰难的处境，仍然决意抵抗魔君带来的压制，并试图保护其他生命时，便可能展现出前所未有的力量。</p>
                 <p>这种力量有时足以使其在魔君面前守护他人。</p>
-                <p>然而，单纯拥有勇气、强烈信念或对魔君的敌意，并不保证一个意识必然成为君主。</p>
+                <p>其次，目前所知的君主都是经过事件见证，世界各地也许还会有别的君主还没有出现在大众视角中。</p>
+                <p>不过单纯拥有勇气、强烈信念或对魔君的敌意，一个意识并不必然成为君主。</p>
                 <p>在创作者构建的不同人物中，部分意识都有可能表现出足以承担这一身份的特质。</p>
             </div>
             <div class="worldview-article-group">
                 <p>君主的力量来源于哪里，目前尚无定论。</p>
                 <p>一种可能是，君主的力量与意识本身的生命结构、经历、信念及成长有关。</p>
                 <p>另一种可能是，这种力量同样与魔君的影响存在某种联系。</p>
-                <p>但二者都尚未得到证实。</p>
-                <p>因此，君主不应被简单定义为魔君的绝对反面，也不能直接视为一种完全不受魔君影响的生命。</p>
             </div>
         </div>
 
@@ -6448,33 +6490,40 @@
         </button>
     </div>
 
-    <section
-        id="demon-remnants-section"
-        class="section worldview-article-section"
-        aria-labelledby="demon-remnants-section-title"
-    >
+    <section id="grays-section" data-archive-article class="section worldview-article-section nhn-dossier" aria-labelledby="grays-section-title">
         <header class="worldview-article-header">
-            <h1 id="demon-remnants-section-title">魔君残党</h1>
-            <p class="worldview-article-title-en" lang="en">The Ruler's Remnants</p>
+            <h1 id="grays-section-title" lang="en">Grays</h1>
         </header>
         <div class="worldview-article-copy">
             <div class="worldview-article-group">
-                <p>魔君残党是人们对一批与魔君存在直接或间接关联的特殊意识及势力的统称。</p>
+                <p><strong>Grays</strong> 是由<a class="inline-section-link bold-text" href="#newworld-section" data-section-link="newworld-section">“新世界”</a>一派<a class="inline-section-link bold-text" href="#the-monarch-info-section" data-section-link="the-monarch-info-section">“君主”</a>所创立的组织，活动范围涉及包括“新世界”在内的附近等多个区域，在《里世界》的社会环境与区域发展中占有一定地位。</p>
+                <p>它之所以作为一股具有相当规模与影响力的势力，是因为曾经过<a class="inline-section-link bold-text" href="#timeline-section" data-section-link="timeline-section" data-timeline-event="event-detail-4">“第一次魔君登录”</a>的洗礼，深感其中事件为人们带来的严重影响，如今其中的人员几乎都成为有效抵御未来一段时间有关<a class="inline-section-link bold-text" href="#demon-remnants-section" data-section-link="demon-remnants-section">“魔君残党”</a>的行动。</p>
+            </div>
+        </div>
+        <button type="button" class="back-to-parent"><span>返回上一级</span></button>
+    </section>
+
+    <section id="demon-remnants-section" data-archive-article class="section worldview-article-section nhn-dossier" aria-labelledby="demon-remnants-section-title">
+        <header class="worldview-article-header">
+            <h1 id="demon-remnants-section-title">魔君残党</h1>
+            <p class="worldview-article-title-en" lang="en">The Ruler's Remnants</p>
+            <p class="archive-lead">魔君残党是人们对一批与魔君存在直接或间接关联的特殊意识及势力的统称。</p>
+        </header>
+        <div class="worldview-article-copy">
+            <div class="worldview-article-group">
                 <p>其中一些意识受到魔君力量的影响，形成强烈的思想印记，并试图依据自身逐渐强化的信念改变里世界的运行。</p>
                 <p>他们可能拥有强大的能力，也可能建立组织、控制内域，或以普通居民的身份参与社会活动。</p>
                 <p>大部分强大的残党在<a class="inline-section-link bold-text" href="#timeline-section" data-section-link="timeline-section" data-timeline-event="event-detail-4">“第一次魔君登录”</a>中被消灭。</p>
                 <p>魔君残党不一定拥有完全统一的组织结构。</p>
-                <p>不同个体可能具有不同的目的，甚至彼此敌对。</p>
+                <p>不同个体可能具有不同的目的，甚至有出现彼此敌对的情况。</p>
                 <p>某些残党认为自己正在改变不合理的现实，而非主动制造灾难。</p>
-                <p>但这种自我认识并不意味着他们的行为没有造成伤害。</p>
                 <p>当然，不能仅仅因为一个人具有极端思想、异常能力或严重的存在困惑，就认定其属于魔君残党。</p>
-                <p>魔君与这些个体之间究竟存在怎样的支配关系，目前仍难以完整解释。</p>
+                <p>魔君与这些个体之间究竟存在怎样的支配关系呢？</p>
             </div>
             <div class="worldview-article-group">
-                <p>“第一次魔君登录”之后，里世界逐渐确认了与魔君相关的多种特殊势力。</p>
+                <p>“第一次魔君登录”之后，里世界逐渐确认了与魔君相关的多个特殊势力。</p>
                 <p>2025年7月，<a class="inline-section-link bold-text" href="#timeline-section" data-section-link="timeline-section" data-timeline-event="event-detail-5">魔君残党的规模性活动</a>成为值得关注的社会问题。</p>
-                <p>不过，部分相关现象可能早在此前就已经存在。</p>
-                <p>因此，魔君残党的历史不一定始于魔君登录这一事件。</p>
+                <p>不过部分相关现象可能早在此前就已经存在了。</p>
             </div>
         </div>
         <button type="button" class="back-to-parent">
@@ -6482,23 +6531,45 @@
         </button>
     </section>
 
-    <section
-        id="energy-conservation-section"
-        class="section worldview-article-section"
-        aria-labelledby="energy-conservation-section-title"
-    >
+    <section id="energy-section" data-archive-article class="section worldview-article-section nhn-dossier" aria-labelledby="energy-section-title">
+        <header class="worldview-article-header">
+            <h1 id="energy-section-title">“能量”</h1>
+            <p class="worldview-article-title-en" lang="en">Energy</p>
+            <p class="archive-lead">能量是《里世界》中维持自然运行与生命活动的重要基础。</p>
+        </header>
+        <div class="worldview-article-copy">
+            <div class="energy-field" aria-hidden="true"></div>
+            <div class="worldview-article-group">
+                <p>根据其存在形式与作用性质，能量主要分为<strong>物理能（Physical Energy）与生命能（Vital Energy）</strong>，两者共同构成了世界运行的基础，并以不同形式参与自然现象与生命活动。</p>
+                <p>这些能量都遵循<a class="inline-section-link" href="#energy-conservation-section" data-section-link="energy-conservation-section">“能量守恒定律”</a>以及受<a class="inline-section-link" href="#observer-effect-section" data-section-link="observer-effect-section">“观察者效应”</a>的影响。</p>
+            </div>
+            <div class="worldview-article-group">
+                <h2>物理能（Physical Energy）</h2>
+                <p>物理能，又称<strong>外能（External Energy）</strong>，是存在于自然环境及物质系统中的能量，包括动能、热能、电磁能等不同形式。</p>
+                <p>它们既不会凭空产生，也不会凭空消失，而是通过传递与转化影响物质的运动、状态及变化。</p>
+                <p>在《里世界》中，物理能广泛存在于自然现象与环境变化之中，是维持物质世界运行的重要基础。</p>
+            </div>
+            <div class="worldview-article-group energy-vital-copy">
+                <h2>生命能（Vital Energy）</h2>
+                <p>生命能，又称<strong>内能（Internal Energy）</strong>，是与生命活动及其存在状态密切相关的一类特殊能量。</p>
+                <p>生命能广泛存在于生命个体之中，其储量与运行状态会影响生命的活力、承受能力及生存状态。</p>
+                <p>与物理能不同，生命能主要体现于生命系统内部，并能够在一定条件下消耗、恢复或发生变化。</p>
+            </div>
+        </div>
+        <button type="button" class="back-to-parent"><span>返回上一级</span></button>
+    </section>
+
+    <section id="energy-conservation-section" data-archive-article class="section worldview-article-section nhn-dossier" aria-labelledby="energy-conservation-section-title">
         <header class="worldview-article-header">
             <h1 id="energy-conservation-section-title">“能量守恒定律”</h1>
+            <p class="worldview-article-title-en" lang="en">Conservation of Energy</p>
+            <p class="archive-lead">里世界的意识无法仅凭想象，无限制地创造任何需要的事物。</p>
         </header>
         <div class="worldview-article-copy">
             <div class="worldview-article-group">
-                <p>里世界的意识无法仅凭想象，无限制地创造任何需要的事物。</p>
                 <p>创造必须具有相应的来源、条件与转化过程。</p>
                 <p>例如，创造火焰不仅需要意识能够想象火的形态，还可能需要其思想、生命特征与火产生某种特殊共鸣。</p>
-                <p>但共鸣本身并不等同于无限的物理能源。</p>
-                <p>火焰的形成、维持和变化仍然涉及资源与代价。</p>
-                <p>因此，强烈的愿望不能直接等同于强大的创造能力。</p>
-                <p>这项原则与现实中的能量守恒思想存在关联，但不能简单地将情绪或信念换算成物理能量。</p>
+                <p>火焰的形成、维持和变化都涉及一定资源上的转换。</p>
             </div>
         </div>
         <button type="button" class="back-to-parent">
@@ -6506,23 +6577,26 @@
         </button>
     </section>
 
-    <section
-        id="observer-effect-section"
-        class="section worldview-article-section"
-        aria-labelledby="observer-effect-section-title"
-    >
+    <section id="observer-effect-section" data-archive-article class="section worldview-article-section nhn-dossier" aria-labelledby="observer-effect-section-title">
         <header class="worldview-article-header">
             <h1 id="observer-effect-section-title">“观察者效应”</h1>
+            <p class="worldview-article-title-en" lang="en">Observer Effect</p>
+            <p class="archive-lead">里世界中的能力通常不存在绝对统一的数值标准。</p>
         </header>
         <div class="worldview-article-copy">
             <div class="worldview-article-group">
-                <p>里世界中的能力通常不存在绝对统一的数值标准。</p>
                 <p>不同意识对彼此的认识，能够影响共同空间中能力的表现。</p>
                 <p>当两名意识处于同一空间时，各自的认知差异可能导致能力发生变化。</p>
                 <p>观察距离是重要影响因素之一。</p>
                 <p>一般而言，距离越远，观察产生的影响越弱。</p>
+            </div>
+            <figure class="observer-relief">
+                <canvas aria-hidden="true"></canvas>
+                <figcaption lang="en">maybe ‘Mount Ebott’ or ‘Mount Celeste’ XD</figcaption>
+            </figure>
+            <div class="worldview-article-group">
                 <p>在多人共同观察的环境中，能力表现会受到更多因素影响。</p>
-                <p>观察者数量与影响强度之间，不能简单地建立固定比例。</p>
+                <p>观察者数量与影响强度之间，很难就这样简单地建立固定比例。</p>
             </div>
         </div>
         <button type="button" class="back-to-parent">
@@ -6536,22 +6610,20 @@
 
     <div id="back-to-home" class="sling-button">
         <svg class="sling-button__fx" viewBox="-40 -40 80 80" aria-hidden="true">
-            <g class="sling-button__tension" opacity="0">
-                <path class="sling-button__band" />
-                <path class="sling-button__band sling-button__band--hot" />
-            </g>
-            <circle class="sling-button__well" r="35" />
-            <circle class="sling-button__arc" r="35" pathLength="1" stroke-dasharray="0 1" opacity="0" />
+            <path class="sling-button__well" d="M-30 20 0 6 30 20 0 34Z"/>
+            <path class="sling-button__rim" d="M-28 19 0 6 28 19 M-30 21 0 35 30 21"/>
+            <path class="sling-button__lip" d="M-19 29 0 38 19 29"/>
+            <path class="sling-button__wake" d="M-25 20 0 8 25 20 0 32Z"/>
+            <path class="sling-button__charge" d="M0 35 -30 21 M0 35 30 21" opacity="0"/>
+            <path class="sling-button__tether" opacity="0"/>
         </svg>
         <span class="sling-button__move">
             <button id="back-to-home-pad" class="sling-button__pad" type="button" aria-label="返回主页" aria-describedby="back-to-home-hint">
-                <span class="sling-button__face">
-                    <span class="sling-button__icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M12 20V4M5 11l7-7 7 7" />
-                        </svg>
-                    </span>
-                </span>
+                <svg class="sling-button__fallback" viewBox="0 0 38 40" aria-hidden="true">
+                    <path fill="#a2a6a8" d="m19 1 17 9-17 10-17-10Z"/>
+                    <path fill="#73777a" d="m2 10 17 10v19L2 29Z"/>
+                    <path fill="#45494c" d="m19 20 17-10v19l-17 10Z"/>
+                </svg>
             </button>
         </span>
         <span class="sling-button__label" aria-hidden="true">返回主页</span>
@@ -6613,7 +6685,7 @@
 
     <script
         type="module"
-        src="scripts/main.js?v=26.10.23.1"
+        src="scripts/main.js?v=26.11.21.9"
     ></script>
 
     <script
@@ -6623,13 +6695,13 @@
 
     <script
         type="module"
-        src="scripts/controls.js?v=26.10.23.1"
+        src="scripts/controls.js?v=26.11.21.10"
     ></script>
 
     <script
         type="module"
-        src="scripts/events.js?v=26.11.12.1"
+        src="scripts/events.js?v=26.11.21.10"
     ></script>
-    <script type="module" src="scripts/effects/another-world-portal.js?v=26.10.23.1"></script>
+    <script type="module" src="scripts/effects/another-world-portal.js?v=26.11.19.3"></script>
 </body>
 </html>

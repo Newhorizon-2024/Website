@@ -1,8 +1,7 @@
 /* WakeSlider 风格音量条：只增强已有 range，音量计算仍由 player.js 负责。 */
 const WAKE_VOLUME_CONFIG = {
     bars: 32,
-    height: 56,
-    restHeight: 12,
+    wakeHeight: 16,
     sensitivity: 1,
     reach: 6,
     skew: 0.6,
@@ -48,6 +47,49 @@ export function initializeWakeVolumeSlider({ input, panel }) {
 
     const active = () => panel.classList.contains("is-open") && !document.hidden && inView;
 
+    // 位移由原有音量交互管理，实时频谱只改变每个方块中心两侧的延伸量。
+    let spectrumListener = null, spectrumVisible = false;
+    let binHz = 0, peak = 0;
+    const edges = new Uint16Array(bars.length + 1);
+    const levels = new Float32Array(bars.length);
+    const rises = new Int16Array(bars.length);
+    function clearSpectrum() {
+        peak = 0;
+        levels.fill(0);
+        barLayer.classList.remove("has-spectrum");
+        bars.forEach((bar, i) => {
+            if (rises[i]) bar.style.removeProperty("--volume-rise");
+            rises[i] = 0;
+        });
+    }
+    function drawSpectrum(data, hz, dt) {
+        if (binHz !== hz) {
+            binHz = hz;
+            const high = Math.min(16000, data.length * hz);
+            for (let i = 0; i < edges.length; i++) {
+                edges[i] = Math.min(data.length - 1, Math.round(40 * (high / 40) ** (i / bars.length) / hz));
+            }
+        }
+        const release = Math.exp(-dt / .16);
+        peak *= Math.exp(-dt / 1.3);
+        for (let i = 0; i < bars.length; i++) {
+            const end = Math.max(edges[i] + 1, edges[i + 1]);
+            let energy = 0;
+            for (let k = edges[i]; k < end; k++) energy += data[k] ** 2;
+            const value = Math.sqrt(energy / (end - edges[i])) / 255;
+            levels[i] = Math.max(value, levels[i] * release);
+            peak = Math.max(peak, levels[i]);
+        }
+        const reference = Math.max(.46, peak * 1.06);
+        barLayer.classList.toggle("has-spectrum", peak > .045);
+        bars.forEach((bar, i) => {
+            const rise = Math.round(40 * (levels[i] / reference) ** 1.28);
+            if (rises[i] === rise) return;
+            rises[i] = rise;
+            bar.style.setProperty("--volume-rise", rise / 4 + "px");
+        });
+    }
+
     function updateValue() {
         const text = `${Math.round(percentage())}%`;
         output.value = text;
@@ -58,7 +100,6 @@ export function initializeWakeVolumeSlider({ input, panel }) {
         const position = head / 100 * (config.bars - 1);
         const energy = motion.matches ? 0 : clamp(Math.abs(speed) * config.sensitivity / 320, 0, 1);
         const amplitude = energy * energy * (3 - 2 * energy);
-        const rest = config.restHeight / config.height;
         const radius = 1.5 + (config.reach - 1.5) * amplitude;
         const direction = Math.sign(speed) || 1;
         const lit = head <= 0 ? -1 : Math.round(position);
@@ -66,7 +107,7 @@ export function initializeWakeVolumeSlider({ input, panel }) {
             const distance = index - position;
             const reach = radius * (distance * direction < 0 ? 1 + config.skew : 1 - config.skew / 2);
             const lift = Math.abs(distance) >= reach ? 0 : amplitude * Math.pow(Math.cos(Math.PI * distance / (2 * reach)), 2);
-            bar.style.transform = `scaleY(${rest + (1 - rest) * lift})`;
+            bar.style.transform = `translateY(${-lift * config.wakeHeight}px)`;
             bar.dataset.on = String(index <= lit);
         });
     }
@@ -140,6 +181,12 @@ export function initializeWakeVolumeSlider({ input, panel }) {
         const rect = track.getBoundingClientRect();
         inView = rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
         if (!active()) finishPointer();
+        const nextVisible = active() && !motion.matches;
+        if (spectrumVisible !== nextVisible) {
+            spectrumVisible = nextVisible;
+            if (!spectrumVisible) clearSpectrum();
+            spectrumListener?.();
+        }
         flatten();
     }
 
@@ -196,4 +243,9 @@ export function initializeWakeVolumeSlider({ input, panel }) {
     });
     root.classList.add("is-enhanced");
     syncVisibility();
+    return {
+        get visible() { return spectrumVisible; },
+        onVisibilityChange(listener) { spectrumListener = listener; },
+        draw: drawSpectrum, clear: clearSpectrum
+    };
 }

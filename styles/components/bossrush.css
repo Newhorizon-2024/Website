@@ -8,8 +8,8 @@
 #bossrush-eyes {
     animation:
         bossrushFadeIn 1s ease-out,
-        bossrushFloat 6s ease-in-out infinite,
-        bossrushGlow 2.5s ease-in-out infinite;
+        bossrushFloat 6s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px rgba(238, 238, 238, .72));
     display: none;
     height: var(--eyes-bg-size);
     left: 50%;
@@ -26,6 +26,7 @@
 
 /* Bossrush 前景眼睛图片 */
 #bossrush-eyes img {
+    transform: scale(var(--beat-scale, 1));
     height: 100%;
     object-fit: contain;
     width: 100%;
@@ -58,6 +59,8 @@
 
 /* Bossrush 眼睛重影图片 */
 #bossrush-eyes-bg img {
+    transform: scale(var(--echo-scale, 1));
+    opacity: var(--echo-opacity, .65);
     filter: blur(2px);
     height: 100%;
     object-fit: contain;
@@ -163,16 +166,6 @@
 }
 
 /* Bossrush 淡出动画 */
-@keyframes bossrushFadeOut {
-    from {
-        opacity: 1;
-    }
-
-    to {
-        opacity: 0;
-    }
-}
-
 /* 音频光频淡入动画 */
 @keyframes bossrushAudioMaskFadeIn {
     from {
@@ -230,30 +223,6 @@
         transform:
             translate(-50%, -50%)
             translate(0, 0);
-    }
-}
-
-/* Bossrush 发光脉冲动画 */
-@keyframes bossrushGlow {
-    0% {
-        filter:
-            drop-shadow(
-                0 0 2px #EEEEEE
-            );
-    }
-
-    50% {
-        filter:
-            drop-shadow(
-                0 0 12px #EEEEEE
-            );
-    }
-
-    100% {
-        filter:
-            drop-shadow(
-                0 0 2px #EEEEEE
-            );
     }
 }
 

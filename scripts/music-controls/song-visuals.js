@@ -1,4 +1,6 @@
-import { applyShadowflameSong } from "../effects/shadowflame.js?v=26.10.21.7";
+import { applyShadowflameSong } from "../effects/shadowflame.js?v=26.11.21.5";
+import { syncPixelSnow } from "../effects/pixel-snow.js?v=26.11.21.9";
+import { trackWaveforms } from "./track-waveforms-data.js?v=26.11.21.7";
 
 /* ===========================
    Bossrush 视觉效果
@@ -55,8 +57,7 @@ let audioContext =
 let analyser =
     null;
 
-let mediaSource =
-    null;
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
 let frequencyData =
     null;
@@ -67,14 +68,18 @@ let waveformData =
 let audioMaskAnimationFrame =
     null;
 
-let audioVisualizerInitialized =
-    false;
-
-let audioVisualizerActive =
-    false;
-
-let audioResumeEventsBound =
-    false;
+let audioEvents = null;
+let spectrum = null;
+let graphUnavailable = false;
+let playing = false;
+let snowSelected = false;
+let snowScore = null;
+const snowBands = {bass:0,mid:0,high:0};
+let pageAway = false;
+let bossVisible = false;
+let lastSampleAt = 0;
+let bassFloor = 0, previousBass = 0, pulse = 0;
+let primed = false;
 
 let smoothedVolume =
     0;
@@ -111,22 +116,13 @@ const AUDIO_VISUALIZER_CONFIG = {
      * FFT 数据精度。
      */
     fftSize:
-        512,
+        2048,
 
     /*
      * 原始频率数据平滑程度。
      */
     analyserSmoothing:
-        0.76,
-
-    /*
-     * 音量上升与下降缓动。
-     */
-    riseSmoothing:
-        0.2,
-
-    fallSmoothing:
-        0.065,
+        0.64,
 
     /*
      * 光频最低与最高高度。
@@ -168,14 +164,17 @@ export function applySongVisuals(
     song
 ) {
     applyShadowflameSong(song, backgroundMusic);
+    snowSelected = song?.visualEffect === "pixel-snow";
+    const row = snowSelected && trackWaveforms[song.path];
+    snowScore = row ? {path:song.path,duration:row[0],peaks:Uint8Array.from(atob(row[1]),c=>c.charCodeAt(0))} : null;
+    playing = !backgroundMusic?.paused && backgroundMusic?.readyState >= 3;
+    spectrum?.clear();
+    resetRhythm();
     const speedMultiplier =
         song?.speedMultiplier ||
         1;
 
     activeBossrushSpeed =
-        speedMultiplier;
-
-    window.globalSpeedMultiplier =
         speedMultiplier;
 
     const root =
@@ -193,10 +192,6 @@ export function applySongVisuals(
                 "clamp(150px, 35vw, 300px)"
             );
 
-            fadeCubeColor(
-                "#888888"
-            );
-
             break;
 
         case 4:
@@ -208,10 +203,6 @@ export function applySongVisuals(
             root.style.setProperty(
                 "--eyes-bg-size",
                 "clamp(200px, 45vw, 400px)"
-            );
-
-            fadeCubeColor(
-                "#666666"
             );
 
             break;
@@ -227,10 +218,6 @@ export function applySongVisuals(
                 "clamp(300px, 55vw, 600px)"
             );
 
-            fadeCubeColor(
-                "#444444"
-            );
-
             break;
 
         case 8:
@@ -244,26 +231,16 @@ export function applySongVisuals(
                 "clamp(400px, 65vw, 800px)"
             );
 
-            fadeCubeColor(
-                "#222222"
-            );
-
             break;
 
         default:
             activeBossrushSpeed =
                 1;
 
-            fadeOutBossrush();
-
-            fadeCubeColor(
-                "#888888"
-            );
-
-            return;
+            break;
     }
 
-    showBossrush();
+    syncVisualizer();
 }
 
 
@@ -327,202 +304,116 @@ function createAudioMask() {
    初始化音频分析器
 =========================== */
 
-function initializeAudioVisualizer() {
-    if (
-        audioVisualizerInitialized
-    ) {
+// 等音频上下文真正运行后才接管媒体输出。受自动播放限制时仍可直接播放。
+function ensureAudioGraph() {
+    if (analyser) return true;
+    if (graphUnavailable) return false;
+    try {
+        if (!audioContext) {
+            const Context = window.AudioContext || window.webkitAudioContext;
+            if (!Context) { graphUnavailable = true; return false; }
+            audioContext = window.bossrushAudioGraph?.context || new Context();
+            audioContext.addEventListener("statechange", syncVisualizer, { signal: audioEvents.signal });
+        }
+        if (audioContext.state !== "running") return false;
+        const existing = window.bossrushAudioGraph;
+        if (existing?.source) {
+            analyser = existing.analyser;
+        } else {
+            const node = audioContext.createAnalyser();
+            node.fftSize = AUDIO_VISUALIZER_CONFIG.fftSize;
+            node.smoothingTimeConstant = AUDIO_VISUALIZER_CONFIG.analyserSmoothing;
+            node.minDecibels = -90;
+            node.maxDecibels = -12;
+            const source = audioContext.createMediaElementSource(backgroundMusic);
+            source.connect(node);
+            node.connect(audioContext.destination);
+            window.bossrushAudioGraph = { context: audioContext, analyser: node, source };
+            analyser = node;
+        }
+        frequencyData = new Uint8Array(analyser.frequencyBinCount);
+        waveformData = new Uint8Array(analyser.fftSize);
         return true;
-    }
-
-    if (!backgroundMusic) {
-        console.warn(
-            "Bossrush 音频可视化初始化失败：未找到 #background-music。"
-        );
-
+    } catch {
+        graphUnavailable = true;
         return false;
     }
+}
 
-    createAudioMask();
-
-    if (
-        !audioMask ||
-        !audioMaskContext
-    ) {
-        console.warn(
-            "Bossrush 音频可视化初始化失败：无法创建音频遮罩。"
-        );
-
-        return false;
+function resumeAudioGraph() {
+    if (audioContext?.state === "suspended" || audioContext?.state === "interrupted") {
+        audioContext.resume().catch(() => {});
     }
+}
 
-    const AudioContextClass =
-        window.AudioContext ||
-        window.webkitAudioContext;
-
-    if (!AudioContextClass) {
-        console.warn(
-            "当前浏览器不支持 Web Audio API。"
-        );
-
-        return false;
+export function initializeSongVisualizer(volumeSpectrum) {
+    if (!backgroundMusic || audioEvents) return;
+    audioEvents = new AbortController();
+    const listen = (target, name, fn) => target.addEventListener(name, fn, { signal: audioEvents.signal });
+    spectrum = volumeSpectrum;
+    spectrum?.onVisibilityChange(syncVisualizer);
+    listen(backgroundMusic, "volumechange", syncVisualizer);
+    listen(backgroundMusic, "playing", () => {
+        playing = true;
+        syncVisualizer();
+        resumeAudioGraph();
+    });
+    for (const type of ["pause", "ended", "waiting", "seeking", "emptied", "error"]) {
+        listen(backgroundMusic, type, () => { playing = false; syncVisualizer(); });
     }
+    listen(backgroundMusic, "seeked", () => {
+        playing = !backgroundMusic.paused && !backgroundMusic.ended && backgroundMusic.readyState >= 3;
+        syncVisualizer();
+    });
+    listen(window, "pointerdown", resumeAudioGraph);
+    listen(window, "keydown", resumeAudioGraph);
+    listen(document, "visibilitychange", syncVisualizer);
+    listen(reduceMotion, "change", syncVisualizer);
+    listen(window, "pageshow", () => { pageAway = false; syncVisualizer(); });
+    listen(window, "pagehide", event => {
+        pageAway = true;
+        syncVisualizer();
+        if (!event.persisted) {
+            spectrum?.onVisibilityChange(null);
+            audioEvents.abort();
+        }
+    });
+    playing = !backgroundMusic.paused && backgroundMusic.readyState >= 3;
+    syncVisualizer();
+}
 
-    /*
-     * 一个 audio 元素只能创建一次
-     * MediaElementAudioSourceNode。
-     */
-    if (
-        window
-            .bossrushAudioGraph
-            ?.source
-    ) {
-        audioContext =
-            window
-                .bossrushAudioGraph
-                .context;
-
-        analyser =
-            window
-                .bossrushAudioGraph
-                .analyser;
-
-        mediaSource =
-            window
-                .bossrushAudioGraph
-                .source;
+function syncVisualizer() {
+    syncPixelSnow(snowSelected && !backgroundMusic?.ended, playing, document.hidden || pageAway,
+        reduceMotion.matches, backgroundMusic, snowScore, snowBands);
+    const bossSelected = activeBossrushSpeed > 1 && playing;
+    const speed = bossSelected ? activeBossrushSpeed : 1;
+    if (window.globalSpeedMultiplier !== speed) {
+        window.globalSpeedMultiplier = speed;
+        fadeCubeColor(({4:"#666666", 6:"#444444", 8:"#222222"})[speed] || "#888888");
+    }
+    if (bossSelected !== bossVisible) {
+        bossVisible = bossSelected;
+        if (bossVisible) showBossrush();
+        else fadeOutBossrush();
+    }
+    const volumeVisible = spectrum?.visible && !backgroundMusic.muted && backgroundMusic.volume > 0;
+    if (!volumeVisible) spectrum?.clear();
+    const run = playing && !pageAway && !document.hidden && !reduceMotion.matches && (bossVisible || volumeVisible || snowSelected);
+    if (run) {
+        ensureAudioGraph();
+        resumeAudioGraph();
+    }
+    if (run && analyser && audioContext.state === "running") {
+        if (audioMaskAnimationFrame === null) audioMaskAnimationFrame = requestAnimationFrame(updateAudioVisualizer);
     } else {
-        try {
-            audioContext =
-                new AudioContextClass();
-
-            analyser =
-                audioContext
-                    .createAnalyser();
-
-            analyser.fftSize =
-                AUDIO_VISUALIZER_CONFIG
-                    .fftSize;
-
-            analyser.smoothingTimeConstant =
-                AUDIO_VISUALIZER_CONFIG
-                    .analyserSmoothing;
-
-            analyser.minDecibels =
-                -90;
-
-            analyser.maxDecibels =
-                -12;
-
-            mediaSource =
-                audioContext
-                    .createMediaElementSource(
-                        backgroundMusic
-                    );
-
-            mediaSource.connect(
-                analyser
-            );
-
-            analyser.connect(
-                audioContext.destination
-            );
-
-            window.bossrushAudioGraph = {
-                context:
-                    audioContext,
-
-                analyser,
-
-                source:
-                    mediaSource
-            };
-        } catch (error) {
-            console.error(
-                "Bossrush 音频分析器创建失败：",
-                error
-            );
-
-            return false;
-        }
+        cancelAnimationFrame(audioMaskAnimationFrame);
+        audioMaskAnimationFrame = null;
+        lastSampleAt = 0;
+        snowBands.bass = snowBands.mid = snowBands.high = 0;
+        spectrum?.clear();
+        if (bossVisible) clearAudioMask();
+        resetRhythm();
     }
-
-    frequencyData =
-        new Uint8Array(
-            analyser.frequencyBinCount
-        );
-
-    waveformData =
-        new Uint8Array(
-            analyser.fftSize
-        );
-
-    bindAudioResumeEvents();
-
-    audioVisualizerInitialized =
-        true;
-
-    return true;
-}
-
-
-/* ===========================
-   AudioContext 恢复
-=========================== */
-
-function resumeAudioContext() {
-    if (
-        !audioContext ||
-        audioContext.state !==
-            "suspended"
-    ) {
-        return;
-    }
-
-    audioContext
-        .resume()
-        .catch(
-            error => {
-                console.warn(
-                    "AudioContext 恢复失败：",
-                    error
-                );
-            }
-        );
-}
-
-function bindAudioResumeEvents() {
-    if (
-        !backgroundMusic ||
-        audioResumeEventsBound
-    ) {
-        return;
-    }
-
-    audioResumeEventsBound =
-        true;
-
-    backgroundMusic.addEventListener(
-        "play",
-        resumeAudioContext
-    );
-
-    window.addEventListener(
-        "pointerdown",
-        resumeAudioContext,
-        {
-            once:
-                true
-        }
-    );
-
-    window.addEventListener(
-        "keydown",
-        resumeAudioContext,
-        {
-            once:
-                true
-        }
-    );
 }
 
 
@@ -540,7 +431,7 @@ function showBossrush() {
             null;
     }
 
-    initializeAudioVisualizer();
+    if (!audioMask) createAudioMask();
 
     const bossrushElements = [
         bossrushEyes,
@@ -551,8 +442,14 @@ function showBossrush() {
 
     bossrushElements.forEach(
         element => {
-            element.style.animation =
-                "";
+            const hiding = element.getAnimations().find(animation => animation.id === "bossrush-hide");
+            if (hiding) {
+                const opacity = getComputedStyle(element).opacity;
+                hiding.cancel();
+                element.animate([{opacity}, {offset:1}], {
+                    id:"bossrush-resume", duration:reduceMotion.matches ? 160 : 400, easing:"ease-out"
+                });
+            }
 
             element.style.display =
                 "block";
@@ -565,7 +462,7 @@ function showBossrush() {
         );
     }
 
-    startAudioVisualizer();
+
 }
 
 
@@ -574,63 +471,26 @@ function showBossrush() {
 =========================== */
 
 function fadeOutBossrush() {
-    const bossrushElements = [
-        bossrushEyes,
-        bossrushEyesBackground,
-        bossrushFilter,
-        audioMask
-    ].filter(Boolean);
-
-    if (
-        bossrushElements.length ===
-        0
-    ) {
-        return;
+    const elements = [bossrushEyes, bossrushEyesBackground, bossrushFilter, audioMask].filter(Boolean);
+    const duration = reduceMotion.matches ? 160 : 600;
+    clearTimeout(bossrushHideTimeout);
+    for (const element of elements) {
+        const opacity = getComputedStyle(element).opacity;
+        element.getAnimations().find(animation => animation.id === "bossrush-resume")?.cancel();
+        element.animate([{ opacity }, { opacity: 0 }],
+            { id: "bossrush-hide", duration, easing: "ease-out", fill: "forwards" });
     }
-
-    if (bossrushHideTimeout) {
-        window.clearTimeout(
-            bossrushHideTimeout
-        );
-    }
-
-    bossrushElements.forEach(
-        element => {
-            element.style.animation =
-                "bossrushFadeOut 1s ease-out forwards";
+    bossrushHideTimeout = setTimeout(() => {
+        for (const element of elements) {
+            element.style.display = "none";
+            element.getAnimations().find(animation => animation.id === "bossrush-hide")?.cancel();
         }
-    );
-
-    bossrushHideTimeout =
-        window.setTimeout(
-            () => {
-                stopAudioVisualizer();
-
-                bossrushElements.forEach(
-                    element => {
-                        element.style.display =
-                            "none";
-
-                        element.style.animation =
-                            "";
-                    }
-                );
-
-                if (audioMask) {
-                    audioMask.classList.remove(
-                        "is-active"
-                    );
-                }
-
-                clearAudioMask();
-
-                bossrushHideTimeout =
-                    null;
-            },
-            1000
-        );
+        audioMask?.classList.remove("is-active");
+        clearAudioMask();
+        resetRhythm();
+        bossrushHideTimeout = null;
+    }, duration);
 }
-
 
 /* ===========================
    数值工具
@@ -648,89 +508,6 @@ function clamp(
             value
         )
     );
-}
-
-function smoothValue(
-    current,
-    target
-) {
-    const smoothing =
-        target >
-        current
-            ? AUDIO_VISUALIZER_CONFIG
-                .riseSmoothing
-            : AUDIO_VISUALIZER_CONFIG
-                .fallSmoothing;
-
-    return current +
-        (
-            target -
-            current
-        ) *
-        smoothing;
-}
-
-
-/* ===========================
-   音频数据读取
-=========================== */
-
-function getBandAverage(
-    startRatio,
-    endRatio
-) {
-    if (
-        !frequencyData ||
-        frequencyData.length === 0
-    ) {
-        return 0;
-    }
-
-    const startIndex =
-        Math.floor(
-            frequencyData.length *
-            startRatio
-        );
-
-    const endIndex =
-        Math.min(
-            frequencyData.length,
-
-            Math.max(
-                startIndex + 1,
-
-                Math.floor(
-                    frequencyData.length *
-                    endRatio
-                )
-            )
-        );
-
-    let total =
-        0;
-
-    let count =
-        0;
-
-    for (
-        let index = startIndex;
-        index < endIndex;
-        index += 1
-    ) {
-        total +=
-            frequencyData[index];
-
-        count +=
-            1;
-    }
-
-    if (count === 0) {
-        return 0;
-    }
-
-    return total /
-        count /
-        255;
 }
 
 function getRmsVolume() {
@@ -836,7 +613,7 @@ function drawAudioMask() {
                 smoothedBass *
                 0.8 +
                 smoothedMid *
-                0.22
+                0.22 + pulse * 0.18
             ) *
             levelStrength,
             0,
@@ -1218,131 +995,69 @@ function drawAudioMask() {
    可视化动画循环
 =========================== */
 
-function updateAudioVisualizer() {
-    if (
-        !audioVisualizerActive ||
-        !analyser ||
-        !frequencyData ||
-        !waveformData
-    ) {
-        audioMaskAnimationFrame =
-            null;
+function resetRhythm() {
+    pulse = bassFloor = previousBass = 0;
+    primed = false;
+    smoothedVolume = smoothedBass = smoothedMid = smoothedTreble = 0;
+    bossrushEyes?.style.removeProperty("--beat-scale");
+    bossrushEyesBackground?.style.removeProperty("--echo-scale");
+    bossrushEyesBackground?.style.removeProperty("--echo-opacity");
+}
 
-        return;
+function readBand(lowHz, highHz, hz) {
+    const first = Math.min(frequencyData.length - 1, Math.max(1, Math.round(lowHz / hz)));
+    const end = Math.min(frequencyData.length, Math.max(first + 1, Math.round(highHz / hz)));
+    let sum = 0;
+    for (let i = first; i < end; i++) sum += frequencyData[i];
+    return sum / (end - first) / 255;
+}
+
+function updateBossrushRhythm(hz, dt) {
+    analyser.getByteTimeDomainData(waveformData);
+    const bass = readBand(42, 185, hz);
+    const rms = Math.min(1, getRmsVolume() * 2.5);
+    const follow = (value, target) => value + (target - value) *
+        (1 - Math.exp(-dt / (target > value ? .065 : .23)));
+    smoothedVolume = follow(smoothedVolume, rms);
+    smoothedBass = follow(smoothedBass, bass);
+    smoothedMid = follow(smoothedMid, readBand(220, 1800, hz));
+    smoothedTreble = follow(smoothedTreble, readBand(2600, 9500, hz));
+    if (!primed) {
+        previousBass = bassFloor = bass;
+        primed = true;
     }
-
-    analyser.getByteFrequencyData(
-        frequencyData
-    );
-
-    analyser.getByteTimeDomainData(
-        waveformData
-    );
-
-    const rms =
-        getRmsVolume();
-
-    const bass =
-        getBandAverage(
-            0,
-            0.12
-        );
-
-    const mid =
-        getBandAverage(
-            0.12,
-            0.42
-        );
-
-    const treble =
-        getBandAverage(
-            0.42,
-            0.82
-        );
-
-    smoothedVolume =
-        smoothValue(
-            smoothedVolume,
-
-            clamp(
-                rms *
-                    2.5,
-                0,
-                1
-            )
-        );
-
-    smoothedBass =
-        smoothValue(
-            smoothedBass,
-            bass
-        );
-
-    smoothedMid =
-        smoothValue(
-            smoothedMid,
-            mid
-        );
-
-    smoothedTreble =
-        smoothValue(
-            smoothedTreble,
-            treble
-        );
-
-    visualizerTime +=
-        0.03 +
-        smoothedMid *
-        0.02;
-
+    // 用相对低频底噪与相邻采样的起音差识别鼓点，持续响亮的段落也能自然回落。
+    const attack = Math.max(0, bass - bassFloor - .035) * 2.8 + Math.max(0, bass - previousBass) * 1.65;
+    pulse = Math.max(pulse * Math.exp(-dt / .19), Math.min(1, attack));
+    bassFloor += (bass - bassFloor) * (1 - Math.exp(-dt / .68));
+    previousBass = bass;
+    const weight = .65 + activeBossrushSpeed * .045;
+    bossrushEyes?.style.setProperty("--beat-scale", (1 + (.012 * smoothedVolume + .046 * pulse) * weight).toFixed(4));
+    bossrushEyesBackground?.style.setProperty("--echo-scale", (1 + (.035 * smoothedBass + .085 * pulse) * weight).toFixed(4));
+    bossrushEyesBackground?.style.setProperty("--echo-opacity", (.45 + .48 * pulse).toFixed(3));
+    visualizerTime += dt * (1.55 + smoothedMid);
     drawAudioMask();
-
-    audioMaskAnimationFrame =
-        window.requestAnimationFrame(
-            updateAudioVisualizer
-        );
 }
 
-function startAudioVisualizer() {
-    if (
-        !audioVisualizerInitialized ||
-        !audioMask
-    ) {
-        return;
+function updateAudioVisualizer(now) {
+    if (now - lastSampleAt >= 1000 / 30 - 0.5) {
+        const dt = lastSampleAt ? Math.min((now - lastSampleAt) / 1000, .1) : 1 / 30;
+        lastSampleAt = now;
+        analyser.getByteFrequencyData(frequencyData);
+        const hz = audioContext.sampleRate / analyser.fftSize;
+        if (spectrum?.visible && !backgroundMusic.muted && backgroundMusic.volume > 0) {
+            spectrum.draw(frequencyData, hz, dt);
+        }
+        if (snowSelected) {
+            snowBands.bass = readBand(45,200,hz);
+            snowBands.mid = readBand(250,1800,hz);
+            snowBands.high = readBand(2600,9000,hz);
+        }
+        if (bossVisible) updateBossrushRhythm(hz, dt);
     }
-
-    resumeAudioContext();
-
-    audioVisualizerActive =
-        true;
-
-    if (
-        audioMaskAnimationFrame ===
-        null
-    ) {
-        audioMaskAnimationFrame =
-            window.requestAnimationFrame(
-                updateAudioVisualizer
-            );
-    }
+    audioMaskAnimationFrame = requestAnimationFrame(updateAudioVisualizer);
 }
 
-function stopAudioVisualizer() {
-    audioVisualizerActive =
-        false;
-
-    if (
-        audioMaskAnimationFrame !==
-        null
-    ) {
-        window.cancelAnimationFrame(
-            audioMaskAnimationFrame
-        );
-
-        audioMaskAnimationFrame =
-            null;
-    }
-}
 
 function clearAudioMask() {
     if (

@@ -106,13 +106,6 @@ export const playlist = [
 
     {
         path:
-            "media/History Is Now - Natalie Holt.mp3",
-        description:
-            `电视剧《洛基》"Loki"`
-    },
-
-    {
-        path:
             "media/History Is Now - Iván Cairo.mp3",
         description:
             `电视剧《洛基》"Loki"`
@@ -349,6 +342,14 @@ export const playlist = [
 
     {
         path:
+            "media/Reach for the Summit - Lena Raine.mp3",
+        visualEffect: "pixel-snow",
+        description:
+            `游戏《蔚蓝》"Celeste"`
+    },
+
+    {
+        path:
             "media/Sleepwalking - The Chain Gang of 1974.mp3",
         description:
             `游戏《侠盗猎车手5》"Grand Theft Auto V"`
@@ -364,6 +365,7 @@ export const playlist = [
     {
         path:
             "media/Stained, Brutal Calamity - DM DOKURO.mp3",
+        visualEffect: "shadowflame",
         description:
             `游戏《泰拉瑞亚》"Terraria" Calamity Mod`
     },
@@ -421,14 +423,7 @@ export const playlist = [
         path:
             "media/UNDERTALE三周年纪念·传说之下16首BGM四手联弹无缝串烧 - Kyle Xian.mp3",
         description:
-            `游戏《传说之下》"UNDERTALE"三周年纪念BGM串烧`
-    },
-
-    {
-        path:
-            "media/Web Launch (From Marvels Spider-Man Score) - John Paesano.mp3",
-        description:
-            `游戏《漫威蜘蛛侠》"Marvel Spider-Man"`
+            `游戏《传说之下》"UNDERTALE"`
     },
 
     {

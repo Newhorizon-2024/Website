@@ -1,5 +1,6 @@
 /* 仅增强播放进度条，不覆盖原有轨道颜色、Dot 的形状、颜色或阴影。 */
 #progress-elastic-track {
+    isolation: isolate;
     align-items: center;
     cursor: pointer;
     display: flex;
@@ -15,9 +16,12 @@
 #progress-elastic-track::before {
     content: "";
     inset: -14px 0;
+    z-index: 1;
     position: absolute;
 }
 #progress-elastic-track #progress-bar {
+    position: relative;
+    z-index: 2;
     flex: 1;
     height: var(--progress-elastic-height, 6px);
     margin: 0;
@@ -43,4 +47,19 @@
 }
 @media (max-width: 480px) {
     #progress-elastic-track { flex: none; margin: 0 auto; width: 90%; }
+}
+
+/* 与原生滑块两端各 7px 的中心行程对齐。 */
+#track-waveform {
+    position: absolute;
+    z-index: 0;
+    left: 7px;
+    bottom: calc(50% + 2px);
+    width: calc(100% - 14px);
+    height: 23px;
+    pointer-events: none;
+}
+@media (max-width: 480px) {
+    #progress-elastic-track { margin-top: 9px; }
+    #track-waveform { height: 15px; }
 }

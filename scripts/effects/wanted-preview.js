@@ -1,4 +1,4 @@
-import { MorphSliderStage } from "../creators/morph-slider.js?v=26.10.19.4";
+import { MorphSliderStage } from "../creators/morph-slider.js?v=26.11.18.3";
 import { prepareImageLoading } from "./image-loading.js?v=26.10.19.4";
 
 let initialized = false;
@@ -85,8 +85,8 @@ export function initializeWantedPreview() {
         return animation;
     }
 
-    function cancelVisuals() {
-        morph.cancel();
+    function cancelVisuals(keepMorph = false) {
+        if (!keepMorph) morph.cancel();
         for (const animation of animations) animation.cancel();
         animations.clear();
         for (const clone of clones) clone.remove();
@@ -266,20 +266,20 @@ export function initializeWantedPreview() {
         closing = false;
     }
 
-    async function change(direction, dragProgress = 0, pointer = [0.5, 0.5]) {
+    async function change(direction, dragProgress = 0, pointer = [0.5, 0.5], variation = morph.nextVariation()) {
         if (!opened || closing || transitioning || posters.length < 2) return;
         const token = ++requestId;
         const previousImage = rememberCurrent();
-        cancelVisuals();
+        cancelVisuals(dragProgress > 0);
         const succeeded = await update(index + direction);
         if (token !== requestId || !opened) return;
-        if (!succeeded) { removeHold(); delete image.dataset.imageRevealOwner; return; }
+        if (!succeeded) { morph.cancel(); removeHold(); delete image.dataset.imageRevealOwner; return; }
         transitioning = true;
         try {
-            if (previousImage && !motion.matches && morph.prepare(previousImage, image, { direction, pointer })) {
+            if (previousImage && !motion.matches && morph.prepare(previousImage, image, { direction, pointer, variation })) {
                 await morph.play({ from: dragProgress, to: 1, duration: dragProgress ? 500 : 1100 });
             } else {
-                const fade = animate(image, [{ opacity: 0 }, { opacity: 1 }], { duration: motion.matches ? 120 : 320, easing: "ease-out" });
+                const fade = animate(image, morph.fallbackFrames(variation, motion.matches), { duration: motion.matches ? 120 : 320, easing: "ease-out" });
                 await fade?.finished.catch(() => undefined);
             }
         } finally {
@@ -301,7 +301,7 @@ export function initializeWantedPreview() {
         if (!g.moved) return;
         suppressClickUntil = performance.now() + 450;
         if (!cancelled && g.progress > 0.25) {
-            change(g.direction, g.rendered ? g.progress : 0, g.pointer);
+            change(g.direction, g.rendered ? g.progress : 0, g.pointer, g.variation);
         } else if (g.rendered && !motion.matches) {
             const token = requestId;
             transitioning = true;
@@ -316,7 +316,7 @@ export function initializeWantedPreview() {
             !opened || image.dataset.imageLoadState !== "ready" || !overImage(event)) return;
         const rect = stage.getBoundingClientRect();
         gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, width: rect.width,
-            moved: false, progress: 0, direction: 1, rendered: false,
+            moved: false, progress: 0, direction: 1, rendered: false, variation: null,
             pointer: [(event.clientX - rect.left) / rect.width, 1 - (event.clientY - rect.top) / rect.height] };
         stage.setPointerCapture?.(event.pointerId);
         stage.focus({ preventScroll: true });
@@ -326,13 +326,16 @@ export function initializeWantedPreview() {
         if (!g || g.id !== event.pointerId) return;
         const dx = event.clientX - g.x, dy = event.clientY - g.y;
         if (!g.moved && (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy) * 1.15)) return;
+        g.variation ??= morph.nextVariation();
         g.moved = true;
         stage.classList.add("is-dragging");
         if (event.cancelable) event.preventDefault();
-        g.direction = dx < 0 ? 1 : -1;
+        const direction = dx < 0 ? 1 : -1;
+        if (direction !== g.direction && g.rendered) { morph.cancel(); g.rendered = false; }
+        g.direction = direction;
         g.progress = Math.min(1, Math.abs(dx) / Math.max(1, g.width));
         const target = preload(index + g.direction);
-        if (target.ready && !motion.matches && morph.prepare(image, target.image, { direction: g.direction, pointer: g.pointer })) {
+        if (target.ready && !motion.matches && morph.prepare(image, target.image, { direction: g.direction, pointer: g.pointer, variation: g.variation })) {
             morph.render(g.progress); g.rendered = true;
         }
     });

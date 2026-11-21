@@ -1,3 +1,4 @@
+import { initializeTextType } from "./effects/text-type.js?v=26.11.19.3";
 /* ===========================
    页面功能导入
 =========================== */
@@ -8,7 +9,7 @@ import {
 
 import {
     initializeCreatorGallery
-} from "./creators/creator-gallery.js?v=26.10.19.5";
+} from "./creators/creator-gallery.js?v=26.11.18.5";
 
 import {
     initializeCreatorNameText
@@ -28,12 +29,12 @@ import {
 
 import {
     initializeInnerworldSection
-} from "./effects/innerworld-section.js";
+} from "./effects/innerworld-section.js?v=26.11.18.8";
 
 import {
     initializeInnerDomainSection
 } from "./effects/inner-domain-section.js";
-import {initializeInnerDomainCubes} from "./effects/inner-domain-cubes.js?v=26.10.23.1";
+import {initializeInnerDomainCubes} from "./effects/inner-domain-cubes.js?v=26.11.20.4";
 
 import {
     initializeMineashSection
@@ -61,15 +62,15 @@ import {
 
 import {
     initializeWantedPreview
-} from "./effects/wanted-preview.js?v=26.10.19.4";
+} from "./effects/wanted-preview.js?v=26.11.18.3";
 
 import {
     initializeWorldviewCore
-} from "./effects/worldview-core.js?v=26.10.23.1";
+} from "./effects/worldview-core.js?v=26.11.19.3";
 
 import {
     initializeWorldviewOrganizations
-} from "./effects/worldview-organizations.js?v=26.10.19.5";
+} from "./effects/worldview-organizations.js?v=26.11.19.10";
 
 import {
     initializeWorldviewTargetCursor
@@ -81,11 +82,11 @@ import {
 
 import {
     initializeWorldviewThings
-} from "./effects/worldview-things.js?v=26.10.18.2";
+} from "./effects/worldview-things.js?v=26.11.21.4";
 
 import {
     initializeWorldviewScenes
-} from "./effects/worldview-scenes.js?v=26.9.2.1";
+} from "./effects/worldview-scenes.js?v=26.11.21.4";
 
 import {
     initializeWorkPostPointerEffects
@@ -99,9 +100,15 @@ import {
     initializeInlineSectionLinks
 } from "./navigation/inline-section-links.js?v=26.11.12.1";
 
+import { initializeArticleReveal } from "./effects/article-reveal.js?v=26.11.21.3";
+import { initializeConservationFlame } from "./effects/conservation-flame.js?v=26.11.21.10";
+import { initializeEnergyField } from "./effects/energy-metaballs.js?v=26.11.20.4";
+import { initializeObserverRelief } from "./effects/observer-relief.js?v=26.11.21.2";
+import { initializeNhnArchiveIndex } from "./navigation/nhn-archive.js?v=26.11.21.2";
+
 import {
     initializeNhnAccordion
-} from "./navigation/nhn-accordion.js?v=26.10.18.2";
+} from "./navigation/nhn-accordion.js?v=26.11.18.7";
 
 import {
     initializeNhnTimeline
@@ -113,7 +120,7 @@ import {
 
 import {
     initializeWorkPostStats
-} from "./work/work-post-stats.js";
+} from "./work/work-post-stats.js?v=26.11.19.4";
 
 
 /* ===========================
@@ -131,12 +138,18 @@ function initializeEvents() {
     initializeInnerDomainSection();
     initializeInnerDomainCubes();
     initializeInnerworldSection();
+    initializeNhnArchiveIndex();
     initializeInlineSectionLinks();
+    initializeArticleReveal();
+    initializeEnergyField();
+    initializeConservationFlame();
+    initializeObserverRelief();
     initializeMineashSection();
     initializeNewworldSection();
     initializeNhnAccordion();
     initializeNhnLogoMagnet();
     initializeNhnTimeline();
+    initializeTextType();
     initializePanelPointerEffects();
     initializePowerSystemSection();
     initializeWantedPosterPointerEffects();

@@ -1,119 +1,103 @@
-/* SlingButton：原生实现，沿用导航模块的返回主页入口。 */
+/* A shallow isometric socket under the live background cube. */
 #back-to-home {
     --sl-size: 56px;
-    --sl-svg: 80px;
-    --sl-pad: #f5f5f5;
-    --sl-icon: #18181b;
-    --sl-accent: #f5f5f5;
-    --sl-well: #27272a;
-    --sl-band: #52525b;
-    --sl-stroke: 3px;
-    --sl-dot: 8px;
-    --sl-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --sl-accent: #e4e7e8;
+    --sl-ease-out: cubic-bezier(.22, 1, .36, 1);
     display: block;
+    position: relative;
+    z-index: 4;
+    width: var(--sl-size);
     height: var(--sl-size);
     margin: 48px auto 104px;
-    position: relative;
-    width: var(--sl-size);
-    z-index: 4;
 }
 
 .sling-button__fx {
-    height: var(--sl-svg);
+    position: absolute;
+    top: 50%;
     left: 50%;
-    margin: calc(var(--sl-svg) / -2) 0 0 calc(var(--sl-svg) / -2);
+    width: 80px;
+    height: 80px;
+    transform: translate(-50%, -50%);
     overflow: visible;
     pointer-events: none;
-    position: absolute;
-    shape-rendering: geometricPrecision;
-    top: 50%;
-    width: var(--sl-svg);
 }
-.sling-button__well { fill: var(--sl-well); transition: fill 200ms ease; }
-.sling-button[data-launching] .sling-button__well { fill: var(--sl-accent); }
-.sling-button__band {
+
+.sling-button__well { fill: #191b1d; fill-opacity: .76; }
+.sling-button__rim,
+.sling-button__lip,
+.sling-button__charge,
+.sling-button__tether,
+.sling-button__wake {
     fill: none;
-    stroke: var(--sl-band);
     stroke-linecap: round;
-    stroke-width: var(--sl-stroke);
-    transition: stroke-width 160ms var(--sl-ease-out);
+    stroke-linejoin: round;
 }
-.sling-button__band--hot { stroke: var(--sl-accent); }
-.sling-button__arc {
-    fill: none;
-    stroke: var(--sl-accent);
-    stroke-linecap: butt;
-    stroke-width: var(--sl-stroke);
-    transition: stroke-width 160ms var(--sl-ease-out);
+
+.sling-button__rim { stroke: #a2a8ac; stroke-opacity: .55; stroke-width: 1; }
+.sling-button__lip { stroke: #747b80; stroke-opacity: .43; }
+.sling-button__charge { stroke: var(--sl-accent); stroke-width: 1.65; }
+.sling-button__tether { stroke: #989fa5; stroke-width: 1; }
+.sling-button__wake {
+    stroke: #e3e6e8;
+    stroke-width: 1;
+    transform-origin: 0px 22px;
+    opacity: 0;
 }
-.sling-button[data-armed] .sling-button__band,
-.sling-button[data-armed] .sling-button__arc { stroke-width: calc(var(--sl-stroke) * 1.5); }
+.sling-button[data-launching] .sling-button__wake { animation: sling-release 220ms var(--sl-ease-out); }
+@keyframes sling-release {
+    from { transform: scale(.7); opacity: .85; }
+    to { transform: scale(1.45); opacity: 0; }
+}
+
 .sling-button__move { position: absolute; inset: 0; }
 .sling-button__pad {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--sl-accent);
+    cursor: grab;
+    touch-action: none;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    background: none;
-    border: 0;
-    border-radius: 50%;
-    cursor: grab;
-    display: block;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    position: relative;
-    touch-action: none;
     user-select: none;
-    width: 100%;
 }
-.sling-button__pad::after { border-radius: 50%; content: ""; inset: -6px; position: absolute; }
+
+.sling-button__pad::after { content: ""; position: absolute; inset: -6px; }
 .sling-button__pad[data-held] { cursor: grabbing; }
 .sling-button__pad:focus-visible { outline: 1px solid var(--sl-accent); outline-offset: 5px; }
-.sling-button__face {
-    align-items: center;
-    background: var(--sl-pad);
-    border-radius: 50%;
-    color: var(--sl-icon);
-    display: flex;
-    height: 100%;
-    justify-content: center;
-    transition: transform 160ms var(--sl-ease-out);
-    width: 100%;
-}
-.sling-button__pad[data-held] .sling-button__face { transform: scale(0.97); }
-.sling-button__pad[data-armed] .sling-button__face { transform: scale(1.04); }
-.sling-button__icon { display: inline-flex; pointer-events: none; }
-.sling-button__dot {
-    background: var(--sl-accent);
-    border-radius: 50%;
-    height: var(--sl-dot);
-    left: 50%;
-    margin: calc(var(--sl-dot) / -2) 0 0 calc(var(--sl-dot) / -2);
-    opacity: 0;
-    pointer-events: none;
-    position: absolute;
-    top: 50%;
-    width: var(--sl-dot);
-}
+
+.sling-button__fallback { width: 38px; height: 40px; pointer-events: none; }
+.sling-button[data-cube-field] .sling-button__fallback { visibility: hidden; }
+
 .sling-button__label {
-    display: block;
-    left: 50%;
-    pointer-events: none;
     position: absolute;
-    text-align: center;
+    top: calc(100% + 16px);
+    left: 50%;
     transform: translateX(-50%);
+    color: #e5e7e9;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .14em;
     white-space: nowrap;
+    pointer-events: none;
 }
-.sling-button__label { color: #eee; font-size: 14px; top: calc(100% + 16px); }
 .sling-button[data-held] .sling-button__label { visibility: hidden; }
+
 .sling-button__hint {
-    color: rgba(238, 238, 238, 0.55);
-    font-size: 12px;
+    position: absolute;
     inset: 0;
+    color: #c4c8ce;
+    font-size: 12px;
     opacity: 0;
     pointer-events: none;
-    position: absolute;
-    transition: opacity 180ms ease;
+    transition: opacity 180ms ease, color 180ms ease;
 }
 .sling-button__hint-left, .sling-button__hint-right {
     position: absolute;
@@ -121,20 +105,19 @@
     transform: translateY(-50%);
     white-space: nowrap;
 }
-.sling-button__hint-left { right: calc(100% + 20px); text-align: right; }
-.sling-button__hint-right { left: calc(100% + 20px); text-align: left; }
+.sling-button__hint-left { right: calc(100% + 22px); }
+.sling-button__hint-right { left: calc(100% + 22px); }
+
 .sling-button:has(.sling-button__pad:focus-visible) .sling-button__hint,
-.sling-button[data-held] .sling-button__hint,
-.sling-button[data-launching] .sling-button__hint { opacity: 1; }
-.sling-button[data-held] .sling-button__hint { color: rgba(238, 238, 238, 0.85); }
+.sling-button:is([data-held], [data-launching]) .sling-button__hint { opacity: 1; }
 .sling-button[data-armed] .sling-button__hint { color: var(--sl-accent); }
+.sling-button:is([data-held], :focus-within) .sling-button__rim { stroke-opacity: .85; }
 
 @media (hover: hover) and (pointer: fine) {
-    .sling-button__pad:not([data-held]):hover .sling-button__face { transform: scale(1.02); }
     .sling-button:has(.sling-button__pad:hover) .sling-button__hint { opacity: 1; }
+    .sling-button:has(.sling-button__pad:hover) .sling-button__rim { stroke-opacity: .85; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .sling-button__face { transform: none !important; transition: none; }
-    .sling-button__band, .sling-button__arc, .sling-button__well { transition: none; }
     .sling-button__hint { transition: none; }
+    .sling-button[data-launching] .sling-button__wake { animation: none; }
 }

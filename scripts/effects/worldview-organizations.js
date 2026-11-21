@@ -1,9 +1,9 @@
+import { bindDirectoryRise } from "./directory-rise.js?v=26.11.19.10";
 /* 世界观 · 组织圆柱轮播。CSS 曲面，不创建 WebGL/React 实例。 */
 import { prepareImageLoading } from "./image-loading.js?v=26.10.19.4";
 
 const ORGANIZATIONS_CAROUSEL_CONFIG = {
     preset: "cylinder",
-    intro: "rise",
     cardWidth: 220,
     aspectRatio: 1,
     speed: 14, // 度 / 秒
@@ -64,7 +64,7 @@ export function initializeWorldviewOrganizations() {
     let selectedIndex = -1;
     let fit = 1;
     let drop = 560;
-    let introElapsed = 0;
+    let rise;
     let frame = 0;
     let lastTime = 0;
     let holdUntil = 0;
@@ -75,7 +75,6 @@ export function initializeWorldviewOrganizations() {
     let hovered = false;
     let focused = false;
     let inView = false;
-    let wasActive = false;
 
     browser.dataset.carouselPreset = config.preset;
     currentButton.style.display = config.captions ? "" : "none";
@@ -84,7 +83,7 @@ export function initializeWorldviewOrganizations() {
     // 空白舞台仍属于网页滚动；只有命中图片时才由轮播接管滚轮。
     browser.removeAttribute("data-lenis-prevent-wheel");
     const active = () => section.classList.contains("is-active") && !document.hidden && inView;
-    const introDone = () => motion.matches || config.intro === "none" || introElapsed >= config.introDuration;
+    const introDone = () => motion.matches || rise?.settled;
     const cruising = () => !motion.matches && introDone() && !hovered && !focused && !gesture && performance.now() >= holdUntil;
 
     function updateInformation(index) {
@@ -182,10 +181,7 @@ export function initializeWorldviewOrganizations() {
         layer.style.transform = `rotateY(${angle}deg)`;
         organizations.forEach(organization => {
             const position = organization.index * step;
-            const delay = Math.abs(wrapAngle(position + angle)) / 180 * 320;
-            const progress = introDone() ? 1 : clamp((introElapsed - delay) / (config.introDuration - delay), 0, 1);
-            const lift = drop * Math.pow(1 - progress, 3);
-            organization.element.style.transform = `rotateY(${position}deg) translateZ(${radius}px) translateY(${lift}px)`;
+            organization.element.style.transform = `rotateY(${position}deg) translateZ(${radius}px)`;
             organization.element.style.setProperty("--organization-depth", String(0.55 * Math.pow((1 - Math.cos(radians(position + angle))) / 2, 1.25)));
         });
         updateInformation(wrapIndex(Math.round(-angle / step)));
@@ -196,8 +192,8 @@ export function initializeWorldviewOrganizations() {
         if (!active()) return;
         const dt = lastTime ? Math.min((now - lastTime) / 1000, 0.05) : 1 / 60;
         lastTime = now;
-        if (!introDone()) introElapsed += dt * 1000;
-        else if (!gesture?.horizontal && target !== null) {
+        if (!introDone()) { lastTime = 0; return; }
+        if (!gesture?.horizontal && target !== null) {
             let remaining = dt;
             while (remaining > 0) {
                 const h = Math.min(remaining, 1 / 240);
@@ -216,7 +212,7 @@ export function initializeWorldviewOrganizations() {
             if (!cruising() && Math.abs(velocity) < 0.01) velocity = 0;
         }
         render();
-        if (!introDone() || target !== null || Math.abs(velocity) > 0.01 || cruising()) frame = requestAnimationFrame(tick);
+        if (target !== null || Math.abs(velocity) > 0.01 || cruising()) frame = requestAnimationFrame(tick);
         else lastTime = 0;
     }
 
@@ -243,10 +239,10 @@ export function initializeWorldviewOrganizations() {
         resumeTimer = setTimeout(wake, 2820);
     }
 
-    function focusIndex(index, moveFocus = false) {
+    function focusIndex(index, moveFocus = false, settle = true) {
         const base = target ?? angle;
         target = -index * step + Math.round((base + index * step) / 360) * 360;
-        introElapsed = config.introDuration;
+        if (settle) rise?.complete();
         hold();
         if (moveFocus) {
             updateInformation(index);
@@ -293,9 +289,6 @@ export function initializeWorldviewOrganizations() {
     }
 
     function syncVisibility() {
-        const sectionActive = section.classList.contains("is-active");
-        if (sectionActive && !wasActive) introElapsed = motion.matches ? config.introDuration : 0;
-        wasActive = sectionActive;
         const rect = browser.getBoundingClientRect();
         inView = rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
         if (active()) { measure(); wake(); }
@@ -308,7 +301,7 @@ export function initializeWorldviewOrganizations() {
         if (!organization || !active() || gesture?.horizontal || performance.now() < suppressClickUntil) return;
         event.preventDefault();
         event.stopPropagation();
-        focusIndex(organization.index);
+        focusIndex(organization.index, false, !organization.sectionId);
         openOrganization(organization);
     });
     listen(layer, "dragstart", event => event.preventDefault());
@@ -331,7 +324,7 @@ export function initializeWorldviewOrganizations() {
         event.stopPropagation();
         const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? browser.clientHeight : 1;
         target = (target ?? angle) - clamp(delta * unit, -250, 250) * 180 / (Math.PI * radius * fit);
-        introElapsed = config.introDuration;
+        rise?.complete();
         hold();
         clearTimeout(snapTimer);
         snapTimer = setTimeout(() => { if (target !== null) target = Math.round(target / step) * step; wake(); }, 140);
@@ -351,7 +344,7 @@ export function initializeWorldviewOrganizations() {
             if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { finishGesture(event, true); return; }
             if (Math.abs(dx) < 8) return;
             gesture.horizontal = true;
-            introElapsed = config.introDuration;
+            rise?.complete();
             target = null;
             clearTimeout(snapTimer);
             browser.classList.add("is-dragging");
@@ -376,7 +369,7 @@ export function initializeWorldviewOrganizations() {
             const base = Math.round((target ?? angle) / step);
             const index = wrapIndex(-base + steps[event.key]);
             target = (base - steps[event.key]) * step;
-            introElapsed = config.introDuration;
+            rise?.complete();
             hold();
             organizations[index].element.focus({ preventScroll: true });
             wake();
@@ -401,7 +394,7 @@ export function initializeWorldviewOrganizations() {
     listen(document, "visibilitychange", syncVisibility);
     listen(motion, "change", () => {
         pause();
-        introElapsed = config.introDuration;
+        rise?.complete();
         angle = Math.round((target ?? angle) / step) * step;
         target = null;
         render();
@@ -416,6 +409,14 @@ export function initializeWorldviewOrganizations() {
             intersectionObserver.disconnect();
         }
     });
+    rise = bindDirectoryRise(browser, () => {
+        measure();
+        const cards = organizations.map(({element, index}) => ({
+            element, distance: drop, delay: Math.abs(wrapAngle(index * step + angle)) / 180 * 320, fade: false
+        }));
+        cards.push({element: currentButton, distance: 45, delay: 110, fade: true});
+        return cards;
+    }, wake, config.introDuration);
     updateInformation(0);
     syncVisibility();
 }

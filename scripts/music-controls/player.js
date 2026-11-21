@@ -1,13 +1,15 @@
+import { legacyLoginPaths } from "./legacy-login-paths.js?v=26.11.21.10";
+import { initializeTrackWaveform } from "./progress-spectrum.js?v=26.11.21.7";
 import { playlist }
-    from "./playlist-data.js";
+    from "./playlist-data.js?v=26.11.21.10";
 
 import {
-    applySongVisuals
-} from "./song-visuals.js?v=26.10.21.7";
+    applySongVisuals, initializeSongVisualizer
+} from "./song-visuals.js?v=26.11.21.9";
 
 import {
     initializeWakeVolumeSlider
-} from "./volume-slider.js?v=26.10.18.8";
+} from "./volume-slider.js?v=26.11.19.9";
 
 import {
     initializeElasticProgressBar
@@ -88,6 +90,7 @@ let currentSongIndex =
     findPlayableSongIndex(0, 1);
 
 let playlistLoaded = false;
+let loginSongPath = null;
 let musicControlsInitialized = false;
 
 
@@ -516,10 +519,10 @@ function loadPlaylist() {
             const songName =
                 getSongName(song);
 
-            const songInformation =
-                document.createElement(
-                    "span"
-                );
+            const songInformation = document.createElement("button");
+            songInformation.type = "button";
+            const preview = song.speedMultiplier > 1 ? "bossrush" : song.visualEffect;
+            if (preview) listItem.dataset.preview = preview;
 
             songInformation.classList.add(
                 "playlist-song-info"
@@ -590,8 +593,7 @@ function loadPlaylist() {
             loginSongButton.type =
                 "button";
 
-            loginSongButton.textContent =
-                "登录曲";
+            paintLoginButton(loginSongButton,song);
 
             loginSongButton.classList.add(
                 "login-song-btn"
@@ -606,10 +608,7 @@ function loadPlaylist() {
                     event => {
                         event.stopPropagation();
 
-                        saveDefaultLoginSong(
-                            index,
-                            songName
-                        );
+                        saveDefaultLoginSong(index);
                     }
                 );
 
@@ -780,10 +779,14 @@ async function playSong(index) {
    11. 登录曲
 =========================== */
 
-function saveDefaultLoginSong(
-    songIndex,
-    songName
-) {
+function paintLoginButton(button,song) {
+    const active = song.path === loginSongPath;
+    button.textContent = active ? "已设为登录曲" : "设为登录曲";
+    button.setAttribute("aria-pressed",String(active));
+    button.setAttribute("aria-label",getSongName(song)+"，"+button.textContent);
+}
+
+function saveDefaultLoginSong(songIndex) {
     if (!isPlayableSong(songIndex)) {
         return;
     }
@@ -791,12 +794,13 @@ function saveDefaultLoginSong(
     try {
         localStorage.setItem(
             "defaultLoginSong",
-            String(songIndex)
+            playlist[songIndex].path
         );
 
-        window.alert(
-            `已将「${songName}」设为登录曲`
-        );
+        loginSongPath = playlist[songIndex].path;
+        for (const row of playlistList.querySelectorAll(".playlist-song")) {
+            paintLoginButton(row.querySelector(".login-song-btn"),playlist[Number(row.dataset.songIndex)]);
+        }
     } catch (error) {
         console.warn(
             "无法保存登录曲：",
@@ -810,16 +814,20 @@ function restoreDefaultLoginSong() {
         return;
     }
 
-    let savedIndex = Number.NaN;
+    let savedIndex;
 
     try {
-        savedIndex =
-            Number.parseInt(
-                localStorage.getItem(
-                    "defaultLoginSong"
-                ),
-                10
-            );
+        const saved = localStorage.getItem("defaultLoginSong");
+        if (!saved) return;
+
+        const savedPath = /^\d+$/.test(saved) ? legacyLoginPaths[Number(saved)] : saved;
+        savedIndex = playlist.findIndex(song => song.path && song.path === savedPath);
+        if (savedIndex < 0) {
+            localStorage.removeItem("defaultLoginSong");
+            return;
+        }
+        if (saved !== savedPath) localStorage.setItem("defaultLoginSong",savedPath);
+        loginSongPath = savedPath;
     } catch (error) {
         console.warn(
             "无法读取登录曲：",
@@ -947,8 +955,10 @@ export function initializeMusicControls() {
         updateAudioVolume();
     }
 
-    initializeWakeVolumeSlider({ input: volumeSlider, panel: volumeSliderContainer });
+    const volumeSpectrum = initializeWakeVolumeSlider({ input: volumeSlider, panel: volumeSliderContainer });
     initializeElasticProgressBar({ input: progressBar });
+    initializeTrackWaveform(audioElement, document.getElementById("track-waveform"));
+    initializeSongVisualizer(volumeSpectrum);
     updateProgressDisplay();
     restoreDefaultLoginSong();
 }

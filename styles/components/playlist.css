@@ -209,66 +209,61 @@
    5. 登录曲按钮
 =========================== */
 
-/* 登录曲按钮 */
-.login-song-btn {
-    background: #444444;
-    border:
-        1px solid
-        rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    color: #EEEEEE;
-    cursor: pointer;
-    flex-shrink: 0;
-    font-size: 12px;
-    margin-left: 10px;
-    opacity: 0;
-    padding: 4px 9px;
-    pointer-events: none;
-    transform:
-        translateX(6px)
-        scale(0.96);
-    transition:
-        background-color 0.3s ease-in-out,
-        border-color 0.3s ease-in-out,
-        opacity 0.3s ease,
-        transform 0.3s
-        cubic-bezier(0.4, 0, 0.2, 1);
+/* A separate action at the right edge leaves the rest of the row playable. */
+#playlist .playlist-song { overflow: hidden; }
+#playlist .playlist-song-info {
+    all: unset;
+    display: block;
+    box-sizing: border-box;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
 }
-
-/* 歌曲悬停时显示登录曲按钮 */
-#playlist li:hover .login-song-btn {
+#playlist .playlist-song-info:focus-visible { outline: 1px solid #ddd; outline-offset: -1px; }
+#playlist .playlist-song[data-preview]::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 6rem;
+    background: var(--song-preview) center / cover no-repeat;
+    mask-image: linear-gradient(90deg,#000 30%,transparent);
+    opacity: .85;
+    pointer-events: none;
+}
+#playlist [data-preview="bossrush"] { --song-preview: url("../../images/bossrush-eyes/bossrush-eyes.png"); }
+#playlist [data-preview="shadowflame"] { --song-preview: url("../../images/music/shadowflame.png"); }
+#playlist [data-preview="pixel-snow"] { --song-preview: url("../../images/music/pixel-snow.png"); }
+#playlist .playlist-song[data-preview] .playlist-song-info { padding-left: 3.4rem; }
+.login-song-btn {
+    position: absolute;
+    inset: 0 0 0 auto;
+    border: 0;
+    margin: 0;
+    padding: 0 .85rem 0 1.8rem;
+    border-radius: 0;
+    background: linear-gradient(90deg,transparent,#101012 42%,#09090a);
+    color: #eee;
+    font: inherit;
+    font-size: .78rem;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+}
+#playlist .playlist-song:is(:hover,:focus-within) .login-song-btn {
     opacity: 1;
     pointer-events: auto;
-    transform:
-        translateX(0)
-        scale(1);
 }
-
-/* 登录曲按钮悬停状态 */
-.login-song-btn:hover {
-    background: #222222;
-    border-color:
-        rgba(255, 255, 255, 0.16);
-    transform:
-        translateX(0)
-        translateY(-1px)
-        scale(1);
+.login-song-btn:focus-visible { outline: 1px solid #ddd; outline-offset: -3px; }
+@media (hover: none), (pointer: coarse) {
+    #playlist .playlist-song { padding-right: 6.4rem; }
+    #playlist .playlist-song .login-song-btn { opacity: 1; pointer-events: auto; }
 }
-
-/* 登录曲按钮键盘焦点 */
-.login-song-btn:focus-visible {
-    opacity: 1;
-    outline:
-        1px solid
-        rgba(238, 238, 238, 0.75);
-    outline-offset: 2px;
-    pointer-events: auto;
-    transform:
-        translateX(0)
-        scale(1);
-}
-
 
 /* ===========================
    6. 歌单动画
@@ -331,12 +326,8 @@
    9. 触摸设备适配
 =========================== */
 
-/* 触摸设备隐藏登录曲按钮 */
+/* 触摸设备保持歌曲行稳定。 */
 @media (hover: none) and (pointer: coarse) {
-    .login-song-btn {
-        display: none !important;
-    }
-
     #playlist .playlist-song:hover {
         box-shadow: none;
         transform: none;
@@ -403,12 +394,8 @@
    25. 歌单设备适配
 =========================== */
 
-/* 触摸设备隐藏登录曲按钮 */
+/* 触摸设备保持歌曲行稳定。 */
 @media (hover: none) and (pointer: coarse) {
-    .login-song-btn {
-        display: none !important;
-    }
-
     #playlist .playlist-song:hover {
         box-shadow: none;
         transform: none;

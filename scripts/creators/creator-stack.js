@@ -11,13 +11,17 @@ export function initializeCreatorStacks({ isBlocked = () => false } = {}) {
         const original = [...gallery.querySelectorAll(":scope > .creator-work")];
         const card = gallery.closest(".creator-card");
         const side = card?.matches(":nth-child(even)") ? -1 : 1;
-        const rotations = card ? getComputedStyle(card) : null;
+        let tallest = 0;
         original.forEach((work, index) => {
             work.dataset.stackOriginalIndex = String(index);
-            work.style.setProperty("--stack-rotation", rotations?.getPropertyValue(`--work-rotation-${index + 1}`).trim() || "0deg");
-            work.querySelectorAll("img").forEach(image => { image.draggable = false; });
+            const image = work.querySelector("img");
+            image.draggable = false;
+            const width = Number(image.getAttribute("width")), height = Number(image.getAttribute("height"));
+            if (width > 0 && height > 0) tallest = Math.max(tallest, height / width);
+            work.style.setProperty("--stack-rotation", (Math.random() * 10 - 5).toFixed(2) + "deg");
             if (original.length > 1) work.setAttribute("aria-description", "单击预览；横向拖出后松开，可将图片放到堆叠底部。");
         });
+        card.style.setProperty("--tallest-print", tallest || 1);
         gallery.classList.add("is-stack-ready");
         gallery.dataset.stackCount = String(original.length);
         return { gallery, card, original, order: [...original], side };
@@ -67,11 +71,90 @@ export function initializeCreatorStacks({ isBlocked = () => false } = {}) {
         extractionTimers.set(stack, setTimeout(() => clearExtraction(stack), duration + 60));
     }
 
+    function createFolio(stack) {
+        const folio = document.createElement("div");
+        folio.className = "creator-folio";
+        const legend = document.createElement("p");
+        legend.className = "creator-work-legend";
+        legend.setAttribute("aria-live", "polite");
+        legend.setAttribute("aria-atomic", "true");
+        const count = document.createElement("span");
+        count.className = "creator-work-count";
+        const title = document.createElement("span");
+        title.className = "creator-work-title";
+        // All captions share one invisible sizing cell, so the tallest real caption reserves
+        // the same wrapping space even when the selected work has no title at all.
+        const titleCell = document.createElement("span");
+        titleCell.className = "creator-title-cell";
+        const measure = document.createElement("span");
+        measure.className = "creator-title-measure";
+        measure.setAttribute("aria-hidden", "true");
+        const labels = stack.original.map(work => (work.dataset.caption || work.querySelector("img").alt).trim());
+        for (const label of new Set(labels)) {
+            if (!label) continue;
+            const sample = document.createElement("span");
+            sample.textContent = label;
+            measure.append(sample);
+        }
+        titleCell.append(measure, title);
+        legend.append(count, titleCell);
+        folio.append(legend);
+
+        const strip = document.createElement("div");
+        strip.className = "creator-thumbnails";
+        strip.setAttribute("role", "group");
+        strip.setAttribute("aria-label", stack.gallery.getAttribute("aria-label") || "选择作品");
+        const buttons = stack.original.length > 1 ? stack.original.map((work, index) => {
+            const thumbnail = document.createElement("img");
+            thumbnail.alt = "";
+            thumbnail.dataset.imageLoading = "off";
+            thumbnail.loading = "lazy";
+            thumbnail.decoding = "async";
+            thumbnail.src = work.querySelector("img").getAttribute("src");
+            const button = document.createElement("button");
+            button.type = "button";
+            button.setAttribute("aria-label", `第 ${index + 1} 张，${work.dataset.caption || work.querySelector("img").alt}`);
+            button.append(thumbnail);
+            button.addEventListener("click", () => {
+                if (isBlocked() || gesture) return;
+                const depth = stack.order.indexOf(work);
+                stack.order = [...stack.order.slice(depth), ...stack.order.slice(0, depth)];
+                render(stack);
+            });
+            button.addEventListener("keydown", event => {
+                const end = stack.original.length - 1;
+                const next = { ArrowLeft: (index + end) % (end + 1), ArrowRight: (index + 1) % (end + 1), Home: 0, End: end }[event.key];
+                if (next === undefined) return;
+                event.preventDefault();
+                buttons[next].focus();
+                buttons[next].click();
+            });
+            strip.append(button);
+            return button;
+        }) : [];
+        if (buttons.length) folio.append(strip);
+        stack.gallery.after(folio);
+        return { count, title, buttons };
+    }
+
     function render(stack) {
+        const top = stack.order[0];
+        const index = stack.original.indexOf(top);
+        const { count, title, buttons } = stack.folio;
+        const number = n => String(n).padStart(2, "0");
+        const label = top.dataset.caption || top.querySelector("img").alt;
+        const position = number(index + 1) + " / " + number(stack.order.length);
+        if (count.textContent !== position) count.textContent = position;
+        if (title.textContent !== label) title.textContent = label;
+        buttons.forEach((button, i) => {
+            button.setAttribute("aria-pressed", String(i === index));
+            button.tabIndex = i === index ? 0 : -1;
+        });
         stack.order.forEach((work, depth) => {
             // Preserve the existing four-photo fan; larger albums share its footprint.
             const x = stack.order.length <= 4 ? [0, 15, 29, 42][depth] : 42 * depth / (stack.order.length - 1);
             const y = stack.order.length <= 4 ? [0, 6, 12, 17][depth] : 17 * depth / (stack.order.length - 1);
+            work.tabIndex = depth === 0 ? 0 : -1;
             work.dataset.stackDepth = String(depth);
             work.style.setProperty("--stack-x", `${x * stack.side}%`);
             work.style.setProperty("--stack-y", `${y}%`);
@@ -114,14 +197,15 @@ export function initializeCreatorStacks({ isBlocked = () => false } = {}) {
     }
 
     stacks.forEach(stack => {
+        stack.folio = createFolio(stack);
         render(stack);
         stack.original.forEach(work => {
             work.addEventListener("dragstart", event => event.preventDefault());
             work.addEventListener("pointerdown", event => {
                 if (stack.original.length < 2 || gesture || event.isPrimary === false || event.button !== 0 ||
                     !section.classList.contains("is-active") || isBlocked()) return;
-                const card = stack.gallery.closest(".creator-card");
-                const scale = card?.offsetWidth ? card.getBoundingClientRect().width / card.offsetWidth : 1;
+                const spread = stack.card.querySelector(".creator-spread");
+                const scale = spread.offsetWidth ? spread.getBoundingClientRect().width / spread.offsetWidth : 1;
                 gesture = {
                     id: event.pointerId, stack, work, x: event.clientX, y: event.clientY,
                     dx: 0, dy: 0, dragging: false, touch: event.pointerType === "touch",

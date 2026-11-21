@@ -1,6 +1,48 @@
+import { initializeCreatorCaptures } from "./creator-capture.js?v=26.11.18.5";
 import { prepareImageLoading } from "../effects/image-loading.js?v=26.10.19.4";
-import { MorphSliderStage } from "./morph-slider.js?v=26.10.19.4";
-import { initializeCreatorStacks } from "./creator-stack.js?v=26.10.19.5";
+import { MorphSliderStage } from "./morph-slider.js?v=26.11.18.3";
+import { initializeCreatorStacks } from "./creator-stack.js?v=26.11.18.4";
+
+function initializeCreatorDirectory(cards, motion) {
+    const toggle = document.querySelector(".creator-directory-toggle");
+    const list = document.getElementById("creator-directory-items");
+    if (!toggle || !list || !cards.length) return;
+
+    function expand(open) {
+        toggle.setAttribute("aria-expanded", String(open));
+        list.hidden = !open;
+    }
+    cards.forEach(card => {
+        const heading = card.querySelector(".creator-name h2");
+        const avatar = card.querySelector(".creator-avatar");
+        const button = document.createElement("button");
+        button.type = "button";
+        const portrait = new Image();
+        portrait.loading = "lazy";
+        portrait.decoding = "async";
+        portrait.src = avatar.getAttribute("src");
+        portrait.alt = "";
+        portrait.dataset.imageLoading = "off";
+        button.append(portrait, document.createTextNode(heading.textContent.trim()));
+        button.addEventListener("click", () => {
+            expand(false);
+            heading.tabIndex = -1;
+            heading.focus({ preventScroll: true });
+            if (window.lenis && !window.lenis.isStopped) {
+                window.lenis.scrollTo(card, { offset: -24, immediate: motion.matches });
+            } else {
+                card.scrollIntoView({ block: "start", behavior: motion.matches ? "instant" : "smooth" });
+            }
+        });
+        list.append(button);
+    });
+    toggle.addEventListener("click", () => expand(list.hidden));
+    list.addEventListener("keydown", event => {
+        if (event.key === "Escape") { expand(false); toggle.focus(); }
+    });
+    window.addEventListener("section-shown", () => expand(false));
+    toggle.parentElement.hidden = false;
+}
 
 let initialized = false;
 
@@ -161,116 +203,6 @@ export function initializeCreatorGallery() {
         animation.onfinish = done;
         animation.oncancel = done;
         return animation;
-    }
-
-    function createRandomRotation(
-        minimum,
-        maximum
-    ) {
-        const rotation =
-            Math.random() *
-            (
-                maximum -
-                minimum
-            ) +
-            minimum;
-
-        return `${rotation.toFixed(
-            2
-        )}deg`;
-    }
-
-    function initializeCardRotations() {
-        creatorCards.forEach(card => {
-            card.style.setProperty(
-                "--avatar-rotation",
-                createRandomRotation(
-                    -5,
-                    5
-                )
-            );
-
-            for (
-                let index = 1;
-                index <= card.querySelectorAll(".creator-work").length;
-                index += 1
-            ) {
-                card.style.setProperty(
-                    `--work-rotation-${index}`,
-                    createRandomRotation(
-                        -5,
-                        5
-                    )
-                );
-            }
-        });
-    }
-
-    function initializeCardObserver() {
-        if (
-            creatorCards.length === 0 ||
-            !(
-                "IntersectionObserver"
-                in window
-            )
-        ) {
-            return;
-        }
-
-        const observer =
-            new IntersectionObserver(
-                entries => {
-                    entries.forEach(entry => {
-                        const card =
-                            entry.target;
-
-                        if (
-                            !entry.isIntersecting
-                        ) {
-                            card.classList.remove(
-                                "is-entering",
-                                "is-settled"
-                            );
-
-                            return;
-                        }
-
-                        if (
-                            entry.intersectionRatio >=
-                            0.58
-                        ) {
-                            card.classList.add(
-                                "is-settled"
-                            );
-
-                            card.classList.remove(
-                                "is-entering"
-                            );
-
-                            return;
-                        }
-
-                        card.classList.add(
-                            "is-entering"
-                        );
-
-                        card.classList.remove(
-                            "is-settled"
-                        );
-                    });
-                },
-                {
-                    root: null,
-                    rootMargin:
-                        "0px 0px -8% 0px",
-                    threshold:
-                        [0.08, 0.58]
-                }
-            );
-
-        creatorCards.forEach(card => {
-            observer.observe(card);
-        });
     }
 
     function updateLightbox(index) {
@@ -649,7 +581,7 @@ export function initializeCreatorGallery() {
         return goToLightboxIndex(wrap(activeWorkIndex + direction), direction);
     }
 
-    async function goToLightboxIndex(index, direction = 1, dragProgress = 0, pointer = [0.5, 0.5]) {
+    async function goToLightboxIndex(index, direction = 1, dragProgress = 0, pointer = [0.5, 0.5], variation = morph.nextVariation()) {
         if (!lightbox.classList.contains("active") || closing || transitionInProgress || index === activeWorkIndex) return;
         const requestId = ++lightboxRequestId;
         const previous = rememberCurrent();
@@ -660,11 +592,11 @@ export function initializeCreatorGallery() {
             if (requestId !== lightboxRequestId || !lightbox.classList.contains("active")) return;
             if (!succeeded) return;
             transitionInProgress = true;
-            const ready = previous && !reducedMotionQuery.matches && morph.prepare(previous, lightboxImage, { direction, pointer });
+            const ready = previous && !reducedMotionQuery.matches && morph.prepare(previous, lightboxImage, { direction, pointer, variation });
             if (ready) {
                 await morph.play({ from: dragProgress, to: 1, duration: dragProgress ? 500 : 1100 });
             } else if (lightboxImage.animate) {
-                await animate(lightboxImage, [{ opacity: 0 }, { opacity: 1 }], {
+                await animate(lightboxImage, morph.fallbackFrames(variation, reducedMotionQuery.matches), {
                     duration: reducedMotionQuery.matches ? 150 : 320, easing: "ease-out"
                 }).finished.catch(() => undefined);
             }
@@ -695,7 +627,7 @@ export function initializeCreatorGallery() {
         if (stage.hasPointerCapture?.(g.id)) stage.releasePointerCapture(g.id);
         if (!g.moved) { morph.cancel(); return; }
         if (!cancelled && g.progress > 0.4) {
-            goToLightboxIndex(wrap(activeWorkIndex + g.direction), g.direction, g.progress, g.pointer);
+            goToLightboxIndex(wrap(activeWorkIndex + g.direction), g.direction, g.rendered ? g.progress : 0, g.pointer, g.variation);
         } else if (g.rendered && !reducedMotionQuery.matches) {
             transitionInProgress = true;
             const requestId = lightboxRequestId;
@@ -710,7 +642,7 @@ export function initializeCreatorGallery() {
             !lightbox.classList.contains("active") || lightboxImage.dataset.imageLoadState !== "ready") return;
         const rect = stage.getBoundingClientRect();
         gesture = { id: event.pointerId, x: event.clientX, y: event.clientY, width: rect.width,
-            moved: false, progress: 0, direction: 1, rendered: false,
+            moved: false, progress: 0, direction: 1, rendered: false, variation: null,
             pointer: [(event.clientX - rect.left) / rect.width, 1 - (event.clientY - rect.top) / rect.height] };
         stage.setPointerCapture(event.pointerId);
         stage.focus({ preventScroll: true });
@@ -720,13 +652,16 @@ export function initializeCreatorGallery() {
         if (!g || g.id !== event.pointerId) return;
         const dx = event.clientX - g.x, dy = event.clientY - g.y;
         if (!g.moved && (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy) * 1.15)) return;
+        g.variation ??= morph.nextVariation();
         g.moved = true;
         stage.classList.add("is-dragging");
         if (event.cancelable) event.preventDefault();
-        g.direction = dx < 0 ? 1 : -1;
+        const direction = dx < 0 ? 1 : -1;
+        if (direction !== g.direction && g.rendered) { morph.cancel(); g.rendered = false; }
+        g.direction = direction;
         g.progress = Math.min(1, Math.abs(dx) / Math.max(1, g.width));
         const target = preload(activeWorkIndex + g.direction);
-        if (target.ready && !reducedMotionQuery.matches && morph.prepare(lightboxImage, target.image, { direction: g.direction, pointer: g.pointer })) {
+        if (target.ready && !reducedMotionQuery.matches && morph.prepare(lightboxImage, target.image, { direction: g.direction, pointer: g.pointer, variation: g.variation })) {
             morph.render(g.progress);
             g.rendered = true;
         }
@@ -748,8 +683,8 @@ export function initializeCreatorGallery() {
     });
     updateIndicators();
 
-    initializeCardRotations();
-    initializeCardObserver();
+    initializeCreatorDirectory(creatorCards, reducedMotionQuery);
+    initializeCreatorCaptures(creatorCards, reducedMotionQuery);
     initializeCreatorStacks({ isBlocked: () => lightbox.classList.contains("active") || closing });
 
     creatorWorks.forEach(

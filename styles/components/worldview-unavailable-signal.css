@@ -62,23 +62,11 @@
         cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.worldview-scenes-section.has-worldview-unavailable-signal
-    .scene-node:not(.is-worldview-unavailable-source),
 .worldview-things-section.has-worldview-unavailable-signal
     .things-wheel-option:not(.is-worldview-unavailable-source),
 .worldview-organizations-section.has-worldview-unavailable-signal
     .organization-orbit-item:not(.is-worldview-unavailable-source) {
     filter: brightness(0.82);
-}
-
-.worldview-scenes-section.has-worldview-scene-unavailable-signal
-    .scene-node:not(.is-worldview-unavailable-source) {
-    filter: brightness(0.9);
-    opacity:
-        calc(var(--scene-opacity) * 0.82);
-    transition:
-        filter 250ms ease,
-        opacity 250ms ease;
 }
 
 .worldview-scenes-section
@@ -127,17 +115,14 @@
 
 @keyframes worldview-scene-unavailable-source {
     0%, 100% {
-        filter: brightness(1);
         scale: 1;
     }
 
     28% {
-        filter: brightness(1.1);
         scale: 0.98;
     }
 
     62% {
-        filter: brightness(1.04);
         scale: 0.992;
     }
 }
@@ -155,8 +140,12 @@
         opacity: 1;
     }
 
-    .is-worldview-unavailable-source {
+    .is-worldview-unavailable-source,
+    .worldview-scenes-section .scene-node.is-worldview-unavailable-source {
         animation: none;
+    }
+
+    .is-worldview-unavailable-source:not(.scene-node) {
         filter: brightness(0.78);
     }
 }

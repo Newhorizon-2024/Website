@@ -29,6 +29,7 @@
 
 /* 导航栏选项 */
 #navbar .tab {
+    -webkit-tap-highlight-color: transparent;
     background-color: transparent;
     color: #EEEEEE;
     cursor: pointer;

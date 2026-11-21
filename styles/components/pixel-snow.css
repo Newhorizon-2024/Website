@@ -1,0 +1,38 @@
+.pixel-snow-sky,
+.pixel-snow-bank {
+    display: block;
+    pointer-events: none;
+    user-select: none;
+    image-rendering: pixelated;
+    opacity: 1;
+    transition: opacity 500ms ease;
+}
+.pixel-snow-sky.is-snow-fading, .pixel-snow-bank.is-snow-fading { opacity: 0; }
+.pixel-snow-sky {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+.pixel-snow-bank {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    visibility: hidden;
+    z-index: 4;
+}
+.pixel-snow-ledge, .pixel-snow-fragment {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.pixel-snow-fragment {
+    position: absolute;
+    top: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+    @starting-style { .pixel-snow-sky, .pixel-snow-bank { opacity: 0; } }
+    .pixel-snow-sky, .pixel-snow-bank { transition-duration: 160ms; }
+}

@@ -178,10 +178,14 @@ export function initializeWorldviewScenes() {
     let canvasHeight =
         0;
 
+    let canvasPadY = 0;
     let globeRadius =
         0;
 
     /* 昼夜交界缓慢绕球体移动，避免与球体旋转完全同步。 */
+    const moonStartPhase = 0.14;
+    const moonPeriodMs = 44000;
+    let moonPhase = moonStartPhase;
     let lightingPhase =
         -0.72;
 
@@ -210,9 +214,7 @@ export function initializeWorldviewScenes() {
     let dragging =
         false;
 
-    let pointerInside =
-        false;
-
+    let pendingNodeDrag = null;
     let activePointerId =
         null;
 
@@ -247,9 +249,6 @@ export function initializeWorldviewScenes() {
         null;
 
     let animationActive =
-        false;
-
-    let lenisStoppedByGlobe =
         false;
 
     const dragClickThreshold =
@@ -479,45 +478,6 @@ export function initializeWorldviewScenes() {
 
 
     /* ===========================
-       Lenis 控制
-    =========================== */
-
-    function stopPageScrolling() {
-        if (lenisStoppedByGlobe) {
-            return;
-        }
-
-        if (
-            window.lenis &&
-            typeof window.lenis.stop ===
-                "function"
-        ) {
-            window.lenis.stop();
-
-            lenisStoppedByGlobe =
-                true;
-        }
-    }
-
-    function restorePageScrolling() {
-        if (!lenisStoppedByGlobe) {
-            return;
-        }
-
-        if (
-            window.lenis &&
-            typeof window.lenis.start ===
-                "function"
-        ) {
-            window.lenis.start();
-        }
-
-        lenisStoppedByGlobe =
-            false;
-    }
-
-
-    /* ===========================
        Canvas 尺寸
     =========================== */
 
@@ -553,12 +513,9 @@ export function initializeWorldviewScenes() {
         canvasHeight =
             layoutHeight;
 
-        globeRadius =
-            Math.min(
-                canvasWidth,
-                canvasHeight
-            ) *
-            0.365;
+        globeRadius = Math.min(canvasHeight * .365, canvasWidth * .34);
+        // 仰视时长轴会转向屏幕上下方。扩展绘图区域，节点仍用原布局坐标。
+        canvasPadY = Math.ceil(Math.max(0, globeRadius * 1.66 + 2 - canvasHeight / 2));
 
         canvas.width =
             Math.max(
@@ -573,7 +530,7 @@ export function initializeWorldviewScenes() {
             Math.max(
                 1,
                 Math.round(
-                    canvasHeight *
+                    (canvasHeight + 2 * canvasPadY) *
                     pixelRatio
                 )
             );
@@ -582,7 +539,8 @@ export function initializeWorldviewScenes() {
             `${canvasWidth}px`;
 
         canvas.style.height =
-            `${canvasHeight}px`;
+            `${canvasHeight + 2 * canvasPadY}px`;
+        canvas.style.top = `${-canvasPadY}px`;
 
         context.setTransform(
             pixelRatio,
@@ -590,7 +548,7 @@ export function initializeWorldviewScenes() {
             0,
             pixelRatio,
             0,
-            0
+            canvasPadY * pixelRatio
         );
 
         renderGlobe();
@@ -601,208 +559,66 @@ export function initializeWorldviewScenes() {
        绘制球体线段
     =========================== */
 
-    function drawProjectedSegment(
-        firstPoint,
-        secondPoint,
-        baseOpacity
-    ) {
-        const centerX =
-            canvasWidth /
-            2;
+    // 经纬网和定位波共用同一组 yaw / pitch。
+    const gridLines = [];
+    const equator = [];
+    function parallel(latitude, longitude, stepLat, stepLon, count) {
+        return Array.from({length: count + 1}, (_, i) =>
+            latitudeLongitudeToVector(latitude + i * stepLat, longitude + i * stepLon));
+    }
+    for (let lat = -60; lat <= 60; lat += 30) {
+        (lat === 0 ? equator : gridLines).push(parallel(lat, -180, 0, 5, 72));
+    }
+    for (let lon = -150; lon <= 180; lon += 30) gridLines.push(parallel(-90, lon, 4, 0, 45));
 
-        const centerY =
-            canvasHeight /
-            2;
-
-        const averageDepth =
-            (
-                firstPoint.z +
-                secondPoint.z
-            ) /
-            2;
-
-        const depthOpacity =
-            clamp(
-                (
-                    averageDepth +
-                    1
-                ) /
-                2,
-                0,
-                1
-            );
-
-        const opacity =
-            baseOpacity *
-            (
-                0.18 +
-                depthOpacity *
-                0.82
-            );
-
-        context.strokeStyle =
-            `rgba(
-                238,
-                238,
-                238,
-                ${opacity}
-            )`;
-
+    // 在地平线处裁断线段，在一次 stroke 中绘制同色线条。
+    function strokeSurface(lines, color, width, radius, cy, sy, cp, sp) {
         context.beginPath();
-
-        context.moveTo(
-            centerX +
-                firstPoint.x *
-                globeRadius,
-            centerY -
-                firstPoint.y *
-                globeRadius
-        );
-
-        context.lineTo(
-            centerX +
-                secondPoint.x *
-                globeRadius,
-            centerY -
-                secondPoint.y *
-                globeRadius
-        );
-
+        for (const line of lines) {
+            let lastX, lastY, lastZ;
+            for (const p of line) {
+                const x = p.x * cy + p.z * sy, side = -p.x * sy + p.z * cy;
+                const y = -(p.y * cp - side * sp), z = p.y * sp + side * cp;
+                if (lastZ !== undefined && (z >= 0) !== (lastZ >= 0)) {
+                    const t = lastZ / (lastZ - z);
+                    const hx = lastX + t * (x - lastX), hy = lastY + t * (y - lastY);
+                    if (z >= 0) context.moveTo(hx,hy); else context.lineTo(hx,hy);
+                }
+                if (z >= 0) {
+                    if (lastZ === undefined) context.moveTo(x,y); else context.lineTo(x,y);
+                }
+                lastX = x; lastY = y; lastZ = z;
+            }
+        }
+        context.strokeStyle = color;
+        context.lineWidth = width / radius;
         context.stroke();
     }
 
-
-    /* ===========================
-       绘制纬线
-    =========================== */
-
-    function drawLatitudeLines() {
-        const latitudeValues = [
-            -60,
-            -30,
-            0,
-            30,
-            60
-        ];
-
-        latitudeValues.forEach(
-            latitude => {
-                let previousPoint =
-                    null;
-
-                for (
-                    let longitude = -180;
-                    longitude <= 180;
-                    longitude += 5
-                ) {
-                    const vector =
-                        latitudeLongitudeToVector(
-                            latitude,
-                            longitude
-                        );
-
-                    const rotated =
-                        rotateVector(
-                            vector,
-                            rotationYaw,
-                            rotationPitch
-                        );
-
-                    if (previousPoint) {
-                        drawProjectedSegment(
-                            previousPoint,
-                            rotated,
-                            latitude === 0
-                                ? 0.12
-                                : 0.065
-                        );
-                    }
-
-                    previousPoint =
-                        rotated;
-                }
-            }
-        );
+    function drawSurface(radius, isEarth) {
+        context.save();
+        context.scale(radius, radius);
+        context.lineJoin = "round";
+        const view = [Math.cos(rotationYaw), Math.sin(rotationYaw), Math.cos(rotationPitch), Math.sin(rotationPitch)];
+        // 小球保留同一套经纬线，线宽按屏幕可读性缩放。
+        const lineScale = isEarth ? 1 : 0.65;
+        strokeSurface(gridLines, "rgba(204,216,222,.13)", .8 * lineScale, radius, ...view);
+        strokeSurface(equator, "rgba(211,224,230,.23)", .9 * lineScale, radius, ...view);
+        context.restore();
     }
-
-
-    /* ===========================
-       绘制经线
-    =========================== */
-
-    function drawLongitudeLines() {
-        for (
-            let longitude = -150;
-            longitude <= 180;
-            longitude += 30
-        ) {
-            let previousPoint =
-                null;
-
-            for (
-                let latitude = -90;
-                latitude <= 90;
-                latitude += 4
-            ) {
-                const vector =
-                    latitudeLongitudeToVector(
-                        latitude,
-                        longitude
-                    );
-
-                const rotated =
-                    rotateVector(
-                        vector,
-                        rotationYaw,
-                        rotationPitch
-                    );
-
-                if (previousPoint) {
-                    drawProjectedSegment(
-                        previousPoint,
-                        rotated,
-                        0.065
-                    );
-                }
-
-                previousPoint =
-                    rotated;
-            }
-        }
-    }
-
 
     /* ===========================
        绘制球体轮廓
     =========================== */
 
-    function drawGlobeOutline() {
-        const centerX =
-            canvasWidth /
-            2;
-
-        const centerY =
-            canvasHeight /
-            2;
-
-        const gradient =
-            context.createRadialGradient(
-                centerX -
-                    globeRadius *
-                    0.2,
-                centerY -
-                    globeRadius *
-                    0.25,
-                globeRadius *
-                    0.1,
-                centerX,
-                centerY,
-                globeRadius
-            );
+    function drawGlobeOutline(radius) {
+        const gradient = context.createRadialGradient(
+            -radius * 0.2, -radius * 0.25, radius * 0.1, 0, 0, radius
+        );
 
         gradient.addColorStop(
             0,
-            "rgba(255, 255, 255, 0.035)"
+            "rgba(116, 128, 138, 0.23)"
         );
 
         gradient.addColorStop(
@@ -820,15 +636,7 @@ export function initializeWorldviewScenes() {
 
         context.beginPath();
 
-        context.arc(
-            centerX,
-            centerY,
-            globeRadius,
-            0,
-            Math.PI *
-                2
-        );
-
+        context.arc(0, 0, radius, 0, Math.PI * 2);
         context.fill();
 
         context.strokeStyle =
@@ -845,143 +653,125 @@ export function initializeWorldviewScenes() {
        昼夜光照与大气边缘
     =========================== */
 
-    function drawGlobeLighting() {
-        const centerX = canvasWidth / 2;
-        const centerY = canvasHeight / 2;
-        const lightX = Math.cos(lightingPhase);
-        const lightY = Math.sin(lightingPhase) * 0.62;
-
+    // 方向光固定在纹理坐标中，每帧只旋转缓存的明暗盘面。
+    const lightDisc = document.createElement("canvas");
+    function drawGlobeLighting(radius) {
+        const density = canvas.width / canvasWidth;
+        const size = Math.max(64, Math.min(768, Math.round(2 * globeRadius * density)));
+        if (lightDisc.width !== size || lightDisc.height !== size) {
+            lightDisc.width = lightDisc.height = size;
+            const pen = lightDisc.getContext("2d");
+            const pixels = pen.createImageData(size,size);
+            for (let y = 0; y < size; y++) {
+                const ny = (2*y+1)/size - 1;
+                for (let x = 0; x < size; x++) {
+                    const nx = (2*x+1)/size - 1, rr = nx*nx + ny*ny;
+                    if (rr >= 1) continue;
+                    const nz = Math.sqrt(1-rr);
+                    const incidence = nx*.94 + nz*.34;
+                    const dawn = clamp((incidence+.17)/.56,0,1);
+                    const twilight = dawn*dawn*(3-2*dawn);
+                    const lit = Math.max(0,incidence);
+                    const grazing = (1-nz)*(1-nz)*lit;
+                    const value = 10 + 18*twilight + 26*lit + 32*grazing;
+                    const i = 4*(y*size+x);
+                    pixels.data[i] = value;
+                    pixels.data[i+1] = value + 2 + lit*2;
+                    pixels.data[i+2] = value + 4 + lit*5;
+                    pixels.data[i+3] = 222 * clamp((1-Math.sqrt(rr))*size*.5,0,1);
+                }
+            }
+            pen.putImageData(pixels,0,0);
+        }
         context.save();
-        context.beginPath();
-        context.arc(
-            centerX,
-            centerY,
-            globeRadius,
-            0,
-            Math.PI * 2
-        );
-        context.clip();
-
-        const dayNightGradient =
-            context.createLinearGradient(
-                centerX - lightX * globeRadius,
-                centerY - lightY * globeRadius,
-                centerX + lightX * globeRadius,
-                centerY + lightY * globeRadius
-            );
-
-        dayNightGradient.addColorStop(
-            0,
-            "rgba(0, 0, 0, 0.52)"
-        );
-        dayNightGradient.addColorStop(
-            0.42,
-            "rgba(4, 7, 12, 0.25)"
-        );
-        dayNightGradient.addColorStop(
-            0.57,
-            "rgba(150, 182, 215, 0.018)"
-        );
-        dayNightGradient.addColorStop(
-            1,
-            "rgba(210, 228, 244, 0.075)"
-        );
-
-        context.fillStyle =
-            dayNightGradient;
-        context.fillRect(
-            centerX - globeRadius,
-            centerY - globeRadius,
-            globeRadius * 2,
-            globeRadius * 2
-        );
-
-        const daylightGlow =
-            context.createRadialGradient(
-                centerX + lightX * globeRadius * 0.42,
-                centerY + lightY * globeRadius * 0.42,
-                0,
-                centerX + lightX * globeRadius * 0.42,
-                centerY + lightY * globeRadius * 0.42,
-                globeRadius * 0.95
-            );
-
-        daylightGlow.addColorStop(
-            0,
-            "rgba(211, 231, 248, 0.07)"
-        );
-        daylightGlow.addColorStop(
-            0.58,
-            "rgba(112, 151, 188, 0.025)"
-        );
-        daylightGlow.addColorStop(
-            1,
-            "rgba(0, 0, 0, 0)"
-        );
-
-        context.fillStyle =
-            daylightGlow;
-        context.fillRect(
-            centerX - globeRadius,
-            centerY - globeRadius,
-            globeRadius * 2,
-            globeRadius * 2
-        );
+        context.rotate(Math.atan2(.62*Math.sin(lightingPhase),Math.cos(lightingPhase)));
+        context.drawImage(lightDisc, -radius, -radius, 2 * radius, 2 * radius);
         context.restore();
     }
 
-    function drawAtmosphereRim() {
-        const centerX = canvasWidth / 2;
-        const centerY = canvasHeight / 2;
+    // 两个正交单位向量固定在地球坐标系中，决定轨道平面的姿态。
+    const orbitAxis = latitudeLongitudeToVector(20, 90);
+    const inclination = degreesToRadians(22);
+    const orbitQuarter = {
+        x: -orbitAxis.y * Math.sin(inclination),
+        y: orbitAxis.x * Math.sin(inclination),
+        z: Math.cos(inclination)
+    };
 
-        const rimGradient =
-            context.createLinearGradient(
-                centerX - globeRadius,
-                centerY,
-                centerX + globeRadius,
-                centerY
-            );
+    function projectLunarOrbit() {
+        const u = rotateVector(orbitAxis, rotationYaw, rotationPitch);
+        const v = rotateVector(orbitQuarter, rotationYaw, rotationPitch);
+        // 在地球坐标中加长第一条轨道轴，拖动时长轴会随轨道平面一起旋转。
+        const major = Math.min(globeRadius * 1.55, canvasWidth / 2 - globeRadius * .11 - 2);
+        const minor = globeRadius * 1.24;
+        const project = phase => {
+            const a = major * Math.cos(phase), b = minor * Math.sin(phase);
+            return { x: a*u.x + b*v.x, y: -(a*u.y + b*v.y), z: a*u.z + b*v.z };
+        };
+        const ascending = Math.atan2(-major * u.z, minor * v.z);
+        const moon = project(moonPhase);
+        return {
+            node: project(ascending), quarter: project(ascending + Math.PI / 2),
+            moonX: canvasWidth / 2 + moon.x, moonY: canvasHeight / 2 + moon.y,
+            moonRadius: globeRadius * (.092 + .012 * moon.z / major),
+            inFront: moon.z >= 0
+        };
+    }
 
-        rimGradient.addColorStop(
-            0,
-            "rgba(92, 126, 158, 0.025)"
-        );
-        rimGradient.addColorStop(
-            0.5,
-            "rgba(190, 219, 242, 0.12)"
-        );
-        rimGradient.addColorStop(
-            1,
-            "rgba(116, 164, 202, 0.045)"
-        );
+    function drawLunarOrbit(orbit, front) {
+        const cx = canvasWidth / 2, cy = canvasHeight / 2;
+        context.save();
+        if (!front) {
+            context.beginPath();
+            context.rect(0, -canvasPadY, canvasWidth, canvasHeight + 2 * canvasPadY);
+            context.moveTo(cx + globeRadius + 0.5, cy);
+            context.arc(cx, cy, globeRadius + 0.5, 0, Math.PI * 2);
+            context.clip("evenodd");
+        }
 
+        // 两段四分之一圆的贝塞尔投影，即使轨道正好侧对镜头也连续。
+        const sign = front ? 1 : -1, k = 4 * (Math.SQRT2 - 1) / 3;
+        const x = orbit.node.x * sign, y = orbit.node.y * sign;
+        const qx = orbit.quarter.x * sign, qy = orbit.quarter.y * sign;
+        context.beginPath();
+        context.moveTo(cx + x, cy + y);
+        context.bezierCurveTo(cx + x + k*qx, cy + y + k*qy, cx + qx + k*x, cy + qy + k*y, cx + qx, cy + qy);
+        context.bezierCurveTo(cx + qx - k*x, cy + qy - k*y, cx - x + k*qx, cy - y + k*qy, cx - x, cy - y);
+        context.lineWidth = front ? 1 : 0.85;
+        context.strokeStyle = front ? "rgba(209,216,225,0.36)" : "rgba(189,198,207,0.24)";
+        context.stroke();
+
+        if (orbit.inFront === front) {
+            // 球体共用半透明材质，先遮住月球轮廓内的轨道和后景。
+            context.save();
+            context.globalCompositeOperation = "destination-out";
+            context.fillStyle = "#000";
+            context.beginPath();
+            context.arc(orbit.moonX, orbit.moonY, orbit.moonRadius, 0, Math.PI * 2);
+            context.fill();
+            context.restore();
+            drawSphere(orbit.moonX, orbit.moonY, orbit.moonRadius, false);
+        }
+        context.restore();
+    }
+
+    function drawAtmosphereRim(r) {
+        const angle = Math.atan2(.62 * Math.sin(lightingPhase), Math.cos(lightingPhase));
+        const dx = r*Math.cos(angle), dy = r*Math.sin(angle);
+        const light = context.createLinearGradient(-dx, -dy, dx, dy);
+        light.addColorStop(0,"rgba(164,174,186,.04)");
+        light.addColorStop(.65,"rgba(182,196,210,.12)");
+        light.addColorStop(1,"rgba(224,235,244,.78)");
         context.save();
         context.beginPath();
-        context.arc(
-            centerX,
-            centerY,
-            globeRadius + 0.75,
-            0,
-            Math.PI * 2
-        );
-        context.strokeStyle =
-            rimGradient;
-        context.lineWidth =
-            Math.max(
-                1.5,
-                globeRadius * 0.012
-            );
-        context.shadowBlur =
-            Math.max(
-                5,
-                globeRadius * 0.035
-            );
-        context.shadowColor =
-            "rgba(120, 174, 214, 0.16)";
+        context.arc(0, 0, r + .4, 0, Math.PI * 2);
+        context.strokeStyle = light;
+        context.lineWidth = Math.max(r === globeRadius ? 1.2 : .7, r * .009);
+        context.shadowBlur = Math.max(r === globeRadius ? 4 : 1.5, r * .035);
+        context.shadowColor = "rgba(185,211,232,.42)";
         context.stroke();
         context.restore();
     }
-
 
     /* ===========================
        更新节点位置
@@ -1095,6 +885,16 @@ export function initializeWorldviewScenes() {
        完整渲染
     =========================== */
 
+    function drawSphere(x, y, radius, isEarth) {
+        context.save();
+        context.translate(x, y);
+        drawGlobeOutline(radius);
+        drawGlobeLighting(radius);
+        drawSurface(radius, isEarth);
+        drawAtmosphereRim(radius);
+        context.restore();
+    }
+
     function renderGlobe() {
         if (
             canvasWidth <= 0 ||
@@ -1103,21 +903,15 @@ export function initializeWorldviewScenes() {
             return;
         }
 
-        context.clearRect(
-            0,
-            0,
-            canvasWidth,
-            canvasHeight
-        );
+        context.clearRect(0, -canvasPadY, canvasWidth, canvasHeight + 2 * canvasPadY);
 
         context.lineWidth =
             1;
 
-        drawGlobeOutline();
-        drawGlobeLighting();
-        drawLongitudeLines();
-        drawLatitudeLines();
-        drawAtmosphereRim();
+        const orbit = projectLunarOrbit();
+        drawLunarOrbit(orbit, false);
+        drawSphere(canvasWidth / 2, canvasHeight / 2, globeRadius, true);
+        drawLunarOrbit(orbit, true);
         updateSceneNodes();
     }
 
@@ -1256,9 +1050,12 @@ export function initializeWorldviewScenes() {
         velocityPitch =
             0;
 
-        focusActive =
-            true;
-
+        focusActive = !reducedMotionQuery.matches;
+        if (!focusActive) {
+            rotationYaw = targetYaw;
+            rotationPitch = targetPitch;
+            renderGlobe();
+        }
         updateCurrentScene();
     }
 
@@ -1338,8 +1135,8 @@ export function initializeWorldviewScenes() {
             await window.showSection(
                 scene.sectionId,
                 {
-                    transitionType:
-                        "slide",
+                    archiveOrigin: scene.element,
+                    transitionType: "depth",
 
                     direction:
                         "forward",
@@ -1423,6 +1220,7 @@ export function initializeWorldviewScenes() {
                 0.75;
 
         if (!reducedMotionQuery.matches) {
+            moonPhase = normalizeAngle(moonPhase + deltaTime * 2 * Math.PI / moonPeriodMs);
             lightingPhase =
                 normalizeAngle(
                     lightingPhase +
@@ -1556,54 +1354,23 @@ export function initializeWorldviewScenes() {
 
 
     /* ===========================
-       指针进入与离开
-    =========================== */
-
-    function handlePointerEnter() {
-        pointerInside =
-            true;
-
-        stopPageScrolling();
-    }
-
-    function handlePointerLeave() {
-        pointerInside =
-            false;
-
-        if (!dragging) {
-            restorePageScrolling();
-        }
-    }
-
-
-    /* ===========================
        开始拖动
     =========================== */
 
-    function handlePointerDown(
-        event
-    ) {
-        if (
-            event.button !==
-                undefined &&
-            event.button !==
-                0
-        ) {
+    function handlePointerDown(event) {
+        if (event.button !== 0 || !event.isPrimary || dragging || pendingNodeDrag) return;
+        if (event.target.closest(".scenes-current")) return;
+        const node = event.target.closest(".scene-node");
+        if (node) {
+            // 轻点仍交给节点；超过既有拖动阈值后才接管整个地月系。
+            pendingNodeDrag = { id: event.pointerId, x: event.clientX, y: event.clientY };
+            node.setPointerCapture(event.pointerId);
             return;
         }
+        beginGlobeDrag(event, event.clientX, event.clientY);
+    }
 
-        const clickedControl =
-            event.target.closest(
-                [
-                    ".scene-node",
-                    ".scenes-current"
-                ].join(",")
-            );
-
-        if (clickedControl) {
-            return;
-        }
-
+    function beginGlobeDrag(event, startX, startY) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -1616,11 +1383,8 @@ export function initializeWorldviewScenes() {
         activePointerId =
             event.pointerId;
 
-        previousPointerX =
-            event.clientX;
-
-        previousPointerY =
-            event.clientY;
+        previousPointerX = startX;
+        previousPointerY = startY;
 
         totalDragDistance =
             0;
@@ -1642,8 +1406,6 @@ export function initializeWorldviewScenes() {
             "is-scenes-globe-dragging"
         );
 
-        stopPageScrolling();
-
         globe.setPointerCapture?.(
             event.pointerId
         );
@@ -1654,9 +1416,13 @@ export function initializeWorldviewScenes() {
        拖动过程
     =========================== */
 
-    function handlePointerMove(
-        event
-    ) {
+    function handlePointerMove(event) {
+        if (pendingNodeDrag?.id === event.pointerId) {
+            const { x, y } = pendingNodeDrag;
+            if (Math.hypot(event.clientX - x, event.clientY - y) <= dragClickThreshold) return;
+            pendingNodeDrag = null;
+            beginGlobeDrag(event, x, y);
+        }
         if (
             !dragging ||
             event.pointerId !==
@@ -1717,9 +1483,12 @@ export function initializeWorldviewScenes() {
             yawMovement *
             0.5;
 
-        velocityPitch =
-            pitchMovement *
-            0.5;
+        velocityPitch = pitchMovement * .5;
+        if (reducedMotionQuery.matches) {
+            rotationPitch = clamp(rotationPitch, -Math.PI * .46, Math.PI * .46);
+            velocityPitch = velocityYaw = 0;
+            renderGlobe();
+        }
     }
 
 
@@ -1730,6 +1499,7 @@ export function initializeWorldviewScenes() {
     function finishPointerInteraction(
         event = null
     ) {
+        if (event?.pointerId === pendingNodeDrag?.id) pendingNodeDrag = null;
         if (!dragging) {
             return;
         }
@@ -1777,10 +1547,6 @@ export function initializeWorldviewScenes() {
                 },
                 0
             );
-        }
-
-        if (!pointerInside) {
-            restorePageScrolling();
         }
     }
 
@@ -1884,10 +1650,8 @@ export function initializeWorldviewScenes() {
     =========================== */
 
     function resetInteractionState() {
+        pendingNodeDrag = null;
         dragging =
-            false;
-
-        pointerInside =
             false;
 
         activePointerId =
@@ -1906,8 +1670,6 @@ export function initializeWorldviewScenes() {
         document.body.classList.remove(
             "is-scenes-globe-dragging"
         );
-
-        restorePageScrolling();
     }
 
 
@@ -1916,13 +1678,12 @@ export function initializeWorldviewScenes() {
     =========================== */
 
     function updateSectionState() {
-        if (isSectionActive()) {
-            window.requestAnimationFrame(
-                () => {
-                    resizeCanvas();
-                    startAnimation();
-                }
-            );
+        if (isSectionActive() && globeVisible && !document.hidden) {
+            if (reducedMotionQuery.matches) {
+                stopAnimation();
+                if (focusActive) { rotationYaw = targetYaw; rotationPitch = targetPitch; focusActive = false; }
+                resizeCanvas();
+            } else if (!animationActive) startAnimation();
 
             return;
         }
@@ -1930,6 +1691,15 @@ export function initializeWorldviewScenes() {
         resetInteractionState();
         stopAnimation();
     }
+
+    let globeVisible = !window.IntersectionObserver;
+    const visibility = window.IntersectionObserver && new IntersectionObserver(([entry]) => {
+        globeVisible = entry.isIntersecting;
+        updateSectionState();
+    });
+    visibility?.observe(globe);
+    reducedMotionQuery.addEventListener("change", updateSectionState);
+    window.addEventListener("pageshow", updateSectionState);
 
     const sectionObserver =
         new MutationObserver(
@@ -2006,16 +1776,6 @@ export function initializeWorldviewScenes() {
     =========================== */
 
     globe.addEventListener(
-        "pointerenter",
-        handlePointerEnter
-    );
-
-    globe.addEventListener(
-        "pointerleave",
-        handlePointerLeave
-    );
-
-    globe.addEventListener(
         "pointerdown",
         handlePointerDown
     );
@@ -2046,9 +1806,9 @@ export function initializeWorldviewScenes() {
     globe.addEventListener(
         "lostpointercapture",
         event => {
-            finishPointerInteraction(
-                event
-            );
+            if (event.target === globe || pendingNodeDrag?.id === event.pointerId) {
+                finishPointerInteraction(event);
+            }
         }
     );
 

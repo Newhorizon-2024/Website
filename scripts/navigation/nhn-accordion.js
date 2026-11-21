@@ -17,6 +17,7 @@ export function initializeNhnAccordion() {
         "(max-width: 768px), (hover: none), (pointer: coarse)"
     );
     let navigating = false;
+    let touchSelection = null;
 
     if (
         accordionOptions.length === 0 &&
@@ -26,6 +27,7 @@ export function initializeNhnAccordion() {
     }
 
     function resetAccordionOptions() {
+        touchSelection = null;
         accordionOptions.forEach(
             option => {
                 option.classList.remove(
@@ -67,8 +69,42 @@ export function initializeNhnAccordion() {
         );
     }
 
+    const menu = accordionOptions[0]?.closest(".accordion-menu");
+    function preview(option) {
+        accordionOptions.forEach(item => {
+            item.classList.toggle("expanded", item === option);
+            item.setAttribute("aria-expanded", String(item === option));
+        });
+    }
+    menu?.addEventListener("keydown", event => {
+        const option = event.target.closest(".accordion-menu-option");
+        if (!option || navigating) return;
+        if (event.key === "Escape") { resetAccordionOptions(); return; }
+        const options = Array.from(accordionOptions);
+        const steps = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+        if (!(event.key in steps)) return;
+        event.preventDefault();
+        const next = options[(options.indexOf(option) + steps[event.key] + options.length) % options.length];
+        next.focus();
+        preview(next);
+    });
+    menu?.addEventListener("focusout", event => {
+        if (!menu.contains(event.relatedTarget)) resetAccordionOptions();
+    });
+    menu?.addEventListener("pointerleave", event => {
+        if (!navigating && event.pointerType === "mouse" && !touchSelection) {
+            const focused = menu.querySelector(":focus-visible");
+            if (focused) preview(focused); else resetAccordionOptions();
+        }
+    });
     accordionOptions.forEach(
         option => {
+            option.addEventListener("pointerenter", event => {
+                if (!navigating && !mobileQuery.matches && event.pointerType === "mouse") preview(option);
+            });
+            option.addEventListener("focus", () => {
+                if (option.matches(":focus-visible")) preview(option);
+            });
             option.addEventListener(
                 "click",
                 async event => {
@@ -83,10 +119,12 @@ export function initializeNhnAccordion() {
                             "expanded"
                         );
 
+                    const previouslyTouched = touchSelection === option;
                     resetAccordionOptions();
 
-                    const requiresConfirmation = mobileQuery.matches || event.pointerType === "touch";
-                    if (requiresConfirmation && !isExpanded) {
+                    const requiresConfirmation = event.pointerType === "touch" || (mobileQuery.matches && event.detail > 0);
+                    if (requiresConfirmation && !previouslyTouched) {
+                        touchSelection = option;
                         option.classList.add("expanded");
                         option.setAttribute("aria-expanded", "true");
                         return;

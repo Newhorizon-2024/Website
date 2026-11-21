@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" role="img" aria-labelledby="title description">
+<title id="title">火焰的形成</title><desc id="description">数条代表来源的线汇入共鸣点，再转化为火焰。</desc>
+<defs>
+ <linearGradient id="ember" x1="0" x2=".9" y1="1" y2=".1" gradientUnits="objectBoundingBox"><stop stop-color="#f2ded0"/><stop offset=".42" stop-color="#c9a192"/><stop offset="1" stop-color="#a39591" stop-opacity=".32"/></linearGradient>
+ <radialGradient id="warm"><stop stop-color="#bba79b" stop-opacity=".16"/><stop offset="1" stop-color="#bba79b" stop-opacity="0"/></radialGradient>
+</defs>
+<ellipse cx="425" cy="197" rx="164" ry="135" fill="url(#warm)"/>
+<g fill="none" stroke="#99908c" stroke-width="1.5">
+ <path d="M36 210C103 210 119 196 180 188S243 180 280 180"/><path d="M36 258C132 258 126 198 203 189S245 181 280 180" opacity=".75"/><path d="M36 162C114 162 144 183 201 182L280 180" opacity=".63"/><path d="M52 127C142 127 143 166 200 174S247 179 280 180" opacity=".38"/>
+</g>
+<g fill="#d8c5b9"><circle cx="36" cy="210" r="4"/><circle cx="36" cy="258" r="3"/><circle cx="36" cy="162" r="3"/><circle cx="52" cy="127" r="2"/></g>
+<circle cx="280" cy="180" r="27" fill="none" stroke="#ac9a92" stroke-dasharray="2 5"/><circle cx="280" cy="180" r="10" fill="none" stroke="#e5d9ce"/><circle cx="280" cy="180" r="3" fill="#f8eee4"/>
+<path d="M308 180C350 180 365 208 387 228" fill="none" stroke="#b8a399"/>
+<path fill="url(#ember)" d="M422 259c-30-5-55-26-58-57-3-27 10-48 21-67 0 23 8 27 13 30-3-38 31-61 23-110 45 36 23 75 44 93 6-10 8-21 6-35 37 35 43 88 13 122-13 15-34 24-51 25 22-15 24-37 18-55-2 10-6 15-12 18 0-20-12-30-16-45-4 26-29 48-1 81Z"/>
+<g fill="none" stroke="#e2cab9" stroke-linecap="round"><path d="M384 244c-33-17-43-52-28-83" opacity=".5"/><path d="M471 246c27-18 41-50 34-79" opacity=".65"/><path d="M419 40c-6-10-4-18 1-24" opacity=".4"/></g>
+<style>@media (max-width:420px){text{font-size:28px}}</style>
+<g font-family="sans-serif" font-size="25" fill="#ded5d0"><text x="42" y="310">来源</text><text x="280" y="310" text-anchor="middle">共鸣条件</text><text x="437" y="310" text-anchor="middle">火焰</text></g>
+</svg>

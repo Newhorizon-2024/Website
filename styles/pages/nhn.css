@@ -1,102 +1,47 @@
-/* ===========================
-   40. 情报署主页
-=========================== */
-
-/* 情报署主页 */
+/* NHN masthead and three archive entrances. Built on the same accordion and routes. */
 #nhn-section {
-    color: #EEEEEE;
-    padding: 40px 20px;
-    position: relative;
+    box-sizing: border-box; width: min(100%, 1400px); margin-inline: auto;
+    padding: clamp(42px, 6vw, 90px) 0 64px; color: #eeece9;
+}
+.nhn-masthead, .nhn-archive-index { margin-inline: clamp(16px, 5vw, 76px); }
+.nhn-masthead {
     text-align: center;
 }
-
-/* 情报署标志 */
-.nhn-logo {
+.nhn-masthead .nhn-logo {
     display: block;
-    height: auto;
-    margin: 40px auto 60px;
-    opacity: 0.9;
-    transition:
-        opacity 0.2s ease,
-        transform 0.18s ease-out;
     width: clamp(200px, 50vw, 600px);
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto clamp(30px, 5vw, 60px);
 }
-
-/* 情报署一级标题 */
-#nhn-section h1 {
-    font-size: 26px;
+#nhn-section .nhn-masthead h1, .nhn-masthead .nhn-english {
+    margin: 0 auto;
+    font-size: clamp(21px, 3vw, 26px);
     letter-spacing: 2px;
-    margin: 0 auto 20px;
 }
-
-/* 情报署正文 */
-#nhn-section p {
-    margin-left: auto;
-    margin-right: auto;
+.nhn-masthead blockquote {
+    max-width: 46em;
+    margin: 2em auto 0;
+    line-height: 1.85;
+    text-wrap: pretty;
 }
-
-
-/* ===========================
-   41. 情报署按钮
-=========================== */
-
-/* 情报署按钮容器 */
-.nhn-btn-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    justify-content: center;
-}
-
-/* 情报署按钮 */
-.nhn-btn {
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    color: inherit;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 18px;
-    padding: 12px 22px;
-    transition:
-        background 0.3s ease,
-        transform 0.3s ease;
-}
-
-/* 情报署按钮悬停状态 */
-.nhn-btn:hover {
-    background: rgba(255, 255, 255, 0.18);
-    transform: translateY(-4px);
-}
-
-/* 情报署按钮键盘焦点 */
-.nhn-btn:focus-visible {
-    outline: 1px solid rgba(238, 238, 238, 0.75);
-    outline-offset: 3px;
-}
-
-
-/* ===========================
-   42. 情报署手风琴菜单
-=========================== */
 
 /* 手风琴菜单容器 */
 .accordion-menu {
-    border-radius: 10px;
+    border-radius: 0;
     display: flex;
     height: clamp(300px, 50vh, 700px);
-    margin: 0 auto;
+    margin: clamp(24px, 3vw, 42px) auto;
     max-width: 1320px;
     overflow: hidden;
-    width: 100%;
+    width: calc(100% - 40px);
 }
 
 /* 手风琴菜单选项 */
 .accordion-menu-option {
     background: none;
     border: none;
+    border-radius: 0;
     color: inherit;
     cursor: pointer;
     display: block;
@@ -174,15 +119,75 @@
 
 /* 支持悬停的精确指针设备 */
 @media (hover: hover) and (pointer: fine) {
-    .accordion-menu-option:hover {
+    .accordion-menu:not(:has(.expanded)) > .accordion-menu-option:hover {
         flex: 4;
     }
 
-    .accordion-menu-option:hover .text {
+    .accordion-menu:not(:has(.expanded)) > .accordion-menu-option:hover .text {
         opacity: 1;
         transform: translateY(0);
         transition-delay: 200ms;
     }
+}
+
+.nhn-archive-index :focus-visible { outline: 2px solid #eee; outline-offset: 3px; }
+.nhn-archive-index { border-block: 1px solid rgb(225 221 216 / .27); }
+.nhn-archive-index[hidden], .nhn-index-results > [hidden] { display: none; }
+.nhn-archive-index summary { display: flex; align-items: center; gap: 14px; padding: 16px 3px; font-size: 18px; cursor: pointer; list-style: none; }
+.nhn-archive-index summary::-webkit-details-marker { display: none; }
+.nhn-archive-index summary::before { content: ""; width: 8px; height: 8px; border: solid #cbc7c2; border-width: 0 1px 1px 0; transform: rotate(-45deg); transition: transform .2s; }
+.nhn-archive-index[open] summary::before { transform: rotate(45deg); }
+.nhn-search-field { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 18px; padding: 0 2px 12px; }
+.nhn-search-field input { flex: 1 1 220px; min-width: 0; color: #eee; border: 1px solid #787572; background: rgb(10 10 11 / .6); border-radius: 2px; padding: 10px 12px; font: inherit; font-size: 16px; }
+.nhn-search-field input::placeholder { color: #aaa6a4; }
+.nhn-search-field [role="status"] { color: #cbc7c4; font-size: 13px; }
+.nhn-index-results { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%, 250px),1fr)); column-gap: 24px; margin-bottom: 18px; }
+.nhn-index-results a { min-width: 0; color: #dedbd8; display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 44px; padding: 2px 5px; text-decoration: none; border-top: 1px solid rgb(231 228 223 / .14); }
+.nhn-index-results a:is(:hover,:focus-visible) { color: #fff; background: rgb(239 235 228 / .065); }
+.nhn-index-results small { color: #aaa6a3; flex-shrink: 0; font-size: 12px; }
+@media (prefers-reduced-motion: reduce) {
+    .accordion-menu-option, .accordion-menu-option .text, .nhn-archive-index summary::before { transition: none; }
+}
+
+/* ===========================
+   41. 情报署按钮
+=========================== */
+
+/* 情报署按钮容器 */
+.nhn-btn-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+}
+
+/* 情报署按钮 */
+.nhn-btn {
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: inherit;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 18px;
+    padding: 12px 22px;
+    transition:
+        background 0.3s ease,
+        transform 0.3s ease;
+}
+
+/* 情报署按钮悬停状态 */
+.nhn-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: translateY(-4px);
+}
+
+/* 情报署按钮键盘焦点 */
+.nhn-btn:focus-visible {
+    outline: 1px solid rgba(238, 238, 238, 0.75);
+    outline-offset: 3px;
 }
 
 

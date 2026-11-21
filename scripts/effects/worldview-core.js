@@ -5,8 +5,8 @@
 
 import {
     createWorldviewDirectoryLabels
-} from "./worldview-directory-labels.js?v=26.10.23.1";
-import { createWorldviewCapture } from "./worldview-capture.js?v=26.10.21.3";
+} from "./worldview-directory-labels.js?v=26.11.19.3";
+import { createWorldviewCapture } from "./worldview-capture.js?v=26.11.18.5";
 
 
 /* ===========================
@@ -1319,23 +1319,27 @@ function makeTextSprite(
         labelCanvas.height
     );
 
-    context.textAlign =
-        "center";
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.font = '500 58px Arial, "Microsoft YaHei", sans-serif';
+    context.fillStyle = "#fff";
+    const left = (labelCanvas.width - context.measureText(text).width) / 2;
+    const letters = Array.from(text);
+    let started = null;
+    let painted = letters.length;
+    context.fillText(text, left, labelCanvas.height / 2);
 
-    context.textBaseline =
-        "middle";
-
-    context.font =
-        '500 58px Arial, "Microsoft YaHei", sans-serif';
-
-    context.fillStyle =
-        "#FFFFFF";
-
-    context.fillText(
-        text,
-        labelCanvas.width / 2,
-        labelCanvas.height / 2
-    );
+    function updateType(hovered, reduced) {
+        if (!hovered) { started = null; return; }
+        const now = performance.now();
+        started ??= now;
+        const count = reduced ? letters.length : Math.min(letters.length, 1 + Math.floor((now - started) / 80));
+        if (painted === count) return;
+        painted = count;
+        context.clearRect(0, 0, labelCanvas.width, labelCanvas.height);
+        context.fillText(letters.slice(0, count).join("") + (count < letters.length ? "▏" : ""), left, labelCanvas.height / 2);
+        texture.needsUpdate = true;
+    }
 
     const texture =
         new THREE.CanvasTexture(
@@ -1397,6 +1401,7 @@ function makeTextSprite(
         20;
 
     sprite.userData = {
+        updateType,
         baseOpacity:
             0,
 
@@ -2901,7 +2906,8 @@ function animate() {
         ({
             pivot,
             group
-        }) => {
+        }, index) => {
+            const cubeReveal = captureVisual?.orbiters[index] ?? orbitReveal;
             const data =
                 group.userData;
 
@@ -2966,8 +2972,7 @@ function animate() {
                 ) *
                 WORLDVIEW_CORE_CONFIG.orbiterFloatAmplitude;
 
-            data.cube.material.opacity =
-                orbitReveal;
+            data.cube.material.opacity = cubeReveal;
 
             data.edges.material.opacity =
                 (
@@ -2976,8 +2981,9 @@ function animate() {
                         ? 0.42
                         : 0.16
                 ) *
-                orbitReveal;
+                cubeReveal;
 
+            data.label.userData.updateType?.(hoveredOrbiter === group && !directoryLabels?.isEnabled(), reducedMotionQuery.matches);
             const labelTargetOpacity =
                 directoryLabels?.isEnabled()
                     ? 0
@@ -3030,7 +3036,7 @@ function animate() {
     if (captureVisual) {
         scene.updateMatrixWorld(true);
         camera.updateMatrixWorld(true);
-        captureBridge.update(exiting);
+        captureBridge.update(exiting, performance.now(), delta);
     }
 
     // One extra core-only pass while the prompt is visible. The regular pass

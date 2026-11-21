@@ -181,13 +181,13 @@ export function initializeWorldviewThings() {
     =========================== */
 
     let fuzzyText =
-        "Bossrush";
+        options[0].textContent.trim();
 
     let fuzzyIntensity =
-        0.18;
+        0.08;
 
     let fuzzyTargetIntensity =
-        0.18;
+        0.08;
 
     let fuzzyCanvasWidth =
         0;
@@ -368,6 +368,76 @@ export function initializeWorldviewThings() {
        更新轮盘
     =========================== */
 
+    // 轨道和名称共用转轮的角度与可见性时钟。
+    const orbit = wheel.querySelector(".things-orbit-lines");
+    const contour = orbit.querySelector(".things-orbit-contour");
+    const echo = orbit.querySelector(".things-orbit-echo");
+    const glint = orbit.querySelector(".things-orbit-glint");
+    const circle = Array.from({length: 128}, (_, i) => {
+        const a = i * Math.PI / 64;
+        return {a, x: Math.cos(a), y: Math.sin(a)};
+    });
+    let pointerPull = 0, pointerBearing = Math.PI / 2, bearing = pointerBearing;
+    let sweepStart = -Infinity, sweepAngle = 0, orbitAtRest = false;
+
+    const hourHand = orbit.querySelector(".things-clock-hour");
+    const minuteHand = orbit.querySelector(".things-clock-minute");
+    const secondHand = orbit.querySelector(".things-clock-second");
+    let clockTimer = null;
+    let lastClockFrame = -Infinity;
+
+    function paintClock(stepped) {
+        const time = new Date();
+        const seconds = time.getSeconds() + (stepped ? 0 : time.getMilliseconds() / 1000);
+        const minutes = time.getMinutes() + seconds / 60;
+        const hours = time.getHours() % 12 + minutes / 60;
+        hourHand.setAttribute("transform", "rotate(" + hours * 30 + ")");
+        minuteHand.setAttribute("transform", "rotate(" + minutes * 6 + ")");
+        secondHand.setAttribute("transform", "rotate(" + seconds * 6 + ")");
+    }
+
+    function tickReducedClock() {
+        clockTimer = null;
+        if (!reducedMotionQuery.matches || !isSectionActive() || document.hidden || !wheelVisible) return;
+        paintClock(true);
+        clockTimer = window.setTimeout(tickReducedClock, 1000 - Date.now() % 1000);
+    }
+
+    function drawOrbit(now) {
+        const reduced = reducedMotionQuery.matches;
+        const progress = reduced ? 1 : clamp((now - sweepStart) / 680, 0, 1);
+        let pull = reduced ? 0 : Math.min(1, shapeStrength) * pointerPull;
+        const quiet = progress === 1 && pull < .005;
+        if (quiet) pull = 0;
+        if (quiet && orbitAtRest) return;
+        orbitAtRest = quiet;
+        bearing += Math.atan2(Math.sin(pointerBearing - bearing), Math.cos(pointerBearing - bearing)) * .22;
+        const sweep = Math.PI / 2 + sweepAngle * Math.pow(1 - progress, 3);
+        const energy = Math.sin(Math.PI * progress);
+        let outer = "", inner = "";
+        for (const {a,x,y} of circle) {
+            const near = (1 + Math.cos(a - bearing)) * .5;
+            const wake = (1 + Math.cos(a - sweep)) * .5;
+            const wave = pull * Math.pow(near, 15) * (3 + 2 * Math.cos(4 * (a - bearing))) +
+                energy * Math.pow(wake, 12) * 3;
+            const edge = 98.5 + wave;
+            const second = 94.8 + wave * .45 + 1.5 * Math.sin(a * 2 - .85);
+            const op = outer ? " L" : "M";
+            outer += op + (x * edge).toFixed(2) + " " + (y * edge).toFixed(2);
+            inner += op + (x * second).toFixed(2) + " " + (y * second).toFixed(2);
+        }
+        contour.setAttribute("d", outer + "Z");
+        echo.setAttribute("d", inner + "Z");
+        const heading = energy > .02 ? sweep : bearing;
+        const strength = Math.max(pull, energy);
+        const halfSpan = .09 + .42 * strength;
+        const radius = 98.5 + 5 * pull + energy * 3;
+        const start = heading - halfSpan, end = heading + halfSpan;
+        glint.setAttribute("d", "M" + radius * Math.cos(start) + " " + radius * Math.sin(start) +
+            " A" + radius + " " + radius + " 0 0 1 " + radius * Math.cos(end) + " " + radius * Math.sin(end));
+        glint.style.opacity = String(strength * .95);
+    }
+
     function updateWheel(
         nextIndex,
         animateCenter = true
@@ -401,6 +471,10 @@ export function initializeWorldviewThings() {
                 optionCount;
         }
 
+        if (animateCenter && indexDifference && !reducedMotionQuery.matches) {
+            sweepAngle = indexDifference * angleStep * Math.PI / 180;
+            sweepStart = performance.now();
+        }
         visualSelectedIndex +=
             indexDifference;
 
@@ -424,6 +498,9 @@ export function initializeWorldviewThings() {
                     "--things-option-angle",
                     `${angle}deg`
                 );
+
+                const depth = (1 + Math.cos(angle * Math.PI / 180)) / 2;
+                option.style.setProperty("--things-depth", depth.toFixed(3));
 
                 const isSelected =
                     index ===
@@ -641,7 +718,7 @@ export function initializeWorldviewThings() {
             );
 
             console.info(
-                `世界观事物“${label}”暂未开放。`
+                `世界观事物${label}暂未开放。`
             );
 
             return false;
@@ -677,8 +754,8 @@ export function initializeWorldviewThings() {
             await window.showSection(
                 sectionId,
                 {
-                    transitionType:
-                        "slide",
+                    archiveOrigin: centerButton,
+                    transitionType: "depth",
 
                     direction:
                         "forward",
@@ -698,7 +775,7 @@ export function initializeWorldviewThings() {
 
     /* ===========================
        Fuzzy Text：源文字逐行切片
-       参考参数：900 字重、0.18 / 0.5 强度、1px 切片、60fps
+       参考参数：700 字重、0.08 / 0.5 强度、1px 切片、60fps
     =========================== */
 
     const fuzzySource = document.createElement("canvas");
@@ -735,15 +812,15 @@ export function initializeWorldviewThings() {
         fuzzyCanvasHeight = rect.height;
         fuzzyPixelRatio = Math.min(window.devicePixelRatio || 1, 2);
         // 窄屏缩小扰动留白，为长名称保留完整的文字空间。
-        fuzzyRange = Math.min(30, Math.max(12, rect.width * 0.1));
+        fuzzyRange = Math.min(30, Math.max(6, rect.width * .07));
         const style = getComputedStyle(fuzzyTextCanvas);
         const family = style.fontFamily || 'Arial, "Microsoft YaHei", sans-serif';
         let fontSize = Math.min(50, Math.max(24, rect.width / 6));
         const availableWidth = Math.max(1, rect.width - (fuzzyRange + 8) * 2 - 10);
-        fuzzySourceContext.font = `900 ${fontSize}px ${family}`;
+        fuzzySourceContext.font = `700 ${fontSize}px ${family}`;
         const initialWidth = fuzzySourceContext.measureText(fuzzyText).width;
         if (initialWidth > availableWidth) fontSize *= availableWidth / initialWidth;
-        fuzzyFont = `900 ${fontSize}px ${family}`;
+        fuzzyFont = `700 ${fontSize}px ${family}`;
         fuzzySourceContext.font = fuzzyFont;
         const metrics = fuzzySourceContext.measureText(fuzzyText);
         const width = Math.ceil(
@@ -848,6 +925,12 @@ export function initializeWorldviewThings() {
                 0,
                 1
             );
+
+        const track = orbit.parentElement.getBoundingClientRect();
+        const dx = event.clientX - (track.left + track.width/2);
+        const dy = event.clientY - (track.top + track.height/2);
+        pointerBearing = Math.atan2(dy,dx);
+        pointerPull = clamp(1 - Math.abs(2*Math.hypot(dx,dy)/track.width - 1)*1.8, 0, 1);
 
         shapeTargetDriftX =
             (
@@ -988,6 +1071,11 @@ export function initializeWorldviewThings() {
             )
         );
 
+        if (currentTime - lastClockFrame >= 1000 / 30) {
+            paintClock(false);
+            lastClockFrame = currentTime;
+        }
+        drawOrbit(currentTime);
         if (currentTime - lastFuzzyFrame >= 1000 / 60 - 1) {
             lastFuzzyFrame = currentTime;
             drawFuzzyText(currentTime);
@@ -1003,9 +1091,12 @@ export function initializeWorldviewThings() {
         if (!isSectionActive() || document.hidden || !wheelVisible) return;
         if (reducedMotionQuery.matches) {
             stopVisualEffects();
+            tickReducedClock();
             resizeFuzzyTextCanvas();
             return;
         }
+        window.clearTimeout(clockTimer);
+        clockTimer = null;
         visualEffectsActive =
             true;
 
@@ -1025,6 +1116,9 @@ export function initializeWorldviewThings() {
     }
 
     function stopVisualEffects() {
+        window.clearTimeout(clockTimer);
+        clockTimer = null;
+        lastClockFrame = -Infinity;
         visualEffectsActive =
             false;
 
@@ -1185,12 +1279,12 @@ export function initializeWorldviewThings() {
         const overText = finePointerQuery.matches && event.pointerType !== "touch" &&
             x >= fuzzyInkBounds.left && x <= fuzzyInkBounds.left + fuzzyInkBounds.width &&
             y >= fuzzyInkBounds.top && y <= fuzzyInkBounds.top + fuzzyInkBounds.height;
-        fuzzyTargetIntensity = overText ? 0.5 : 0.18;
+        fuzzyTargetIntensity = overText ? 0.5 : 0.08;
     }
 
     function handleCenterPointerLeave() {
         fuzzyTargetIntensity =
-            0.18;
+            0.08;
     }
 
 
@@ -1652,7 +1746,7 @@ export function initializeWorldviewThings() {
             false;
 
         fuzzyTargetIntensity =
-            0.18;
+            0.08;
 
         clearShapePointer();
 
@@ -1736,13 +1830,15 @@ export function initializeWorldviewThings() {
                 "0"
             );
 
+            drawOrbit(performance.now());
             drawFuzzyText();
+            tickReducedClock();
 
             return;
         }
 
         fuzzyTargetIntensity =
-            0.18;
+            0.08;
 
         if (isSectionActive()) {
             startVisualEffects();
@@ -1945,6 +2041,7 @@ export function initializeWorldviewThings() {
         false
     );
 
+    drawOrbit(performance.now());
     resizeFuzzyTextCanvas();
     drawFuzzyText();
     updateSectionState();

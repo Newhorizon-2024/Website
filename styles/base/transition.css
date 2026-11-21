@@ -124,3 +124,36 @@ body.is-section-transitioning #back-to-home {
     position: relative;
     width: 100%;
 }
+
+/* 档案入口：以转轮或选中地点的屏幕坐标衔接两个页面。 */
+.archive-entry {
+    position: fixed;
+    inset: 0;
+    z-index: 10020;
+    overflow: hidden;
+    isolation: isolate;
+    pointer-events: auto;
+}
+.archive-entry-veil {
+    position: absolute;
+    inset: 0;
+    background: #131416;
+}
+.archive-entry-ring {
+    position: absolute;
+    border-radius: 50%;
+    background: conic-gradient(from 18deg, transparent 0deg, #cbd0da30 48deg,
+        #edf1f8bb 85deg, #fff 94deg, transparent 101deg 178deg,
+        #b6bcc738 214deg, #e4e8efbd 243deg, transparent 254deg);
+    mask-image: radial-gradient(closest-side, transparent calc(100% - 5px),
+        #0004 calc(100% - 3px), #000 calc(100% - 1.65px),
+        #000a calc(100% - .8px), transparent);
+}
+.archive-entry-photo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: 0 0;
+    background-size: cover;
+    background-repeat: no-repeat;
+}

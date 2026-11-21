@@ -1,13 +1,15 @@
+import { initializeDirectoryRises, leaveDirectory } from "../effects/directory-rise.js?v=26.11.19.10";
+import { beginArchiveEntry } from "../effects/directory-archive-entry.js?v=26.11.21.10";
 import {
     showWorldviewCore,
     hideWorldviewCore,
     transitionWorldviewCoreOut
-} from "../effects/worldview-core.js?v=26.10.23.1";
-import {transitionInnerDomainCubesOut} from "../effects/inner-domain-cubes.js?v=26.10.23.1";
+} from "../effects/worldview-core.js?v=26.11.19.3";
+import {transitionInnerDomainCubesOut} from "../effects/inner-domain-cubes.js?v=26.11.20.4";
 
 import {
     initializeSlingButton
-} from "../effects/sling-button.js?v=26.10.18.11";
+} from "../effects/sling-button.js?v=26.11.18.5";
 
 /* ===========================
    1. 导航栏状态
@@ -80,6 +82,7 @@ export function initializeNavigation() {
     let isTransitioning = false;
 
     navigationInitialized = true;
+    initializeDirectoryRises();
 
 
     /* ===========================
@@ -210,20 +213,42 @@ export function initializeNavigation() {
             return;
         }
 
-        const tabRect =
-            tab.getBoundingClientRect();
+        navigationIndicator.style.left = tab.offsetLeft + "px";
+        navigationIndicator.style.width = tab.offsetWidth + "px";
+    }
 
-        const navbarRect =
-            navbar.getBoundingClientRect();
-
-        navigationIndicator.style.left =
-            `${
-                tabRect.left -
-                navbarRect.left
-            }px`;
-
-        navigationIndicator.style.width =
-            `${tabRect.width}px`;
+    // 按钮以原布局为基准向两侧借宽；整排外缘在回弹过程中保持稳定。
+    function playRepeatFeedback(tab) {
+        const poses = new Map();
+        for (const item of navigationTabs) {
+            for (const animation of item.getAnimations()) {
+                if (animation.id !== "nav-repeat") continue;
+                poses.set(item, getComputedStyle(item).transform);
+                animation.cancel();
+            }
+        }
+        if (reducedMotionQuery.matches || navigationTabs.length < 2) return;
+        const selected = navigationTabs.indexOf(tab);
+        const widths = navigationTabs.map(item => item.offsetWidth);
+        const gain = Math.min(30, widths[selected] * .21);
+        const shares = widths.map((width, i) => i === selected ? 0 : width / Math.abs(i - selected) ** 2);
+        const total = shares.reduce((sum, share) => sum + share, 0);
+        if (!total) return;
+        let edgeShift = 0;
+        navigationTabs.forEach((item, i) => {
+            const delta = i === selected ? gain : -gain * shares[i] / total;
+            const shift = edgeShift + delta / 2;
+            edgeShift += delta;
+            const frame = (offset, strength) => ({
+                offset,
+                transform: `translateX(${shift * strength}px) scaleX(${1 + delta * strength / widths[i]})`,
+                easing: "cubic-bezier(.22,.72,.25,1)"
+            });
+            const initial = frame(0, 0);
+            if (poses.has(item)) initial.transform = poses.get(item);
+            item.animate([initial, frame(.24, 1), frame(.53, -.23), frame(.77, .07), frame(1, 0)],
+                { id: "nav-repeat", duration: 540 });
+        });
     }
 
     function setActiveNavigationTab(tab) {
@@ -642,8 +667,11 @@ export function initializeNavigation() {
 
         disableScrollAnchoring();
 
+        let archiveEntry;
         try {
             // 保持旧 Section 可见，等待世界观画布离场后才提交页面切换。
+            archiveEntry = beginArchiveEntry(previousSection, options.archiveOrigin);
+            await (archiveEntry?.ready ?? leaveDirectory(previousSection));
             if (previousId === "worldview-section") {
                 await transitionWorldviewCoreOut();
                 hideWorldviewCore();
@@ -692,7 +720,7 @@ export function initializeNavigation() {
             =========================== */
 
             if (
-                prefersReducedMotion ||
+                prefersReducedMotion || reducedMotionQuery.matches ||
                 !previousSection
             ) {
                 resetSection(
@@ -786,6 +814,7 @@ export function initializeNavigation() {
                 "is-active",
                 enterClass
             );
+            archiveEntry?.reveal();
 
             /*
             * 目标区块进入文档流。
@@ -856,6 +885,7 @@ export function initializeNavigation() {
 
             return true;
         } finally {
+            archiveEntry?.dispose();
             document.body.classList.remove(
                 "is-section-transitioning"
             );
@@ -923,6 +953,8 @@ export function initializeNavigation() {
                         return;
                     }
 
+                    if (isTransitioning) return;
+                    if (tab === currentActiveTab) playRepeatFeedback(tab);
                     setActiveNavigationTab(
                         tab
                     );

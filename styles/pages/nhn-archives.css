@@ -1,0 +1,20 @@
+/* 情报署文字档案沿用单栏正文与双语页首。 */
+.nhn-dossier .archive-lead {
+    max-width: 42em;
+    margin: 2em auto 0;
+    line-height: 1.9;
+    text-align: center;
+}
+#wanted-info-section .worldview-article-header h1 {
+    font-size: clamp(36px, 6vw, 100px);
+    white-space: normal;
+}
+@media (max-width: 600px) {
+    #the-ruler-info-section h1, #the-monarch-info-section h1 {
+        font-size: clamp(44px, 17vw, 98px);
+        white-space: nowrap;
+    }
+    #bossrush-section .bossrush-page-header h1 {
+        font-size: clamp(32px, 10vw, 60px);
+    }
+}

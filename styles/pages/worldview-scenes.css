@@ -50,7 +50,7 @@
 .scenes-header {
     margin:
         0 auto
-        clamp(50px, 7vw, 90px);
+        clamp(18px, 2.5vw, 40px);
     max-width:
         760px;
     text-align:
@@ -128,8 +128,7 @@
         none;
     user-select:
         none;
-    width:
-        var(--scenes-globe-size);
+    width: min(100%, calc(var(--scenes-globe-size) * 1.24));
 }
 
 /* 拖动状态 */
@@ -178,8 +177,11 @@
         rgba(255, 255, 255, 0.035);
     border-radius:
         50%;
-    inset:
-        9%;
+    top: 9%;
+    left: 50%;
+    height: 82%;
+    aspect-ratio: 1;
+    transform: translateX(-50%);
     pointer-events:
         none;
     position:
@@ -357,16 +359,6 @@
         10;
 }
 
-/* 节点悬停 */
-.scene-node:hover,
-.scene-node:focus-visible {
-    filter:
-        brightness(1.12);
-    outline:
-        none;
-}
-
-
 /* ===========================
    8. 场景图像
 =========================== */
@@ -414,6 +406,7 @@
 
 /* 场景图片 */
 .scene-node-marker img {
+    filter: grayscale(72%) brightness(0.72);
     display:
         block;
     height:
@@ -427,7 +420,6 @@
     position:
         absolute;
     transition:
-        filter 0.35s ease,
         transform 0.45s
         cubic-bezier(
             0.22,
@@ -439,24 +431,12 @@
         100%;
 }
 
-/* 默认轻度去色 */
-.scene-node:not(.is-selected)
-.scene-node-marker img {
-    filter:
-        grayscale(72%)
-        brightness(0.72);
-}
-
-/* 悬停恢复部分颜色 */
 .scene-node:hover
 .scene-node-marker img,
 .scene-node:focus-visible
 .scene-node-marker img,
 .scene-node.is-selected
 .scene-node-marker img {
-    filter:
-        grayscale(0%)
-        brightness(1);
     transform:
         scale(1.045);
 }
@@ -698,7 +678,7 @@
     display:
         flex;
     margin:
-        clamp(70px, 9vw, 120px)
+        118px
         auto
         0;
 }
@@ -778,7 +758,6 @@ body.is-scenes-globe-dragging * {
 =========================== */
 
 @media (hover: none), (pointer: coarse) {
-    .scene-node:not(.is-selected)
     .scene-node-marker img {
         filter:
             grayscale(0%)
@@ -806,4 +785,28 @@ body.is-scenes-globe-dragging * {
         transition:
             none;
     }
+}
+
+/* 地表投影上的坐标与索引 */
+.scene-node:focus-visible { outline: 1px solid #dedee0; outline-offset: 4px; }
+.scene-node { min-height: 44px; }
+.scene-node.is-behind:not(:focus-visible) .scene-node-name { visibility: hidden; }
+.scene-node-marker { border-radius: 2px; }
+.scene-node.is-selected .scene-node-marker { box-shadow: 0 4px 18px #10111666; border-color: #c4c6c9; }
+.scenes-current {
+    top: 92%; bottom: auto; min-width: min(85%,300px);
+    padding: 10px 16px; align-items: center; border: 0; border-radius: 0;
+    background: transparent; backdrop-filter: none;
+}
+.scenes-current:hover, .scenes-current:focus-visible { background: transparent; }
+.scenes-current:focus-visible { outline: 1px solid #aaa; }
+.scenes-current-index, .scenes-current-coordinate { color: #a9aaaf; font-variant-numeric: tabular-nums; }
+.scenes-current-name { font-size: clamp(20px,2.6vw,32px); }
+.scenes-current-status { color: #ceced0; }
+@media (max-width:600px) {
+    .scenes-current { top: 99%; }
+    .scene-node { width: clamp(66px,19vw,92px); }
+}
+@media (prefers-reduced-motion:reduce) {
+    .scenes-current:hover, .scenes-current:focus-visible { transform: translateX(-50%); }
 }

@@ -7,8 +7,8 @@ void main() { vUv = position * 0.5 + 0.5; gl_Position = vec4(position, 0.0, 1.0)
 const FRAGMENT = `
 precision highp float;
 uniform sampler2D tCurrent, tNext;
-uniform vec2 uResolution, uCurrentSize, uNextSize, uPointer;
-uniform float uProgress, uDir, uTime;
+uniform vec2 uResolution, uCurrentSize, uNextSize, uPointer, uAxis, uOrigin;
+uniform float uProgress, uDir;
 uniform int uMode;
 varying vec2 vUv;
 const float PI = 3.14159265359;
@@ -40,36 +40,48 @@ vec4 sampleNext(vec2 uv) {
 void main() {
     float p=clamp(uProgress,0.,1.), env=sin(p*PI);
     vec2 uv=vUv;
-    // 漂移只作用于转场，中止/结束时完全回归原始图片。
-    uv+=vec2(sin(uTime*.25+uv.y*4.),cos(uTime*.22+uv.x*4.))*.0032*env;
+    vec2 aspect=uResolution/max(uResolution.x,uResolution.y);
+    vec2 tangent=vec2(-uAxis.y,uAxis.x);
+    vec2 plane=(uv-.5)*aspect;
+    vec2 field=vec2(dot(plane,uAxis),dot(plane,tangent));
+    vec2 extent=vec2(dot(abs(uAxis),aspect),dot(abs(tangent),aspect));
+    vec2 along=field/max(extent,vec2(.0001))+.5;
+    // Only the distortion field rotates. Both source images stay upright in their contain boxes.
+    vec2 flow=(field*3.4+uOrigin)+vec2(p*.12,-p*.08);
+    float nn=fbm(flow), warp=fbm(flow*1.7+vec2(2.6,5.7));
     vec2 uvC=uv, uvN=uv;
     float m=smoothstep(0.,1.,p);
     if(uMode==3) {
-        vec2 c=uv-.5;float ang=env*.55*3.5*(1.-length(c));
-        uvC=rot(ang)*c+.5;uvN=rot(-ang)*c+.5;
+        vec2 pivot=.5+uAxis*.12;
+        vec2 c=(uv-pivot)*aspect;
+        float ang=env*1.65*(1.-length(c))*uDir;
+        uvC=rot(ang)*c/aspect+pivot;uvN=rot(-ang)*c/aspect+pivot;
     } else if(uMode==1) {
-        float d=distance(uv,uPointer), ring=p*1.6;
-        vec2 disp=normalize(uv-uPointer+1e-4)*sin((d-ring)*30.)*env*.55*.25;
-        uvC=uv+disp;uvN=uv+disp*.6;
+        vec2 delta=(uv-uPointer)*aspect;
+        float d=length(delta), ring=p*1.65;
+        vec2 disp=delta/max(d,.0001)*sin((d-ring)*30.)*env*.095/aspect;
+        uvC+=disp;uvN+=disp*.6;
         m=1.-smoothstep(ring-.03,ring+.03,d);
     } else if(uMode==2) {
-        float rnd=hash11(floor(uv.y*14.));
-        vec2 disp=vec2((rnd-.5)*env*.55*.6,0.);
-        uvC=uv+disp;uvN=uv+disp;
-        float localX=uDir>0.?uv.x:1.-uv.x;
+        float rnd=hash11(floor(along.y*14.)+uOrigin.x);
+        vec2 disp=uAxis/aspect*((rnd-.5)*env*.26);
+        uvC+=disp;uvN+=disp;
+        float localX=uDir>0.?along.x:1.-along.x;
         float th=p*1.5-.25+(rnd-.5)*.25;
         m=1.-smoothstep(th-.06,th+.06,localX);
     } else {
-        float nn=fbm(uv*2.4+uTime*.03), warp=fbm(uv*2.4*1.7-uTime*.02);
-        vec2 g=vec2(nn,warp)-.5;
-        uvC=uv+g*.55*.5*p;uvN=uv-g*.55*.5*(1.-p);
-        m=smoothstep(nn-.15,nn+.15,p);
+        float travel=uDir>0.?along.x:1.-along.x;
+        float arrival=mix(.12+.76*travel,nn,.48);
+        vec2 shift=(uAxis*(nn-.5)*.24+tangent*(warp-.5)*.16)/aspect;
+        uvC+=shift*p;uvN-=shift*(1.-p);
+        m=smoothstep(arrival-.14,arrival+.14,p);
     }
+
     if(p<.0001){uvC=vUv;m=0.;}else if(p>.9999){uvN=vUv;m=1.;}
     float ca=.35*env*.03;
     vec4 c=sampleCurrent(uvC), n=sampleNext(uvN);
-    c.r=sampleCurrent(uvC+vec2(ca,0.)).r;c.b=sampleCurrent(uvC-vec2(ca,0.)).b;
-    n.r=sampleNext(uvN+vec2(ca,0.)).r;n.b=sampleNext(uvN-vec2(ca,0.)).b;
+    c.r=sampleCurrent(uvC+uAxis*ca/aspect).r;c.b=sampleCurrent(uvC-uAxis*ca/aspect).b;
+    n.r=sampleNext(uvN+uAxis*ca/aspect).r;n.b=sampleNext(uvN-uAxis*ca/aspect).b;
     vec4 col=mix(c,n,m);
     vec3 color=col.rgb;
     float gray=dot(color,vec3(.2126,.7152,.0722));
@@ -129,7 +141,7 @@ export class MorphSliderStage {
             const position = gl.getAttribLocation(this.program, "position");
             gl.enableVertexAttribArray(position);
             gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-            this.uniforms = Object.fromEntries(["tCurrent","tNext","uResolution","uCurrentSize","uNextSize","uProgress","uDir","uMode","uPointer","uTime"].map(name => [name, gl.getUniformLocation(this.program, name)]));
+            this.uniforms = Object.fromEntries(["tCurrent","tNext","uResolution","uCurrentSize","uNextSize","uProgress","uDir","uMode","uPointer","uAxis","uOrigin"].map(name => [name, gl.getUniformLocation(this.program, name)]));
             gl.uniform1i(this.uniforms.tCurrent, 0);
             gl.uniform1i(this.uniforms.tNext, 1);
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -194,12 +206,31 @@ export class MorphSliderStage {
         return true;
     }
 
-    prepare(current, next, { direction = 1, pointer = [0.5,0.5] } = {}) {
+    nextVariation() {
+        // Space consecutive directions apart, including repeat visits to the same pair.
+        const turn = Math.PI * 2;
+        this.angle = this.angle === undefined ? Math.random() * turn
+            : (this.angle + (.23 + Math.random() * .54) * turn) % turn;
+        return { axis: [Math.cos(this.angle), Math.sin(this.angle)], origin: [Math.random() * 16, Math.random() * 16] };
+    }
+
+    fallbackFrames(variation, reduce) {
+        if (reduce) return [{ opacity: 0 }, { opacity: 1 }];
+        const [x, y] = variation.axis;
+        return [
+            { opacity: 0, filter: "grayscale(1)", transform: `translate(${x * 8}px, ${y * 8}px)` },
+            { opacity: 1, filter: "grayscale(0)", transform: "translate(0, 0)" }
+        ];
+    }
+
+    prepare(current, next, { direction = 1, pointer = [0.5,0.5], variation = this.nextVariation() } = {}) {
         if (!current?.naturalWidth || !next?.naturalWidth || !this.initialize() || this.disabled || this.gl.isContextLost()) return false;
         try {
             if (!this.upload(current,0) || !this.upload(next,1)) return false;
             this.cancel(false);
             const gl = this.gl, u = this.uniforms;
+            gl.uniform2fv(u.uAxis,variation.axis);
+            gl.uniform2fv(u.uOrigin,variation.origin);
             gl.uniform1f(u.uDir,direction);
             gl.uniform1i(u.uMode,MODES[this.stage.dataset.morphTransition] ?? 0);
             gl.uniform2fv(u.uPointer,pointer);
@@ -224,7 +255,6 @@ export class MorphSliderStage {
         const gl = this.gl;
         gl.uniform2f(this.uniforms.uResolution,this.canvas.width,this.canvas.height);
         gl.uniform1f(this.uniforms.uProgress,progress);
-        gl.uniform1f(this.uniforms.uTime,performance.now()*0.001);
         gl.drawArrays(gl.TRIANGLES,0,3);
     }
 
