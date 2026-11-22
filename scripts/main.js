@@ -190,6 +190,7 @@ window.material =
 function resetCube(
     cube
 ) {
+    cube.userData.summitGeneration = (cube.userData.summitGeneration || 0) + 1;
     backgroundCubeThrows.delete(cube);
     thrownBackgroundCubes.delete(cube);
     const size =
@@ -652,7 +653,48 @@ function paintCubePulse() {
     cubePulseSkin.children[0].material.opacity = .85*remaining*remaining;
 }
 
+// Sample only free, visible meshes near the player. Vertices give the true upper
+// silhouette of each rotating cube, including its perspective and current scale.
+const summitPoint = new THREE.Vector3();
+const summitEdgePairs = [[0,1],[0,2],[0,4],[1,3],[1,5],[2,3],[2,6],[3,7],[4,5],[4,6],[5,7],[6,7]];
+function platformsNear(x, y, reach, {margin=0, index=null, incoming=false} = {}) {
+    const bounds = backgroundCanvas.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return [];
+    camera.updateMatrixWorld();
+    const focal = bounds.height / (2 * Math.tan(camera.fov * Math.PI / 360));
+    const platforms = [];
+    const first = index ?? 0, end = index === null ? cubes.length : Math.min(index+1,cubes.length);
+    for (let id=first; id<end; id++) {
+        const mesh = cubes[id];
+        if (!mesh || !mesh.visible || !mesh.material.opacity || capturedBackgroundCubes.has(mesh)) continue;
+        const depth = camera.position.z - mesh.position.z;
+        const radius = .867 * Math.max(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+        if (depth <= radius || depth >= camera.far) continue;
+        const cx = bounds.left + bounds.width/2 + mesh.position.x*focal/depth;
+        const cy = bounds.top + bounds.height/2 - mesh.position.y*focal/depth;
+        const extent = radius * (focal + Math.max(Math.abs(cx-bounds.left-bounds.width/2),Math.abs(cy-bounds.top-bounds.height/2))) / (depth-radius);
+        if (Math.abs(cx-x) > reach+extent || Math.abs(cy-y) > reach+extent) continue;
+        if (cx+extent < -margin || cx-extent > innerWidth+margin || cy+extent < -margin || cy-extent > innerHeight+margin) continue;
+        if (incoming && cx+extent < innerWidth && cy-extent >= 0) continue;
+        mesh.updateMatrixWorld();
+        const corners = [];
+        let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity;
+        for (let i=0;i<8;i++) {
+            summitPoint.set(i&1 ? .5:-.5, i&2 ? .5:-.5, i&4 ? .5:-.5).applyMatrix4(mesh.matrixWorld).project(camera);
+            const px = bounds.left + (1+summitPoint.x)*bounds.width/2;
+            const py = bounds.top + (1-summitPoint.y)*bounds.height/2;
+            corners.push({x:px,y:py});
+            left = Math.min(left,px); right = Math.max(right,px);
+            top = Math.min(top,py); bottom = Math.max(bottom,py);
+        }
+        if(right<=-margin || left>=innerWidth+margin || bottom<=-margin || top>=innerHeight+margin) continue;
+        platforms.push({id:"cube-"+id,index:id,generation:mesh.userData.summitGeneration,left,right,top,bottom,edges:summitEdgePairs.map(([a,b])=>[corners[a],corners[b]])});
+    }
+    return platforms;
+}
+
 window.NewHorizonBackgroundCubes = Object.freeze({
+    platformsNear,
     pulseVisibleCube,
     clearCubePulse,
     claimNearest: claimNearestBackgroundCubes,

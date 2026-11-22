@@ -1,0 +1,32 @@
+.summit-avatar, .summit-companion, .summit-dash-effect {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    image-rendering: pixelated;
+    z-index: 9;
+    will-change: transform;
+}
+html.summit-dragging, html.summit-dragging * { cursor: grabbing !important; }
+.summit-game-hint {
+    position: fixed;
+    z-index: 9;
+    bottom: 1.15rem;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: calc(100vw - 2rem);
+    width: max-content;
+    padding: .42rem .9rem;
+    color: #f2f2f2;
+    background: rgba(25,25,28,.88);
+    font-size: .875rem;
+    line-height: 1.55;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0;
+    transition: opacity .28s ease;
+}
+.summit-game-hint.is-shown {opacity: 1;}
+@media (prefers-reduced-motion: reduce) {
+    .summit-game-hint {transition: none;}
+}

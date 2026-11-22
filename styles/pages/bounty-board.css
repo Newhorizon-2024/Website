@@ -59,7 +59,7 @@
     align-items: flex-start;
     display: flex;
     flex-wrap: wrap;
-    gap: 50px 30px;
+    gap: 30px;
     justify-content: center;
     margin: 0 auto;
     width: 100%;
@@ -142,10 +142,6 @@
 =========================== */
 
 @media (min-width: 1200px) {
-    .bounty-container {
-        gap: 60px 30px;
-    }
-
     .wanted-poster {
         flex-basis: 260px;
         width: 260px;
@@ -169,7 +165,7 @@
     }
 
     .bounty-container {
-        gap: 40px 20px;
+        gap: 20px;
     }
 
     .wanted-poster {
@@ -190,10 +186,6 @@
 
     #bounty-board-section {
         width: 88%;
-    }
-
-    .bounty-container {
-        gap: 40px 30px;
     }
 
     .wanted-poster {

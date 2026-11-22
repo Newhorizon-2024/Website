@@ -483,7 +483,8 @@ function showCountdown() {
    7. 页面卸载清理
 =========================== */
 
-window.addEventListener("beforeunload", () => {
+window.addEventListener("pagehide", event => {
+    if (event.persisted) return;
     if (countdownInterval) {
         window.clearInterval(
             countdownInterval
@@ -502,7 +503,7 @@ window.addEventListener("beforeunload", () => {
 
     if (lenis) {
         lenis.destroy();
-        lenis = null;
+        window.lenis = lenis = null;
     }
 });
 
@@ -515,4 +516,7 @@ window.addEventListener("beforeunload", () => {
  * 当前 HTML 不再需要 onclick。
  * 暂时保留全局入口，兼容可能存在的旧调用。
  */
+window.addEventListener("pageshow", event => {
+    if (event.persisted && lenis) lenis.resize();
+});
 window.startExperience = startExperience;

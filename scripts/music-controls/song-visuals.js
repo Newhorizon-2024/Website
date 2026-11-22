@@ -73,6 +73,27 @@ let spectrum = null;
 let graphUnavailable = false;
 let playing = false;
 let snowSelected = false;
+const summitDesktop = matchMedia("(hover: hover) and (pointer: fine)");
+const mobileDevice = navigator.userAgentData?.mobile || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+let summitSelected = false, summitGame = null, summitLoading = null;
+function syncSummitGame() {
+    const selected = summitSelected && summitDesktop.matches && !mobileDevice && !backgroundMusic?.ended;
+    const active = selected && playing && !pageAway && !document.hidden;
+    if (!selected) {
+        summitGame?.destroy();
+        summitGame = null;
+    } else if (summitGame) {
+        summitGame.setPlaying(playing && !pageAway);
+    } else if (active && !summitLoading) {
+        summitLoading = import("../effects/summit-game.js?v=26.11.22.5")
+            .then(module => module.createSummitGame())
+            .then(game => { summitGame = game; syncSummitGame(); })
+            .catch(error => console.warn("Summit game could not start", error))
+            .finally(() => { summitLoading = null; });
+    }
+}
+
 let snowScore = null;
 const snowBands = {bass:0,mid:0,high:0};
 let pageAway = false;
@@ -164,6 +185,7 @@ export function applySongVisuals(
     song
 ) {
     applyShadowflameSong(song, backgroundMusic);
+    summitSelected = song?.path === "media/Reach for the Summit - Lena Raine.mp3";
     snowSelected = song?.visualEffect === "pixel-snow";
     const row = snowSelected && trackWaveforms[song.path];
     snowScore = row ? {path:song.path,duration:row[0],peaks:Uint8Array.from(atob(row[1]),c=>c.charCodeAt(0))} : null;
@@ -369,6 +391,7 @@ export function initializeSongVisualizer(volumeSpectrum) {
     listen(window, "keydown", resumeAudioGraph);
     listen(document, "visibilitychange", syncVisualizer);
     listen(reduceMotion, "change", syncVisualizer);
+    listen(summitDesktop, "change", syncSummitGame);
     listen(window, "pageshow", () => { pageAway = false; syncVisualizer(); });
     listen(window, "pagehide", event => {
         pageAway = true;
@@ -383,6 +406,7 @@ export function initializeSongVisualizer(volumeSpectrum) {
 }
 
 function syncVisualizer() {
+    syncSummitGame();
     syncPixelSnow(snowSelected && !backgroundMusic?.ended, playing, document.hidden || pageAway,
         reduceMotion.matches, backgroundMusic, snowScore, snowBands);
     const bossSelected = activeBossrushSpeed > 1 && playing;

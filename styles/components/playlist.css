@@ -111,20 +111,13 @@
 /* 普通歌曲列表项 */
 #playlist .playlist-song {
     display: flex;
+    isolation: isolate;
+    overflow: hidden;
 }
 
 /* 折叠状态中的歌曲 */
 #playlist .playlist-song.is-collapsed {
     display: none;
-}
-
-/* 普通歌曲悬停状态 */
-#playlist .playlist-song:hover {
-    background-color: #666666;
-    box-shadow:
-        0 5px 16px
-        rgba(0, 0, 0, 0.2);
-    transform: translateX(4px);
 }
 
 /* 歌单展开时歌曲依次进入 */
@@ -210,7 +203,16 @@
 =========================== */
 
 /* A separate action at the right edge leaves the rest of the row playable. */
-#playlist .playlist-song { overflow: hidden; }
+#playlist .playlist-song::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom left, rgb(0 0 0 / 95%), rgb(0 0 0 / 55%) 34%, transparent 83%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .24s ease;
+}
+#playlist .playlist-song:is(:hover, :focus-within)::after { opacity: 1; }
 #playlist .playlist-song-info {
     all: unset;
     display: block;
@@ -221,9 +223,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     text-align: left;
+    z-index: 1;
     cursor: pointer;
     position: relative;
 }
+#playlist .playlist-song:is(:hover, :focus-within) .playlist-song-info { padding-right: 6rem; }
 #playlist .playlist-song-info:focus-visible { outline: 1px solid #ddd; outline-offset: -1px; }
 #playlist .playlist-song[data-preview]::before {
     content: "";
@@ -232,13 +236,12 @@
     width: 6rem;
     background: var(--song-preview) center / cover no-repeat;
     mask-image: linear-gradient(90deg,#000 30%,transparent);
-    opacity: .85;
+    opacity: .38;
     pointer-events: none;
 }
 #playlist [data-preview="bossrush"] { --song-preview: url("../../images/bossrush-eyes/bossrush-eyes.png"); }
 #playlist [data-preview="shadowflame"] { --song-preview: url("../../images/music/shadowflame.png"); }
 #playlist [data-preview="pixel-snow"] { --song-preview: url("../../images/music/pixel-snow.png"); }
-#playlist .playlist-song[data-preview] .playlist-song-info { padding-left: 3.4rem; }
 .login-song-btn {
     position: absolute;
     inset: 0 0 0 auto;
@@ -246,7 +249,8 @@
     margin: 0;
     padding: 0 .85rem 0 1.8rem;
     border-radius: 0;
-    background: linear-gradient(90deg,transparent,#101012 42%,#09090a);
+    background: transparent;
+    z-index: 2;
     color: #eee;
     font: inherit;
     font-size: .78rem;
@@ -262,6 +266,8 @@
 .login-song-btn:focus-visible { outline: 1px solid #ddd; outline-offset: -3px; }
 @media (hover: none), (pointer: coarse) {
     #playlist .playlist-song { padding-right: 6.4rem; }
+    #playlist .playlist-song::after { opacity: 1; }
+    #playlist .playlist-song:is(:hover, :focus-within) .playlist-song-info { padding-right: 0; }
     #playlist .playlist-song .login-song-btn { opacity: 1; pointer-events: auto; }
 }
 
@@ -342,6 +348,7 @@
 @media (prefers-reduced-motion: reduce) {
     #playlist-container,
     #playlist li,
+    #playlist .playlist-song::after,
     .login-song-btn {
         animation: none !important;
         transition: none !important;
@@ -406,6 +413,7 @@
 @media (prefers-reduced-motion: reduce) {
     #playlist-container,
     #playlist li,
+    #playlist .playlist-song::after,
     .login-song-btn {
         animation: none !important;
         transition: none !important;
