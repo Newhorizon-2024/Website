@@ -1,4 +1,8 @@
-import { clamp, topAt } from "./summit-motion.js?v=26.11.22.6";
+import { clamp, topAt } from "./summit-motion.js?v=26.11.22.8";
+
+const guideStarts = 2;
+const farewellStarts = guideStarts + 6;
+const tutorialEnds = farewellStarts + 2;
 
 // The perch is stored relative to its real platform. Scroll and cube rotation then
 // move the encounter with the ledge, instead of leaving a pickup suspended over UI.
@@ -59,7 +63,8 @@ function advanceBird(v, player, scale, dt) {
         b.y = v.spot.y;
         b.facing = Math.sign(player.x - b.x) || b.facing;
         const near = Math.hypot(player.x - b.x, player.y - b.y) < 17 * scale;
-        if (v.tutorial ? b.clock >= 8 : (near && b.clock > .35) || b.clock > v.birdDwell) leave(v, player.x);
+        if (v.tutorial) v.guidePage = b.clock < guideStarts ? null : b.clock < farewellStarts ? "controls" : "farewell";
+        if (v.tutorial ? b.clock >= tutorialEnds : (near && b.clock > .35) || b.clock > v.birdDwell) leave(v, player.x);
     } else if (b.phase === "departing") {
         const t = b.clock;
         b.x += b.facing * (85 + 165 * Math.min(t / .45, 1)) * scale * dt;
@@ -217,5 +222,5 @@ export function createEncounterView(art, tutorialArt) {
         const c=crystalPosition(v,scale);
         gem.draw(c.x,c.y,scale,t,v.collected,Math.min((away-.22)*5,(v.life-t)*2));
     }
-    return {draw,detach};
+    return {draw,detach,birdElement:bird.el};
 }

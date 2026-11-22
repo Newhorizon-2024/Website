@@ -695,6 +695,19 @@ function platformsNear(x, y, reach, {margin=0, index=null, incoming=false} = {})
 
 window.NewHorizonBackgroundCubes = Object.freeze({
     platformsNear,
+    kickPlatform(surface, dx, dy) {
+        const mesh = cubes[surface.index];
+        if (!mesh?.visible || mesh.userData.summitGeneration !== surface.generation ||
+            capturedBackgroundCubes.has(mesh) || backgroundCubeDrag?.mesh === mesh) return;
+        const height = backgroundCanvas.clientHeight;
+        if (!height || !Number.isFinite(dx) || !Number.isFinite(dy)) return;
+        const worldPerPixel = 2 * Math.abs(camera.position.z-mesh.position.z) * Math.tan(camera.fov*Math.PI/360) / height;
+        const gain = Math.min(1, 440 / Math.max(1, Math.hypot(dx,dy)));
+        const previous = backgroundCubeThrows.get(mesh);
+        thrownBackgroundCubes.add(mesh);
+        backgroundCubeThrows.set(mesh, {worldPerPixel, acceleration:[0,0], x:(previous?.x || 0) + dx * gain * worldPerPixel,
+            y:(previous?.y || 0) - dy * gain * worldPerPixel});
+    },
     pulseVisibleCube,
     clearCubePulse,
     claimNearest: claimNearestBackgroundCubes,

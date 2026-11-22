@@ -1,16 +1,17 @@
-import { advance, clamp, createActor, step, topAt } from "./summit-motion.js?v=26.11.22.6";
-import { createAvatar, loadSummitPack } from "./summit-avatar.js?v=26.11.22.3";
-import { createEncounter, createEncounterView } from "./summit-encounter.js?v=26.11.22.6";
+import { advance, clamp, createActor, step, topAt } from "./summit-motion.js?v=26.11.22.8";
+import { createAvatar, loadSummitPack } from "./summit-avatar.js?v=26.11.22.8";
+import { createEncounter, createEncounterView } from "./summit-encounter.js?v=26.11.22.8";
 
 import { createDashEffect } from "./summit-dash.js?v=26.11.22.2";
 
-import { createCubeCrystal } from "./summit-field-items.js?v=26.11.22.6";
+import { createSpring } from "./summit-spring.js?v=26.11.22.8";
+import { createCubeCrystal } from "./summit-field-items.js?v=26.11.22.8";
 
 import { createDust } from "./summit-trail.js?v=26.11.22.6";
-import { createRoomCamera } from "./summit-camera.js?v=26.11.22.6";
-import { createBirdTutorial } from "./summit-tutorial.js?v=26.11.22.6";
+import { createRoomCamera } from "./summit-camera.js?v=26.11.22.8";
+import { createBirdTutorial } from "./summit-tutorial.js?v=26.11.22.8";
 
-const panels = "#navbar, #settings-section, .site-panel, .work-post, .creator-card, #countdown, #sponsor-section, #bounty-board-section.is-active .wanted-poster";
+const panels = "#navbar, #settings-section, .site-panel, .work-post, .creator-card, #countdown, #sponsor-section, #bounty-board-section.is-active :is(.wanted-poster, .bounty-page-link, .bounty-rank)";
 const keys = {
     KeyA:"left", KeyD:"right",
     KeyW:"up", KeyS:"down",
@@ -32,9 +33,15 @@ function readPad() {
     catch { return null; }
 }
 function rectOf(el) {
-    const {left,top,right,bottom,width,height} = el.getBoundingClientRect();
+    const heading = el.matches("#bounty-board-section :is(.bounty-page-link, .bounty-rank)");
+    let rect = el.getBoundingClientRect();
+    if (heading && rect.height) {
+        const range = document.createRange(); range.selectNodeContents(el);
+        rect = range.getBoundingClientRect();
+    }
+    const {left,top,right,bottom,width,height} = rect;
     if (!width || !height || left >= innerWidth || right <= 0 || top > innerHeight + 48 || bottom < -64) return null;
-    if (el.id === "countdown" || el.classList.contains("wanted-poster")) {
+    if (heading || el.id === "countdown" || el.classList.contains("wanted-poster")) {
         const style = getComputedStyle(el);
         if (style.visibility !== "visible" || (+style.opacity <= .01 && !el.classList.contains("is-wanted-decaying"))) return null;
     }
@@ -45,14 +52,15 @@ export async function createSummitGame() {
     const [skin,wildlife,tutorialArt] = await Promise.all([
         loadSummitPack("madeline"), loadSummitPack("wildlife"), loadSummitPack("tutorial")
     ]);
-    const avatar = createAvatar(skin);
+    const avatar = createAvatar(skin, tutorialArt);
     const dashEffect = createDashEffect(avatar.el, wildlife);
     const encounter = createEncounter();
     const encounterView = createEncounterView(wildlife, tutorialArt);
     const dust = createDust(tutorialArt);
     const camera = createRoomCamera();
-    const tutorial = createBirdTutorial();
+    const tutorial = createBirdTutorial(encounterView.birdElement);
     let lastCaps = -Infinity;
+    const spring = createSpring(tutorialArt, document.getElementById("back-to-home-pad"));
     const cubeCrystal = createCubeCrystal(wildlife);
     const hint = document.createElement("div");
     hint.className = "summit-game-hint";
@@ -101,7 +109,9 @@ export async function createSummitGame() {
         event.stopImmediatePropagation();
         drag = {id:event.pointerId,x:event.clientX,y:event.clientY,dx:actor.x-event.clientX,dy:actor.y-event.clientY};
         actor.vx = actor.vy = actor.dashTime = actor.jumpHold = actor.grace = actor.buffer = 0;
+        actor.springLift = 0;
         actor.dashAge = -1;
+        actor.dashBuffer = actor.dashAttack = 0; actor.dashSlide = false;
         actor.support = support = null;
         actor.pose = "idle";
         dashEffect.clear();
@@ -149,7 +159,7 @@ export async function createSummitGame() {
     function pollInput() {
         const pad = readPad();
         if ((pad?.index ?? null) !== padIndex) {
-            if (pad || padIndex !== null) showHint(pad ? "手柄已连接 · A / Y 跳跃　X / B 冲刺　肩键 / 扳机 抓墙" : "手柄已断开 · 键盘可继续操作");
+            if (pad || padIndex !== null) showHint(pad ? "手柄已连接" : "手柄已断开 · 键盘可继续操作");
             padIndex = pad?.index ?? null;
             lastJump = lastDash = false;
         }
@@ -203,6 +213,8 @@ export async function createSummitGame() {
 
         if (time >= nextScan) { targets = Array.from(document.querySelectorAll(panels)); nextScan = time + 500; }
         const platforms = targets.map(rectOf).filter(Boolean);
+        const coil = spring.surface(size);
+        if (coil) platforms.push(coil);
         const cubes = window.NewHorizonBackgroundCubes?.platformsNear?.(actor.x, actor.y, 120*size) || [];
         platforms.push(...cubes);
         cubeCrystal.sample(window.NewHorizonBackgroundCubes,size,dt);
@@ -220,7 +232,13 @@ export async function createSummitGame() {
         while(debt >= step) {
             const input = pollInput();
             if (drag) placeDraggedActor();
+            const takeoff = !drag && typeof actor.support === "string" && cubes.find(s => s.id === actor.support);
             const respawned = !drag && advance(actor,input,platforms,size,innerWidth,innerHeight,exits,dust.emit);
+            if (takeoff && actor.support !== takeoff.id && !respawned) {
+                const dash = actor.dashAge >= 0 && actor.dashTime > 0;
+                const effort = dash ? .68 : actor.vy < 0 ? .48 : .12;
+                window.NewHorizonBackgroundCubes?.kickPlatform?.(takeoff, -actor.vx*effort, -actor.vy*effort);
+            }
             if (!drag && camera.cross(actor,size,exits,() => avatar.draw(actor,size,0))) {
                 support = null; nextScan = 0; debt = 0;
                 dashEffect.clear(); dust.clear();
@@ -239,8 +257,9 @@ export async function createSummitGame() {
             debt -= step;
         }
         encounterView.draw(encounter.visit,size);
-        tutorial.draw(encounter.visit,size);
+        tutorial.draw(encounter.visit);
         cubeCrystal.draw(size);
+        spring.draw(dt);
         support = actor.support === null ? null : platforms.find(s => s.id === actor.support);
     }
     let focused = document.hasFocus();
@@ -281,7 +300,7 @@ export async function createSummitGame() {
         if (!shown) {
             dashEffect.detach(); dust.clear(); tutorial.detach();
             encounterView.detach();
-            cubeCrystal.detach();
+            cubeCrystal.detach(); spring.detach();
             avatar.el.remove(); hint.remove();
         }
     }

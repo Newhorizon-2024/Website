@@ -14,13 +14,13 @@ export function createRoomCamera() {
         cancelAnimationFrame(trip.frame);
         root.classList.remove("summit-room-pan");
         root.style.removeProperty("--summit-room-x");
-        root.style.removeProperty("--summit-room-y");
+
         move = null;
     }
     function cancel() {
         if (!move) return;
         const trip = move;
-        trip.view?.skipTransition();
+        trip.interrupt();
         finish(trip);
     }
     function boundaries() {
@@ -39,7 +39,12 @@ export function createRoomCamera() {
         const start = scrollY;
         const target = Math.max(0, Math.min(limit(), start + (dy || dx) * (h - 20 * scale)));
         if (Math.abs(target - start) < 1) return false;
-        const trip = {frame:0, view:null};
+        const trip = {frame:0, interrupt() {
+            actor.x = Math.max(5*scale,Math.min(innerWidth-5*scale,actor.x));
+            actor.y = Math.max(3*scale,Math.min(innerHeight-scale,actor.y));
+            if (dx) actor.vx = 0;
+            paint();
+        }};
         move = trip;
         const fromX = actor.x, fromY = actor.y;
         const toX = dx > 0 ? 6*scale : dx < 0 ? w-6*scale : fromX;
@@ -52,25 +57,23 @@ export function createRoomCamera() {
             paint();
         }
         if (reduced.matches) { place(1); finish(trip); return true; }
-        root.style.setProperty("--summit-room-x", dx * 100 + "vw");
-        root.style.setProperty("--summit-room-y", (dy ? target - start : 0) + "px");
         root.classList.add("summit-room-pan");
-        if (document.startViewTransition) {
-            trip.view = document.startViewTransition(() => place(1));
-            // A skipped snapshot still invokes the update callback in a visible document.
-            trip.view.ready.catch(() => {});
-            trip.view.finished.then(() => finish(trip), () => finish(trip));
-        } else {
-            const since = performance.now();
-            function pan(now) {
-                if (move !== trip) return;
-                const t = Math.min(1,(now-since)/440);
-                place(t*t*(3-2*t));
-                if (t < 1) trip.frame = requestAnimationFrame(pan);
-                else finish(trip);
-            }
-            trip.frame = requestAnimationFrame(pan);
+        const since = performance.now();
+        let switched = false;
+        function pan(now) {
+            if (move !== trip) return;
+            const t = Math.min(1, (now-since)/440);
+            const u = t*t*(3-2*t);
+            if (dx) {
+                // Slide the room surfaces past the stationary sky. Exchange rooms offscreen.
+                if (!switched && u >= .5) { place(1); switched = true; }
+                const offset = dx * (switched ? 2*(1-u) : -2*u);
+                root.style.setProperty("--summit-room-x", 100*offset + "vw");
+            } else place(u);
+            if (t < 1) trip.frame = requestAnimationFrame(pan);
+            else finish(trip);
         }
+        trip.frame = requestAnimationFrame(pan);
         return true;
     }
     function toggle() { cancel(); enabled = !enabled; return enabled; }

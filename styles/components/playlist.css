@@ -242,6 +242,11 @@
 #playlist [data-preview="bossrush"] { --song-preview: url("../../images/bossrush-eyes/bossrush-eyes.png"); }
 #playlist [data-preview="shadowflame"] { --song-preview: url("../../images/music/shadowflame.png"); }
 #playlist [data-preview="pixel-snow"] { --song-preview: url("../../images/music/pixel-snow.png"); }
+#playlist .playlist-song[data-preview="pixel-snow"]::before {
+    background-size: 205% auto;
+    background-position: 42% 44%;
+    opacity: .7;
+}
 .login-song-btn {
     position: absolute;
     inset: 0 0 0 auto;

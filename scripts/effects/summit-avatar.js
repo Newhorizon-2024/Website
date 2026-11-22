@@ -2,7 +2,7 @@ const pack = new URL("./summit-local/", import.meta.url);
 const packs = new Map();
 
 export function loadSummitPack(name) {
-    const revision = name === "wildlife" ? "?v=26.11.22.2" : "";
+    const revision = name === "tutorial" ? "?v=26.11.22.8" : name === "wildlife" ? "?v=26.11.22.2" : "";
     if (!packs.has(name)) packs.set(name, Promise.all([
         fetch(new URL(name+".json"+revision, pack)).then(r => { if (!r.ok) throw Error("skin"); return r.json(); }),
         new Promise((resolve, reject) => {
@@ -15,7 +15,7 @@ export function loadSummitPack(name) {
     return packs.get(name);
 }
 
-export function createAvatar(skin) {
+export function createAvatar(skin, tutorialArt) {
     const el = document.createElement("canvas");
     el.className = "summit-avatar";
     el.width = 48; el.height = 40;
@@ -56,6 +56,9 @@ export function createAvatar(skin) {
         ctx.translate(24, 34);
         ctx.scale(p.facing * (1 + squash), 1 - squash);
         ctx.translate(-16, -32);
+        const tired = action === "tired" && tutorialArt?.meta.animations.tired;
+        const breath = p.breathTime > 0 && !dashPose;
+        if (breath && !p.support) ctx.translate(0, Math.sin(age * 12) > .25 ? 1 : 0);
         const hairColor = p.dashes ? "#b93248" : "#55a9d7";
         for (let i = 4; i >= 0; i--) {
             const t = i / 4;
@@ -79,7 +82,11 @@ export function createAvatar(skin) {
             const [ox,oy] = skin.meta.hairOrigin;
             tile(palette.bangs[skin.meta.bangs[frame] || 0],head[0]-ox,head[1]-oy);
             // The face is in the body tile; fringe and trailing strands sit behind it.
-            tile(frame,0,0);
+            if (tired) {
+                const {cell,columns} = tutorialArt.meta;
+                const index = tired.frames[Math.floor(age / tired.delay) % tired.frames.length];
+                ctx.drawImage(tutorialArt.image,index%columns*cell,Math.floor(index/columns)*cell,32,32,0,0,32,32);
+            } else tile(frame,0,0);
         } else {
             // An original miniature climber also keeps the game playable without the private skin.
             if (action === "duck") { ctx.translate(0, 32); ctx.scale(1, .70); ctx.translate(0, -32); }
@@ -92,6 +99,11 @@ export function createAvatar(skin) {
             ctx.fillRect(12-stride,29,3,3); ctx.fillRect(17+stride,29,3,3);
         }
         ctx.restore();
+        if (breath && (p.pose === "wallslide" || p.pose === "climbup" || tired)) {
+            const phase = (age * 1.6) % 1;
+            ctx.fillStyle = "rgba(235,242,249," + (.7*(1-phase)) + ")";
+            ctx.fillRect(24+p.facing*(5+Math.round(7*phase)), 27-Math.round(4*phase), 2, 1);
+        }
         if (el.style.width !== el.width*scale+"px") {
             el.style.width = el.width*scale+"px";
             el.style.height = el.height*scale+"px";

@@ -86,7 +86,7 @@ function syncSummitGame() {
     } else if (summitGame) {
         summitGame.setPlaying(playing && !pageAway);
     } else if (active && !summitLoading) {
-        summitLoading = import("../effects/summit-game.js?v=26.11.22.6")
+        summitLoading = import("../effects/summit-game.js?v=26.11.22.8")
             .then(module => module.createSummitGame())
             .then(game => { summitGame = game; syncSummitGame(); })
             .catch(error => console.warn("Summit game could not start", error))

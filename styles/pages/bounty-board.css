@@ -60,6 +60,7 @@
     display: flex;
     flex-wrap: wrap;
     --poster-gap: 50px;
+    --poster-width: min(260px, calc((100% - 3 * var(--poster-gap)) / 4));
     gap: var(--poster-gap);
     justify-content: center;
     margin: 0 auto;
@@ -70,7 +71,8 @@
 .wanted-poster {
     border-radius: 0;
     cursor: zoom-in;
-    flex: 0 0 260px;
+    flex: 0 0 var(--poster-width);
+    min-width: 0;
     height: auto;
     margin: 0;
     max-width: 100%;
@@ -88,7 +90,7 @@
     touch-action: pan-y pinch-zoom;
     user-select: none;
     -webkit-user-select: none;
-    width: 260px;
+    width: var(--poster-width);
 }
 
 /* 悬停仅轻微倾斜、发光，不放大海报本体或改变布局宽度。 */
@@ -145,10 +147,6 @@
 @media (min-width: 1200px) {
     .bounty-container { --poster-gap: 60px; }
 
-    .wanted-poster {
-        flex-basis: 260px;
-        width: 260px;
-    }
 }
 
 
@@ -171,10 +169,6 @@
         --poster-gap: 40px;
     }
 
-    .wanted-poster {
-        flex-basis: calc((100% - 3 * var(--poster-gap)) / 4);
-        width: calc((100% - 3 * var(--poster-gap)) / 4);
-    }
 }
 
 
@@ -191,17 +185,9 @@
         width: 88%;
     }
 
-    .bounty-container { --poster-gap: 40px; }
-
-    .wanted-poster {
-        flex-basis: min(
-            250px,
-            calc((100% - var(--poster-gap)) / 2)
-        );
-        width: min(
-            250px,
-            calc((100% - var(--poster-gap)) / 2)
-        );
+    .bounty-container {
+        --poster-gap: 40px;
+        --poster-width: min(250px, calc((100% - var(--poster-gap)) / 2));
     }
 }
 
@@ -219,12 +205,11 @@
 
     .bounty-container {
         --poster-gap: 40px;
+        --poster-width: min(250px, 100%);
+        align-items: center;
+        flex-direction: column;
     }
-
-    .wanted-poster {
-        flex-basis: 250px;
-        width: 250px;
-    }
+    .wanted-poster { flex: none; }
 }
 
 
@@ -233,8 +218,5 @@
 =========================== */
 
 @media (max-width: 480px) {
-    .wanted-poster {
-        flex-basis: 200px;
-        width: 200px;
-    }
+    .bounty-container { --poster-width: min(200px, 100%); }
 }
