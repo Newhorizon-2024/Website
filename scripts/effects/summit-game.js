@@ -1,10 +1,14 @@
-import { advance, clamp, createActor, step, topAt } from "./summit-motion.js?v=26.11.22.5";
+import { advance, clamp, createActor, step, topAt } from "./summit-motion.js?v=26.11.22.6";
 import { createAvatar, loadSummitPack } from "./summit-avatar.js?v=26.11.22.3";
-import { createEncounter, createEncounterView } from "./summit-encounter.js?v=26.11.22.5";
+import { createEncounter, createEncounterView } from "./summit-encounter.js?v=26.11.22.6";
 
 import { createDashEffect } from "./summit-dash.js?v=26.11.22.2";
 
-import { createCubeCrystal } from "./summit-field-items.js?v=26.11.22.5";
+import { createCubeCrystal } from "./summit-field-items.js?v=26.11.22.6";
+
+import { createDust } from "./summit-trail.js?v=26.11.22.6";
+import { createRoomCamera } from "./summit-camera.js?v=26.11.22.6";
+import { createBirdTutorial } from "./summit-tutorial.js?v=26.11.22.6";
 
 const panels = "#navbar, #settings-section, .site-panel, .work-post, .creator-card, #countdown, #sponsor-section, #bounty-board-section.is-active .wanted-poster";
 const keys = {
@@ -38,11 +42,17 @@ function rectOf(el) {
 }
 
 export async function createSummitGame() {
-    const [skin,wildlife] = await Promise.all([loadSummitPack("madeline"),loadSummitPack("wildlife")]);
+    const [skin,wildlife,tutorialArt] = await Promise.all([
+        loadSummitPack("madeline"), loadSummitPack("wildlife"), loadSummitPack("tutorial")
+    ]);
     const avatar = createAvatar(skin);
     const dashEffect = createDashEffect(avatar.el, wildlife);
     const encounter = createEncounter();
-    const encounterView = createEncounterView(wildlife);
+    const encounterView = createEncounterView(wildlife, tutorialArt);
+    const dust = createDust(tutorialArt);
+    const camera = createRoomCamera();
+    const tutorial = createBirdTutorial();
+    let lastCaps = -Infinity;
     const cubeCrystal = createCubeCrystal(wildlife);
     const hint = document.createElement("div");
     hint.className = "summit-game-hint";
@@ -51,7 +61,7 @@ export async function createSummitGame() {
     const navbar = document.getElementById("navbar");
     const held = new Set();
     let actor, intro = 0, frame = 0, last = 0, debt = 0, playing = false, disposed = false;
-    let targets = [], nextScan = 0, support = null, launchScrolled = false, firstHint = true, hintTimer;
+    let targets = [], nextScan = 0, support = null, launchScrolled = false, hintTimer;
     let jumpEdge = false, dashEdge = false, lastJump = false, lastDash = false, padIndex = null;
     let listeners = null;
     const scale = () => innerWidth >= 1024 ? 3 : 2;
@@ -62,6 +72,7 @@ export async function createSummitGame() {
         hintTimer = setTimeout(() => hint.classList.remove("is-shown"), 5200);
     };
     function clearInput() {
+        lastCaps = -Infinity;
         held.clear(); jumpEdge = dashEdge = lastJump = lastDash = false;
     }
     let drag = null, eatenClick = -1;
@@ -82,7 +93,7 @@ export async function createSummitGame() {
     }
     function beginDrag(event) {
         eatenClick = -1;
-        if (!actor || intro < 1 || drag || event.pointerType !== "mouse" || event.button !== 0 ||
+        if (!actor || intro < 1 || drag || camera.busy || event.pointerType !== "mouse" || event.button !== 0 ||
             !event.isPrimary || event.defaultPrevented || !avatar.hit(event.clientX,event.clientY)) return;
         const target = document.elementFromPoint(event.clientX,event.clientY);
         if (target?.closest("dialog, [aria-modal=true], #playlist-container, .volume-container")) return;
@@ -114,8 +125,20 @@ export async function createSummitGame() {
     }
 
     function keyDown(event) {
+        if (drag || !supportsInput(event) || document.body.matches(blockedPage)) return;
+        if (event.code === "CapsLock") {
+            if (!event.repeat && !held.has(event.code)) {
+                const now = performance.now();
+                if (now-lastCaps <= 450) {
+                    showHint(camera.toggle() ? "游戏视角已开启" : "游戏视角已关闭");
+                    lastCaps = -Infinity;
+                } else lastCaps = now;
+            }
+            held.add(event.code);
+            return;
+        }
         const action = keys[event.code];
-        if (drag || !action || !supportsInput(event) || document.body.matches(blockedPage)) return;
+        if (!action) return;
         if (!held.has(event.code) && !event.repeat) {
             if (action === "jump") jumpEdge = true;
             if (action === "dash" || action === "grabDash") dashEdge = true;
@@ -148,15 +171,17 @@ export async function createSummitGame() {
     }
     function run(time) {
         frame = requestAnimationFrame(run);
-        const dt = last ? Math.min((time-last)/1000,.08) : 0;
+        const elapsed = last ? (time-last)/1000 : 0;
+        const dt = Math.min(elapsed, .08);
         last = time;
         const size = scale();
+        if (camera.busy) { debt = 0; return; }
         if (!actor || intro < 1) {
             const r = navbar?.getBoundingClientRect();
             if (!r?.width) return;
-            if (!actor && !launchScrolled && (r.top < 12*size || r.top > innerHeight - 16)) {
+            if (!actor && !launchScrolled && (r.top < Math.min(180,innerHeight*.35) || r.top > innerHeight - 16)) {
                 launchScrolled = true;
-                if (window.lenis?.scrollTo) window.lenis.scrollTo(navbar,{offset:-Math.round(innerHeight*.26),immediate:true});
+                if (window.lenis?.scrollTo) window.lenis.scrollTo(navbar,{offset:-Math.round(innerHeight*.38),immediate:true});
                 else navbar.scrollIntoView({block:"center",behavior:"instant"});
                 return;
             }
@@ -168,7 +193,9 @@ export async function createSummitGame() {
             actor.pose = intro < .49 ? "jumpFast" : "fallFast";
             if (intro === 1) {
                 actor.support = navbar; actor.pose = "idle"; support = rectOf(navbar);
-                if(firstHint) {firstHint=false;showHint("WASD 移动　C / 空格 跳跃　X 冲刺　Z 抓墙　鼠标拖动角色");}
+                encounter.greet(navbar, size);
+                encounterView.draw(encounter.visit, size);
+                dust.emit("land", actor.x, actor.y, actor.facing, size);
             }
             avatar.draw(actor,size,dt);
             return;
@@ -186,11 +213,20 @@ export async function createSummitGame() {
                 actor.y = topAt(next,clamp(actor.x,next.left+.001,next.right-.001));
             } else actor.support = null;
         }
+        // Tutorial text stays up for real foreground time, even when physics drops frames.
+        encounter.readTutorial(elapsed);
+        const exits = camera.boundaries();
         debt += dt;
         while(debt >= step) {
             const input = pollInput();
             if (drag) placeDraggedActor();
-            const respawned = !drag && advance(actor,input,platforms,size,innerWidth,innerHeight);
+            const respawned = !drag && advance(actor,input,platforms,size,innerWidth,innerHeight,exits,dust.emit);
+            if (!drag && camera.cross(actor,size,exits,() => avatar.draw(actor,size,0))) {
+                support = null; nextScan = 0; debt = 0;
+                dashEffect.clear(); dust.clear();
+                encounter.abandon(actor.x); encounterView.detach(); tutorial.detach(); cubeCrystal.detach();
+                return;
+            }
             if (respawned) {
                 encounter.abandon(actor.x);
                 dashEffect.clear();
@@ -199,9 +235,11 @@ export async function createSummitGame() {
             cubeCrystal.update(actor,size,step,!drag);
             avatar.draw(actor,size,step);
             dashEffect.draw(actor,size);
+            dust.update(step);
             debt -= step;
         }
         encounterView.draw(encounter.visit,size);
+        tutorial.draw(encounter.visit,size);
         cubeCrystal.draw(size);
         support = actor.support === null ? null : platforms.find(s => s.id === actor.support);
     }
@@ -228,9 +266,12 @@ export async function createSummitGame() {
             window.addEventListener("pointercancel",releaseDrag,{signal});
             // Browser chrome can revoke capture while the primary button is still held.
             window.addEventListener("lostpointercapture",e=>{if (!(e.buttons & 1)) releaseDrag(e);},{capture:true,signal});
+            window.addEventListener("resize",camera.cancel,{signal});
+            window.addEventListener("wheel",camera.cancel,{passive:true,signal});
             last = debt = nextScan = 0;
             frame = requestAnimationFrame(run);
         } else if (!runNow && listeners) {
+            camera.cancel(); tutorial.suspend();
             cancelAnimationFrame(frame); frame = 0;
             listeners.abort(); listeners=null;
             endDrag();
@@ -238,7 +279,7 @@ export async function createSummitGame() {
             hint.classList.remove("is-shown");
         }
         if (!shown) {
-            dashEffect.detach();
+            dashEffect.detach(); dust.clear(); tutorial.detach();
             encounterView.detach();
             cubeCrystal.detach();
             avatar.el.remove(); hint.remove();
@@ -254,6 +295,6 @@ export async function createSummitGame() {
     observer.observe(document.body,{attributes:true,attributeFilter:["class"]});
     return {
         setPlaying(value) { playing=value; update(); },
-        destroy() { disposed=true; update(); observer.disconnect(); lifecycle.abort(); }
+        destroy() { disposed=true; update(); tutorial.destroy(); observer.disconnect(); lifecycle.abort(); }
     };
 }

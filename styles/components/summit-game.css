@@ -30,3 +30,69 @@ html.summit-dragging, html.summit-dragging * { cursor: grabbing !important; }
 @media (prefers-reduced-motion: reduce) {
     .summit-game-hint {transition: none;}
 }
+
+
+.summit-bird-bubble {
+    position: fixed;
+    z-index: 10;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: min(35rem, calc(100vw - 16px));
+    padding: 9px 12px;
+    background: #191827;
+    color: #fff9f4;
+    border: 2px solid #f4edea;
+    border-radius: 0;
+    box-shadow: 3px 3px 0 #282033, -2px 2px 0 #282033;
+    font: 600 clamp(11px, 1.25vw, 14px)/1.55 ui-monospace, "Microsoft YaHei", monospace;
+    pointer-events: none;
+    user-select: none;
+}
+.summit-bird-bubble::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: var(--beak);
+    width: 10px;
+    height: 8px;
+    background: #191827;
+    clip-path: polygon(0 0,100% 0,100% 4px,60% 4px,60% 100%,25% 100%,25% 4px,0 4px);
+}
+.summit-bird-controls {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 3px 12px;
+}
+.summit-bird-controls > span { display: flex; align-items: center; gap: 5px; }
+.summit-bird-controls kbd {
+    display: inline-block;
+    padding: 0 3px;
+    background: #ece7eb;
+    box-shadow: 0 2px 0 #938699;
+    color: #272135;
+    font: inherit;
+    white-space: nowrap;
+}
+.summit-bird-controls .summit-bird-gamepad { grid-column: 1 / -1; color: #d2c9dd; }
+@media (max-width: 620px) {
+    .summit-bird-controls { grid-template-columns: 1fr; }
+}
+html.summit-room-pan *, html.summit-room-pan *::before, html.summit-room-pan *::after {
+    animation-play-state: paused !important;
+}
+html.summit-room-pan::view-transition-group(root) { animation: none; }
+html.summit-room-pan::view-transition-old(root), html.summit-room-pan::view-transition-new(root) {
+    height: 100%;
+    mix-blend-mode: normal;
+    animation-duration: 440ms;
+    animation-timing-function: cubic-bezier(.4,0,.25,1);
+    animation-fill-mode: both;
+}
+html.summit-room-pan::view-transition-old(root) { animation-name: summit-room-leave; }
+html.summit-room-pan::view-transition-new(root) { animation-name: summit-room-enter; }
+@keyframes summit-room-leave {
+    to { transform: translate(calc(-1 * var(--summit-room-x)), calc(-1 * var(--summit-room-y))); }
+}
+@keyframes summit-room-enter {
+    from { transform: translate(var(--summit-room-x), var(--summit-room-y)); }
+}

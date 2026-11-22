@@ -19,7 +19,7 @@ export function createActor(x, y) {
         grace: 0, buffer: 0, dashTime: 0, dashAge: -1, dashX: 0, dashY: 0, dashStartX: x, dashStartY: y, refillDelay: 0, jumpHold: 0, kickLock: 0, pose: "idle" };
 }
 
-export function advance(p, input, surfaces, scale, width, height) {
+export function advance(p, input, surfaces, scale, width, height, exits = null, emitDust = null) {
     const dt = step, hw = 4 * scale, bodyHeight = 11 * scale;
     const wallAt = (x, dir) => surfaces.find(s => !s.edges && p.y > s.top + scale &&
         p.y - bodyHeight < s.bottom - scale &&
@@ -71,7 +71,10 @@ export function advance(p, input, surfaces, scale, width, height) {
             p.vy = approach(p.vy, maxFall * scale, gravity * scale * dt);
         }
         if (p.buffer && (p.grace || wallDir)) {
-            if (!p.grace && wallDir) {
+            const wallJump = !p.grace && wallDir;
+            emitDust?.(wallJump ? "wall" : "jump", p.x + (wallJump ? wallDir * hw : 0),
+                p.y - (wallJump ? 5 * scale : 0), wallJump ? -wallDir : p.facing, scale);
+            if (wallJump) {
                 p.vx = -wallDir * 126 * scale; p.kickLock = .14; p.facing = -wallDir;
             }
             p.vy = -113 * scale; p.jumpHold = .18;
@@ -94,7 +97,7 @@ export function advance(p, input, surfaces, scale, width, height) {
         return false;
     }
     const oldX = p.x, oldY = p.y;
-    let nx = clamp(oldX + p.vx * dt, hw, width - hw);
+    let nx = clamp(oldX + p.vx * dt, exits?.previous ? -hw : hw, exits?.next ? width + hw : width - hw);
     for (const s of surfaces) {
         if (s.edges || oldY <= s.top + scale || oldY - bodyHeight >= s.bottom - scale) continue;
         if (p.vx > 0 && oldX + hw <= s.left + .01 && nx + hw > s.left) { nx = s.left - hw; p.vx = 0; }
@@ -116,9 +119,10 @@ export function advance(p, input, surfaces, scale, width, height) {
         }
     }
     p.y = ny;
+    if (landed && p.support == null && p.vy > 72 * scale) emitDust?.("land", p.x, ny, p.facing, scale);
     p.support = landed?.id ?? null;
     if (landed) p.vy = 0;
-    if (p.y > height + bodyHeight) {
+    if (!exits?.next && p.y > height + bodyHeight) {
         const x = p.x;
         Object.assign(p, createActor(x, -2 * scale), { facing: p.facing, pose: "fallFast" });
         return true;

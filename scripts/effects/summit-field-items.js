@@ -1,5 +1,5 @@
-import { topAt } from "./summit-motion.js?v=26.11.22.5";
-import { createCrystalView, refillIfTouched } from "./summit-encounter.js?v=26.11.22.5";
+import { topAt } from "./summit-motion.js?v=26.11.22.6";
+import { createCrystalView, refillIfTouched } from "./summit-encounter.js?v=26.11.22.6";
 
 export function createCubeCrystal(art, random = Math.random) {
     const view = createCrystalView(art, "cube-crystal");

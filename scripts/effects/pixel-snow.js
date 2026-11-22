@@ -324,6 +324,11 @@ function makeWeather(audio, score, bands) {
         }
     }
     function tick(now) {
+        if (document.documentElement.classList.contains("summit-room-pan")) {
+            last = 0;
+            frame = requestAnimationFrame(tick);
+            return;
+        }
         if (!last || now-last >= 32) {
             const dt = last ? Math.min(.15,(now-last)/1000) : 0;
             last = now;

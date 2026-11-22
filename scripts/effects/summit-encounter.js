@@ -1,4 +1,4 @@
-import { clamp, topAt } from "./summit-motion.js?v=26.11.22.5";
+import { clamp, topAt } from "./summit-motion.js?v=26.11.22.6";
 
 // The perch is stored relative to its real platform. Scroll and cube rotation then
 // move the encounter with the ledge, instead of leaving a pickup suspended over UI.
@@ -46,7 +46,8 @@ function leave(v, playerX) {
 
 function advanceBird(v, player, scale, dt) {
     const b = v.bird;
-    b.clock += dt;
+    if (v.tutorial && b.phase === "perched") b.clock = v.readingTime;
+    else b.clock += dt;
     if (b.phase === "arriving") {
         const u = Math.min(1, b.clock / b.flightTime);
         const remaining = (1 - u) ** 1.5;
@@ -58,7 +59,7 @@ function advanceBird(v, player, scale, dt) {
         b.y = v.spot.y;
         b.facing = Math.sign(player.x - b.x) || b.facing;
         const near = Math.hypot(player.x - b.x, player.y - b.y) < 17 * scale;
-        if ((near && b.clock > .35) || b.clock > v.birdDwell) leave(v, player.x);
+        if (v.tutorial ? b.clock >= 8 : (near && b.clock > .35) || b.clock > v.birdDwell) leave(v, player.x);
     } else if (b.phase === "departing") {
         const t = b.clock;
         b.x += b.facing * (85 + 165 * Math.min(t / .45, 1)) * scale * dt;
@@ -73,6 +74,13 @@ function advanceBird(v, player, scale, dt) {
 export function createEncounter(random = Math.random) {
     let visit = null, wait = 1.8;
     function reset(delay = 1.8) { visit = null; wait = delay; }
+    function greet(navbar, scale) {
+        const r = navbar.getBoundingClientRect();
+        const x = Math.min(innerWidth - 14*scale, r.right - Math.min(r.width*.13,28*scale));
+        visit = startVisit({id:navbar, u:(x-r.left)/r.width, x, y:r.top, side:1}, scale, random);
+        visit.tutorial = true;
+        visit.readingTime = 0;
+    }
     function abandon(playerX) {
         if (!visit) return;
         visit.lostPerch = true;
@@ -99,15 +107,18 @@ export function createEncounter(random = Math.random) {
             } else abandon(player.x);
         }
         advanceBird(v, player, scale, dt);
-        if (canCollect && !v.lostPerch && v.depart >= 0 && v.age - v.depart >= .22 && v.collected < 0 &&
+        if (canCollect && !v.tutorial && !v.lostPerch && v.depart >= 0 && v.age - v.depart >= .22 && v.collected < 0 &&
             player.support === null && (player.dashes === 0 || player.stamina < 90)) {
             const pos = crystalPosition(v, scale);
             if (refillIfTouched(player,pos,scale)) v.collected = v.age;
         }
-        const gemFinished = v.lostPerch || (v.collected >= 0 && v.age - v.collected > .55) || v.age > v.life;
+        const gemFinished = v.tutorial || v.lostPerch || (v.collected >= 0 && v.age - v.collected > .55) || v.age > v.life;
         if (gemFinished && v.bird.phase === "gone") reset(v.lostPerch ? 1.5 : 6 + random() * 4);
     }
-    return { update, abandon, get visit() { return visit; } };
+    function readTutorial(elapsed) {
+        if (visit?.tutorial && visit.bird.phase === "perched") visit.readingTime += elapsed;
+    }
+    return { greet, readTutorial, update, abandon, get visit() { return visit; } };
 }
 
 function crystalPosition(v,scale) {
@@ -179,7 +190,7 @@ function paintSprite(art,ctx,action,seconds,direction) {
     ctx.restore();
 }
 
-export function createEncounterView(art) {
+export function createEncounterView(art, tutorialArt) {
     const bird=badge("bird"),gem=createCrystalView(art,"crystal");
     function detach(){bird.el.remove();gem.remove();}
     function draw(v,scale) {
@@ -194,10 +205,11 @@ export function createEncounterView(art) {
             } else if (b.phase === "departing" && b.hop && clock < .24) {
                 action = "birdJump";
             }
+            const call = v.tutorial && b.phase === "perched" && b.clock < 1.12 && tutorialArt;
             position(bird, b.x, b.y, scale);
-            paintSprite(art,bird.ctx, action, clock, b.facing);
+            paintSprite(call ? tutorialArt : art, bird.ctx, call ? "birdCall" : action, call ? b.clock : clock, b.facing);
         } else bird.el.remove();
-        if (v.lostPerch || v.depart < 0 || away < .22 || (v.collected >= 0 && t - v.collected > .55)) {
+        if (v.tutorial || v.lostPerch || v.depart < 0 || away < .22 || (v.collected >= 0 && t - v.collected > .55)) {
             gem.remove();
             return;
         }

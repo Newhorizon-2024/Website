@@ -2086,7 +2086,7 @@ function animate(
      * 返回页面后会自动恢复，
      * 不会限制前台运行时的最高帧率。
      */
-    if (!isPageVisible || anotherWorldObscuresBackground) {
+    if (!isPageVisible || anotherWorldObscuresBackground || document.documentElement.classList.contains("summit-room-pan")) {
         previousBackgroundFrameAt = null;
         return;
     }

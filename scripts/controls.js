@@ -8,7 +8,7 @@ import {
 
 import {
     initializeMusicControls
-} from "./music-controls/player.js?v=26.11.22.5";
+} from "./music-controls/player.js?v=26.11.22.6";
 
 
 /* ===========================

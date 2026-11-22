@@ -1,5 +1,5 @@
 import { applyShadowflameSong } from "../effects/shadowflame.js?v=26.11.21.5";
-import { syncPixelSnow } from "../effects/pixel-snow.js?v=26.11.21.9";
+import { syncPixelSnow } from "../effects/pixel-snow.js?v=26.11.22.6";
 import { trackWaveforms } from "./track-waveforms-data.js?v=26.11.21.7";
 
 /* ===========================
@@ -86,7 +86,7 @@ function syncSummitGame() {
     } else if (summitGame) {
         summitGame.setPlaying(playing && !pageAway);
     } else if (active && !summitLoading) {
-        summitLoading = import("../effects/summit-game.js?v=26.11.22.5")
+        summitLoading = import("../effects/summit-game.js?v=26.11.22.6")
             .then(module => module.createSummitGame())
             .then(game => { summitGame = game; syncSummitGame(); })
             .catch(error => console.warn("Summit game could not start", error))
