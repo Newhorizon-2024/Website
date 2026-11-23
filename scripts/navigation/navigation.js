@@ -9,7 +9,7 @@ import {transitionInnerDomainCubesOut} from "../effects/inner-domain-cubes.js?v=
 
 import {
     initializeSlingButton
-} from "../effects/sling-button.js?v=26.11.18.5";
+} from "../effects/sling-button.js?v=26.11.23.1";
 
 /* ===========================
    1. 导航栏状态

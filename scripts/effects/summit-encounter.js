@@ -1,4 +1,4 @@
-import { clamp, topAt } from "./summit-motion.js?v=26.11.22.8";
+import { clamp, topAt } from "./summit-motion.js?v=26.11.23.1";
 
 const guideStarts = 2;
 const farewellStarts = guideStarts + 6;
@@ -63,7 +63,11 @@ function advanceBird(v, player, scale, dt) {
         b.y = v.spot.y;
         b.facing = Math.sign(player.x - b.x) || b.facing;
         const near = Math.hypot(player.x - b.x, player.y - b.y) < 17 * scale;
-        if (v.tutorial) v.guidePage = b.clock < guideStarts ? null : b.clock < farewellStarts ? "controls" : "farewell";
+        if (v.tutorial) {
+            const page = b.clock < guideStarts ? null : b.clock < farewellStarts ? "controls" : "farewell";
+            if (page === "controls" && !v.guidePage) b.callStarted = b.clock;
+            v.guidePage = page;
+        }
         if (v.tutorial ? b.clock >= tutorialEnds : (near && b.clock > .35) || b.clock > v.birdDwell) leave(v, player.x);
     } else if (b.phase === "departing") {
         const t = b.clock;
@@ -210,9 +214,11 @@ export function createEncounterView(art, tutorialArt) {
             } else if (b.phase === "departing" && b.hop && clock < .24) {
                 action = "birdJump";
             }
-            const call = v.tutorial && b.phase === "perched" && b.clock < 1.12 && tutorialArt;
+            const callTime = b.clock - b.callStarted;
+            const clip = tutorialArt?.meta.animations.birdCall;
+            const call = clip && v.guidePage === "controls" && b.phase === "perched" && callTime < clip.frames.length * clip.delay;
             position(bird, b.x, b.y, scale);
-            paintSprite(call ? tutorialArt : art, bird.ctx, call ? "birdCall" : action, call ? b.clock : clock, b.facing);
+            paintSprite(call ? tutorialArt : art, bird.ctx, call ? "birdCall" : action, call ? callTime : clock, b.facing);
         } else bird.el.remove();
         if (v.tutorial || v.lostPerch || v.depart < 0 || away < .22 || (v.collected >= 0 && t - v.collected > .55)) {
             gem.remove();

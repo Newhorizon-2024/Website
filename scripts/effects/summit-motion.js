@@ -4,6 +4,7 @@ const approach = (value, target, delta) => value + Math.sign(target - value) * M
 export const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 
 export function topAt(surface, x) {
+    if (surface.inkTop) return surface.inkTop(x);
     if (!surface.edges) return surface.top;
     let y = surface.bottom;
     for (const [a, b] of surface.edges) {
@@ -14,17 +15,49 @@ export function topAt(surface, x) {
     return y;
 }
 
+// Intersect a horizontal slice of the projected cube with its twelve edges.
+function flank(cube, dir, feet, scale) {
+    const h = cube.bottom - cube.top;
+    if (h < 2 || feet <= cube.top || feet - 8*scale >= cube.bottom) return null;
+    const y = clamp(feet - Math.min(5*scale, h*.32), cube.top + .1, cube.bottom - .1);
+    let edge = dir > 0 ? Infinity : -Infinity;
+    for (const [a,b] of cube.edges) {
+        if (a.y === b.y || y < Math.min(a.y,b.y) || y > Math.max(a.y,b.y)) continue;
+        const x = a.x + (y-a.y)*(b.x-a.x)/(b.y-a.y);
+        edge = dir > 0 ? Math.min(edge,x) : Math.max(edge,x);
+    }
+    return Number.isFinite(edge) ? edge : null;
+}
+
 export function createActor(x, y) {
-    return { x, y, vx: 0, vy: 0, facing: 1, dashes: 1, stamina: 110, breathTime: 0, springLift: 0, support: null,
+    return { x, y, vx: 0, vy: 0, facing: 1, dashes: 1, stamina: 110, breathTime: 0, springLift: 0, cubeGrip: null, support: null,
         grace: 0, buffer: 0, dashBuffer: 0, dashCooldown: 0, dashAttack: 0, dashSlide: false, dashTime: 0, dashAge: -1, dashX: 0, dashY: 0, dashStartX: x, dashStartY: y, refillDelay: 0, jumpHold: 0, kickLock: 0, pose: "idle" };
 }
 
 export function advance(p, input, surfaces, scale, width, height, exits = null, emitDust = null) {
     const dt = step, hw = 4 * scale, bodyHeight = 11 * scale;
-    const wallAt = (x, dir, reach = 1.6) => surfaces.find(s => !s.edges && p.y > s.top + scale &&
-        p.y - bodyHeight < s.bottom - scale &&
-        Math.abs(x + dir * hw - (dir > 0 ? s.left : s.right)) <= reach * scale);
-    const wallDir = wallAt(p.x, 1) ? 1 : wallAt(p.x, -1) ? -1 : 0;
+    const canGrabCube = input.grab && !p.support && !p.kickLock && !p.dashTime && !input.dashPressed;
+    const previous = p.cubeGrip;
+    p.cubeGrip = null;
+    if (canGrabCube && previous && p.stamina > 0 && input.x !== -previous.dir) {
+        const host = surfaces.find(s => s.id === previous.id && s.generation === previous.generation);
+        if (host && Math.hypot(host.left-previous.left, host.top-previous.top) < 45*scale) {
+            const feet = p.y + host.top - previous.top;
+            const side = flank(host,previous.dir,feet,scale);
+            if (side !== null) { p.x = side - previous.dir*hw; p.y = feet; }
+        }
+    }
+    function wallAt(x, dir, reach = 1.6) {
+        return surfaces.find(s => {
+            if (s.spring || p.y <= s.top + scale || p.y-bodyHeight >= s.bottom-scale) return false;
+            if (s.edges && (!canGrabCube || input.x === -dir)) return false;
+            const side = s.edges ? flank(s,dir,p.y,scale) : dir > 0 ? s.left : s.right;
+            return side !== null && Math.abs(x + dir*hw - side) <= reach*scale;
+        });
+    }
+    const rightWall = wallAt(p.x,1);
+    const wall = rightWall || wallAt(p.x,-1);
+    const wallDir = rightWall ? 1 : wall ? -1 : 0;
     const grip = wallDir && input.grab && p.stamina > 0 && !p.support;
     p.buffer = input.jumpPressed ? .11 : Math.max(0, p.buffer - dt);
     p.grace = p.support ? .1 : Math.max(0, p.grace - dt);
@@ -114,21 +147,32 @@ export function advance(p, input, surfaces, scale, width, height, exits = null, 
         }
         p.jumpHold = Math.max(0, p.jumpHold - dt);
         if (!p.support && wallDir && p.stamina <= 20 && input.grab) p.breathTime = 1.0;
-        p.pose = grip ? (input.y < 0 ? "climbup" : "wallslide") :
+        p.pose = grip && !p.kickLock ? (input.y < 0 ? "climbup" : "wallslide") :
             p.support ? (duck ? "duck" : Math.abs(p.vx) > 9 * scale ? "runFast" : p.breathTime > 0 ? "tired" : "idle") :
             p.vy < 0 ? "jumpFast" : wallDir && (input.x === wallDir || input.grab && !p.stamina) ? "wallslide" : "fallFast";
     }
 
-    const handhold = grip && input.y < 0 && !p.dashTime && !input.jumpPressed && !input.dashPressed && wallAt(p.x,wallDir);
+    const handhold = grip && input.y < 0 && !p.dashTime && !input.jumpPressed && !input.dashPressed && wall;
     if (handhold && p.y - handhold.top < 3 * scale) {
         p.x = clamp(p.x + wallDir * (hw + 2 * scale), hw, width - hw);
-        p.y = handhold.top; p.vx = p.vy = 0; p.support = handhold.id; p.pose = "idle";
+        p.y = topAt(handhold, clamp(p.x,handhold.left+.001,handhold.right-.001)); p.vx = p.vy = 0; p.support = handhold.id; p.pose = "idle";
         return false;
+    }
+    if (grip && wall.edges && !input.jumpPressed && !p.kickLock && !p.dashTime && p.vy >= -45*scale) {
+        p.cubeGrip = {id:wall.id, generation:wall.generation, dir:wallDir, left:wall.left, top:wall.top};
+        p.x = flank(wall,wallDir,p.y,scale) - wallDir*hw;
+        p.vx = 0;
     }
     const oldX = p.x, oldY = p.y;
     let nx = clamp(oldX + p.vx * dt, exits?.previous ? -hw : hw, exits?.next ? width + hw : width - hw);
     for (const s of surfaces) {
-        if (s.edges || oldY <= s.top + scale || oldY - bodyHeight >= s.bottom - scale) continue;
+        if (s.spring || oldY <= s.top + scale || oldY - bodyHeight >= s.bottom - scale) continue;
+        if (s.edges) {
+            if (!canGrabCube || !p.vx) continue;
+            const dir = Math.sign(p.vx), side = flank(s,dir,oldY,scale);
+            if (side !== null && dir*(oldX+dir*hw-side) <= 0 && dir*(nx+dir*hw-side) >= 0) { nx = side-dir*hw; p.vx = 0; }
+            continue;
+        }
         if (p.vx > 0 && oldX + hw <= s.left + .01 && nx + hw > s.left) { nx = s.left - hw; p.vx = 0; }
         if (p.vx < 0 && oldX - hw >= s.right - .01 && nx - hw < s.right) { nx = s.right + hw; p.vx = 0; }
     }
@@ -136,13 +180,15 @@ export function advance(p, input, surfaces, scale, width, height, exits = null, 
     let ny = oldY + p.vy * dt, landed = null;
     if (p.vy >= 0) {
         const planted = p.support != null && surfaces.some(s => s.id === p.support && !s.edges &&
-            p.x >= s.left-hw*.55 && p.x <= s.right+hw*.55 && Math.abs(oldY-s.top) <= 3*scale);
+            p.x >= s.left-hw*.55 && p.x <= s.right+hw*.55 && Math.abs(oldY-topAt(s,p.x)) <= 3*scale);
         const downThroughCubes = p.pose === "dash" && p.dashX === 0 && p.dashY === 1;
         for (const s of surfaces) {
-            if (s.edges && (planted || downThroughCubes)) continue;
+            if (s.edges && !s.spring && (planted || downThroughCubes || s.id === p.cubeGrip?.id)) continue;
             if (p.x < s.left - hw * .55 || p.x > s.right + hw * .55) continue;
             const y = topAt(s, clamp(p.x, s.left + .001, s.right - .001));
-            if (oldY > y + (s.id === p.support ? 3 * scale : 1) || ny < y - (s.id === p.support ? 3 * scale : 0)) continue;
+            const standing = s.id === p.support;
+            const followsInk = standing && s.inkTop;
+            if (!followsInk && (oldY > y + (standing ? 3 * scale : 1) || ny < y - (standing ? 3 * scale : 0))) continue;
             if (landed && (y > ny || (y === ny && (!landed.edges || s.edges)))) continue;
             ny = y; landed = s;
         }

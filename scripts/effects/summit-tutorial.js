@@ -1,5 +1,5 @@
 const bindings = [
-    ["W A S D", "移动 / 冲刺方向"], ["C / 空格", "跳跃"],
+    ["W A S D", "移动 / 冲刺方向"], ["空格", "跳跃"],
     ["左 Shift", "冲刺 / 按住抓墙"], ["鼠标", "拖动 Madeline"],
     ["Caps Lock", "双击大写键开启/关闭游戏视角"]
 ];
@@ -24,7 +24,7 @@ export function createBirdTutorial(birdElement) {
     const music = document.getElementById("background-music");
     const chirp = new Audio(new URL("./summit-local/bird-chirp.wav", import.meta.url).href);
     chirp.preload = "auto";
-    let page = "", sounded = false;
+    let page = "", soundedVisit = null;
     function volume() { chirp.volume = (music?.volume ?? 1) * .54; chirp.muted = Boolean(music?.muted); }
     music?.addEventListener("volumechange", volume);
     function position() {
@@ -70,8 +70,8 @@ export function createBirdTutorial(birdElement) {
     function draw(visit) {
         if (!visit?.tutorial || visit.bird.phase !== "perched") { detach(); return; }
         if (!visit.guidePage) { detach(); return; }
-        if (!sounded) {
-            sounded = true;
+        if (visit.guidePage === "controls" && soundedVisit !== visit) {
+            soundedVisit = visit;
             volume();
             if (!chirp.muted && chirp.volume > 0) chirp.play().catch(() => {});
         }

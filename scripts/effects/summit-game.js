@@ -1,15 +1,16 @@
-import { advance, clamp, createActor, step, topAt } from "./summit-motion.js?v=26.11.22.8";
+import { textSurface } from "./summit-text-surface.js?v=26.11.23.1";
+import { advance, clamp, createActor, step, topAt } from "./summit-motion.js?v=26.11.23.1";
 import { createAvatar, loadSummitPack } from "./summit-avatar.js?v=26.11.22.8";
-import { createEncounter, createEncounterView } from "./summit-encounter.js?v=26.11.22.8";
+import { createEncounter, createEncounterView } from "./summit-encounter.js?v=26.11.23.1";
 
 import { createDashEffect } from "./summit-dash.js?v=26.11.22.2";
 
-import { createSpring } from "./summit-spring.js?v=26.11.22.8";
-import { createCubeCrystal } from "./summit-field-items.js?v=26.11.22.8";
+import { getHomeSpring } from "./summit-spring.js?v=26.11.23.1";
+import { createCubeCrystal } from "./summit-field-items.js?v=26.11.23.1";
 
 import { createDust } from "./summit-trail.js?v=26.11.22.6";
 import { createRoomCamera } from "./summit-camera.js?v=26.11.22.8";
-import { createBirdTutorial } from "./summit-tutorial.js?v=26.11.22.8";
+import { createBirdTutorial } from "./summit-tutorial.js?v=26.11.23.1";
 
 const panels = "#navbar, #settings-section, .site-panel, .work-post, .creator-card, #countdown, #sponsor-section, #bounty-board-section.is-active :is(.wanted-poster, .bounty-page-link, .bounty-rank)";
 const keys = {
@@ -32,18 +33,15 @@ function readPad() {
     try { return Array.from(navigator.getGamepads?.() || []).find(p => p?.connected && p.mapping === "standard"); }
     catch { return null; }
 }
-function rectOf(el) {
+function rectOf(el, size = 2) {
     const heading = el.matches("#bounty-board-section :is(.bounty-page-link, .bounty-rank)");
-    let rect = el.getBoundingClientRect();
-    if (heading && rect.height) {
-        const range = document.createRange(); range.selectNodeContents(el);
-        rect = range.getBoundingClientRect();
-    }
+    const rect = el.getBoundingClientRect();
     const {left,top,right,bottom,width,height} = rect;
     if (!width || !height || left >= innerWidth || right <= 0 || top > innerHeight + 48 || bottom < -64) return null;
     if (heading || el.id === "countdown" || el.classList.contains("wanted-poster")) {
         const style = getComputedStyle(el);
         if (style.visibility !== "visible" || (+style.opacity <= .01 && !el.classList.contains("is-wanted-decaying"))) return null;
+        if (heading || el.id === "countdown") return textSurface(el,style,3*size);
     }
     return {id:el,left,top,right,bottom};
 }
@@ -60,7 +58,7 @@ export async function createSummitGame() {
     const camera = createRoomCamera();
     const tutorial = createBirdTutorial(encounterView.birdElement);
     let lastCaps = -Infinity;
-    const spring = createSpring(tutorialArt, document.getElementById("back-to-home-pad"));
+    const spring = getHomeSpring(document.getElementById("back-to-home-pad"));
     const cubeCrystal = createCubeCrystal(wildlife);
     const hint = document.createElement("div");
     hint.className = "summit-game-hint";
@@ -112,6 +110,7 @@ export async function createSummitGame() {
         actor.springLift = 0;
         actor.dashAge = -1;
         actor.dashBuffer = actor.dashAttack = 0; actor.dashSlide = false;
+        actor.cubeGrip = null;
         actor.support = support = null;
         actor.pose = "idle";
         dashEffect.clear();
@@ -212,9 +211,9 @@ export async function createSummitGame() {
         }
 
         if (time >= nextScan) { targets = Array.from(document.querySelectorAll(panels)); nextScan = time + 500; }
-        const platforms = targets.map(rectOf).filter(Boolean);
-        const coil = spring.surface(size);
-        if (coil) platforms.push(coil);
+        const platforms = targets.map(el => rectOf(el,size)).filter(Boolean);
+        const homeCube = spring.surface();
+        if (homeCube) platforms.push(homeCube);
         const cubes = window.NewHorizonBackgroundCubes?.platformsNear?.(actor.x, actor.y, 120*size) || [];
         platforms.push(...cubes);
         cubeCrystal.sample(window.NewHorizonBackgroundCubes,size,dt);
@@ -232,9 +231,13 @@ export async function createSummitGame() {
         while(debt >= step) {
             const input = pollInput();
             if (drag) placeDraggedActor();
-            const takeoff = !drag && typeof actor.support === "string" && cubes.find(s => s.id === actor.support);
+            const hand = actor.cubeGrip;
+            const contactId = actor.support ?? hand?.id;
+            const takeoff = !drag && typeof contactId === "string" && cubes.find(s =>
+                s.id === contactId && (!hand || s.generation === hand.generation));
             const respawned = !drag && advance(actor,input,platforms,size,innerWidth,innerHeight,exits,dust.emit);
-            if (takeoff && actor.support !== takeoff.id && !respawned) {
+            const leftWall = hand && !actor.cubeGrip && (actor.kickLock > 0 || actor.dashTime > 0);
+            if (takeoff && actor.support !== takeoff.id && (!hand || leftWall) && !respawned) {
                 const dash = actor.dashAge >= 0 && actor.dashTime > 0;
                 const effort = dash ? .68 : actor.vy < 0 ? .48 : .12;
                 window.NewHorizonBackgroundCubes?.kickPlatform?.(takeoff, -actor.vx*effort, -actor.vy*effort);
@@ -259,7 +262,6 @@ export async function createSummitGame() {
         encounterView.draw(encounter.visit,size);
         tutorial.draw(encounter.visit);
         cubeCrystal.draw(size);
-        spring.draw(dt);
         support = actor.support === null ? null : platforms.find(s => s.id === actor.support);
     }
     let focused = document.hasFocus();

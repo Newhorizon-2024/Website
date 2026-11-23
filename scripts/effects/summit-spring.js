@@ -1,35 +1,40 @@
-export function createSpring(art, pad) {
-    const el = document.createElement("canvas");
-    el.className = "summit-spring";
-    el.width = el.height = 16;
-    el.setAttribute("aria-hidden","true");
-    const ctx = el.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    const animation = art?.meta.animations.spring;
-    let age = Infinity, painted = -1;
-    function draw(dt) {
-        age += dt;
-        const frame = age < .325 ? 1 + Math.min(4, Math.floor(age/.065)) : 0;
-        if (painted === frame) return;
-        painted = frame;
-        ctx.clearRect(0,0,16,16);
-        if (animation) {
-            const {cell,columns} = art.meta;
-            const id = animation.frames[frame];
-            ctx.drawImage(art.image,id%columns*cell,Math.floor(id/columns)*cell,16,16,0,0,16,16);
-        } else {
-            ctx.fillStyle = "#b5bec7"; ctx.fillRect(4,14,8,2);
-            ctx.fillStyle = "#d96056"; ctx.fillRect(2,frame ? 7 : 12,12,2);
+// Shared by the button renderer and game physics. The docked mesh owns its contact surface.
+const springs = new WeakMap();
+export function getHomeSpring(pad) {
+    if (springs.has(pad)) return springs.get(pad);
+    const root = pad.closest(".sling-button");
+    const fallback = pad.querySelector(".sling-button__fallback");
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    let contact = null, active = false, struck = -Infinity, fallbackMotion = null;
+    function bounce() {
+        if (reduced.matches) return;
+        struck = performance.now();
+        if (!root.hasAttribute("data-cube-field") && fallback) {
+            fallbackMotion?.cancel();
+            fallbackMotion = fallback.animate([
+                { transform:"translateY(0) scale(1)" },
+                { transform:"translateY(4px) scale(1.12,.78)", offset:.18 },
+                { transform:"translateY(-3px) scale(.94,1.1)", offset:.48 },
+                { transform:"translateY(0) scale(1)" }
+            ], { duration:400, easing:"ease-in-out" });
         }
     }
-    function surface(scale) {
-        if (!pad) return null;
-        if (!el.isConnected) pad.append(el);
-        if (el.style.width !== 16*scale+"px") el.style.width = el.style.height = 16*scale+"px";
-        const r = el.getBoundingClientRect();
-        if (!r.width || !r.height || r.bottom < 0 || r.top > innerHeight || getComputedStyle(pad).visibility !== "visible") return null;
-        return {id:el, spring:true, top:r.bottom-3*scale, bottom:r.bottom, left:r.left+2*scale,
-            right:r.right-2*scale, bounce:() => { age = 0; }};
-    }
-    return {surface, draw, detach() {el.remove(); age = Infinity; painted = -1;}};
+    const spring = {
+        get active() { return active; },
+        get recoil() {
+            const t = (performance.now()-struck)/1000;
+            return t < .45 && !reduced.matches ? Math.sin(24*t)*Math.exp(-9*t)*(1-t/.45) : 0;
+        },
+        setContact(bounds) { contact = bounds; },
+        surface() {
+            active = true;
+            const field = root.hasAttribute("data-cube-field");
+            const box = field ? (root.dataset.cubePhase === "docked" ? contact : null) : fallback?.getBoundingClientRect();
+            if (!box || box.right <= box.left || box.bottom <= 0 || box.top >= innerHeight) return null;
+            return {id:pad, spring:true, bounce, left:box.left, right:box.right, top:box.top, bottom:box.bottom, edges:box.edges};
+        },
+        detach() { active = false; contact = null; struck = -Infinity; fallbackMotion?.cancel(); }
+    };
+    springs.set(pad, spring);
+    return spring;
 }

@@ -1,4 +1,4 @@
-import { attachHomeCube } from "./home-cube.js?v=26.11.18.5";
+import { attachHomeCube } from "./home-cube.js?v=26.11.23.1";
 
 const initializedRoots = new WeakSet();
 const CONFIG = { armAt: 48, maxPull: 160, launchSpeed: 2600 };

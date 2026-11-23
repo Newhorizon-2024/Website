@@ -53,15 +53,15 @@ html.summit-dragging, html.summit-dragging * { cursor: grabbing !important; }
     position: absolute;
     top: 100%;
     left: var(--beak);
-    width: 10px;
-    height: 8px;
-    background: #191827;
-    clip-path: polygon(0 0,100% 0,100% 4px,60% 4px,60% 100%,25% 100%,25% 4px,0 4px);
+    width: 14px;
+    height: 12px;
+    pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 12'%3E%3Cpath d='M0 0h14v2h-2v3h-2v3H8v3H6V8H4V5H2V2H0z' fill='%23f4edea'/%3E%3Cpath d='M2 0h10v2h-2v3H8v3H6V5H4V2H2z' fill='%23191827'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 .summit-bird-bubble[data-side="below"]::after { top: auto; bottom: 100%; transform: rotate(180deg); }
 .summit-bird-bubble:is([data-side="left"], [data-side="right"])::after { top: var(--beak); }
-.summit-bird-bubble[data-side="left"]::after { left: 100%; transform: rotate(-90deg); }
-.summit-bird-bubble[data-side="right"]::after { left: auto; right: 100%; transform: rotate(90deg); }
+.summit-bird-bubble[data-side="left"]::after { left: calc(100% - 1px); transform: rotate(-90deg); }
+.summit-bird-bubble[data-side="right"]::after { left: auto; right: calc(100% - 1px); transform: rotate(90deg); }
 .summit-bird-bubble.is-clipped .summit-bird-message { overflow: auto; pointer-events: auto; }
 .summit-bird-controls {
     display: grid;
@@ -86,8 +86,4 @@ html.summit-room-pan *, html.summit-room-pan *::before, html.summit-room-pan *::
 }
 html.summit-room-pan body > :is(#content, #navbar, #settings-section, .section, #back-to-home, #sponsor-section, .pixel-snow-bank, .summit-avatar) {
     translate: var(--summit-room-x, 0px) 0;
-}
-.summit-spring {
-    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-    pointer-events: none; image-rendering: pixelated;
 }

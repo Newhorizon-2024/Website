@@ -1,3 +1,4 @@
+import { getHomeSpring } from "./summit-spring.js?v=26.11.23.1";
 import { captureArrival } from "./capture-arrival.js?v=26.11.18.5";
 /* Dock a live background mesh using the same camera, material and frame as the field. */
 export function attachHomeCube({ pad, motion, signal, onBounds, needsBounds }) {
@@ -7,6 +8,7 @@ export function attachHomeCube({ pad, motion, signal, onBounds, needsBounds }) {
     if (!api?.beforeRender || !canvas || !front || front.hidden) return;
 
     const root = pad.closest(".sling-button");
+    const spring = getHomeSpring(pad);
     const position = new THREE.Vector3();
     const rotation = new THREE.Euler();
     const orientation = new THREE.Quaternion();
@@ -22,6 +24,7 @@ export function attachHomeCube({ pad, motion, signal, onBounds, needsBounds }) {
     const ease = t => t * t * t * (10 + t * (6 * t - 15));
 
     function release() {
+        spring.setContact(null);
         if (!lease) return;
         // Restore native TRS before the background adopts the last screen position.
         pose.compose(position, orientation, lease.entries[0].sourceScale);
@@ -115,17 +118,37 @@ export function attachHomeCube({ pad, motion, signal, onBounds, needsBounds }) {
             m[column] -= shearX * m[column + 2];
             m[column + 1] -= shearY * m[column + 2];
         }
+        // Squash across screen axes so the reaction follows gravity at every rotation.
+        const recoil = spring.recoil;
+        if (recoil && root.dataset.cubePhase === "docked") {
+            for (const column of [0, 4, 8]) {
+                m[column] *= 1 + .26 * recoil;
+                m[column + 1] *= 1 - .48 * recoil;
+            }
+            m[13] -= 7 * units * recoil;
+        }
         lease.setPose(0, { matrix: pose, frontMix: mix });
-        if (needsBounds()) {
+        const dockedContact = spring.active && root.dataset.cubePhase === "docked";
+        if (needsBounds() || dockedContact) {
+            const vertices = [];
             let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity;
             for (let i = 0; i < 8; i++) {
                 corner.set((i & 1) - 0.5, ((i >> 1) & 1) - 0.5, (i >> 2) - 0.5).applyMatrix4(pose).project(camera);
                 const x = bounds.left + (corner.x + 1) * bounds.width / 2;
                 const y = bounds.top + (1 - corner.y) * bounds.height / 2;
+                if (dockedContact) vertices.push({x, y});
                 left = Math.min(left, x); right = Math.max(right, x);
                 top = Math.min(top, y); bottom = Math.max(bottom, y);
             }
-            onBounds({ left, right, top, bottom });
+            const box = {left, right, top, bottom};
+            if (dockedContact) {
+                const edges = [];
+                for (let i = 0; i < 8; i++) {
+                    for (const axis of [1, 2, 4]) if (!(i & axis)) edges.push([vertices[i], vertices[i | axis]]);
+                }
+                spring.setContact({...box, edges});
+            }
+            if (needsBounds()) onBounds(box);
         }
     }
 
