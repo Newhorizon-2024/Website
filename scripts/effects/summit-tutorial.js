@@ -70,7 +70,7 @@ export function createBirdTutorial(birdElement) {
     function draw(visit) {
         if (!visit?.tutorial || visit.bird.phase !== "perched") { detach(); return; }
         if (!visit.guidePage) { detach(); return; }
-        if (visit.guidePage === "controls" && soundedVisit !== visit) {
+        if (soundedVisit !== visit) {
             soundedVisit = visit;
             volume();
             if (!chirp.muted && chirp.volume > 0) chirp.play().catch(() => {});

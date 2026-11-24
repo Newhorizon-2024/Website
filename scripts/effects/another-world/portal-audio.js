@@ -1,3 +1,4 @@
+import { clearSiteArtwork } from "../../music-controls/lock-screen.js?v=26.11.24.1";
 /* A separate observation soundtrack. Never replace the site's playlist source
  * or seek its media element: a paused song keeps its exact original position. */
 export const PORTAL_AUDIO_SOURCE = 'media/STAY - Hans Zimmer.mp3';
@@ -139,6 +140,7 @@ export function createPortalAudioSession({
         sourceRequest = null;
         pendingRestore = null;
         phase = 'active';
+        clearSiteArtwork();
         sourceAudio?.pause();
         // Only our private soundtrack is rewound after its silent authorization.
         try { portalAudio.currentTime = 0; } catch { /* A cold stream starts at zero. */ }

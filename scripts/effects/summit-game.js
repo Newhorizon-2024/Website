@@ -1,16 +1,17 @@
+import { readPad } from "../device-input.js?v=26.11.24.1";
 import { textSurface } from "./summit-text-surface.js?v=26.11.23.1";
 import { advance, clamp, createActor, step, topAt } from "./summit-motion.js?v=26.11.23.1";
 import { createAvatar, loadSummitPack } from "./summit-avatar.js?v=26.11.22.8";
-import { createEncounter, createEncounterView } from "./summit-encounter.js?v=26.11.23.1";
+import { createEncounter, createEncounterView } from "./summit-encounter.js?v=26.11.24.1";
 
 import { createDashEffect } from "./summit-dash.js?v=26.11.22.2";
 
 import { getHomeSpring } from "./summit-spring.js?v=26.11.23.1";
-import { createCubeCrystal } from "./summit-field-items.js?v=26.11.23.1";
+import { createCubeCrystal } from "./summit-field-items.js?v=26.11.24.1";
 
 import { createDust } from "./summit-trail.js?v=26.11.22.6";
 import { createRoomCamera } from "./summit-camera.js?v=26.11.22.8";
-import { createBirdTutorial } from "./summit-tutorial.js?v=26.11.23.1";
+import { createBirdTutorial } from "./summit-tutorial.js?v=26.11.24.1";
 
 const panels = "#navbar, #settings-section, .site-panel, .work-post, .creator-card, #countdown, #sponsor-section, #bounty-board-section.is-active :is(.wanted-poster, .bounty-page-link, .bounty-rank)";
 const keys = {
@@ -29,10 +30,6 @@ function supportsInput(event) {
     return !(event.code === "Space" && event.target instanceof Element &&
         event.target.closest("button:focus-visible, a:focus-visible, [role=button]:focus-visible, [role=slider]"));
 }
-function readPad() {
-    try { return Array.from(navigator.getGamepads?.() || []).find(p => p?.connected && p.mapping === "standard"); }
-    catch { return null; }
-}
 function rectOf(el, size = 2) {
     const heading = el.matches("#bounty-board-section :is(.bounty-page-link, .bounty-rank)");
     const rect = el.getBoundingClientRect();
@@ -46,7 +43,7 @@ function rectOf(el, size = 2) {
     return {id:el,left,top,right,bottom};
 }
 
-export async function createSummitGame() {
+export async function createSummitGame({controllerOnly = false} = {}) {
     const [skin,wildlife,tutorialArt] = await Promise.all([
         loadSummitPack("madeline"), loadSummitPack("wildlife"), loadSummitPack("tutorial")
     ]);
@@ -99,7 +96,7 @@ export async function createSummitGame() {
     }
     function beginDrag(event) {
         eatenClick = -1;
-        if (!actor || intro < 1 || drag || camera.busy || event.pointerType !== "mouse" || event.button !== 0 ||
+        if (controllerOnly || !actor || intro < 1 || drag || camera.busy || event.pointerType !== "mouse" || event.button !== 0 ||
             !event.isPrimary || event.defaultPrevented || !avatar.hit(event.clientX,event.clientY)) return;
         const target = document.elementFromPoint(event.clientX,event.clientY);
         if (target?.closest("dialog, [aria-modal=true], #playlist-container, .volume-container")) return;
@@ -134,7 +131,7 @@ export async function createSummitGame() {
     }
 
     function keyDown(event) {
-        if (drag || !supportsInput(event) || document.body.matches(blockedPage)) return;
+        if (controllerOnly || drag || !supportsInput(event) || document.body.matches(blockedPage)) return;
         if (event.code === "CapsLock") {
             if (!event.repeat && !held.has(event.code)) {
                 const now = performance.now();
@@ -158,11 +155,11 @@ export async function createSummitGame() {
     function pollInput() {
         const pad = readPad();
         if ((pad?.index ?? null) !== padIndex) {
-            if (pad || padIndex !== null) showHint(pad ? "手柄已连接" : "手柄已断开 · 键盘可继续操作");
+            if (!controllerOnly && (pad || padIndex !== null)) showHint(pad ? "手柄已连接" : "手柄已断开 · 键盘可继续操作");
             padIndex = pad?.index ?? null;
             lastJump = lastDash = false;
         }
-        if (isEditing(document.activeElement)) {
+        if (!controllerOnly && isEditing(document.activeElement)) {
             clearInput();
             return {x:0,y:0,jump:false,grab:false,jumpPressed:false,dashPressed:false};
         }
@@ -202,7 +199,7 @@ export async function createSummitGame() {
             actor.pose = intro < .49 ? "jumpFast" : "fallFast";
             if (intro === 1) {
                 actor.support = navbar; actor.pose = "idle"; support = rectOf(navbar);
-                encounter.greet(navbar, size);
+                encounter.greet(navbar, size, controllerOnly);
                 encounterView.draw(encounter.visit, size);
                 dust.emit("land", actor.x, actor.y, actor.facing, size);
             }

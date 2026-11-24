@@ -1,11 +1,12 @@
+import { clearSiteArtwork, updateLockScreen } from "./lock-screen.js?v=26.11.24.1";
 import { legacyLoginPaths } from "./legacy-login-paths.js?v=26.11.21.10";
 import { initializeTrackWaveform } from "./progress-spectrum.js?v=26.11.21.7";
 import { playlist }
-    from "./playlist-data.js?v=26.11.21.10";
+    from "./playlist-data.js?v=26.11.24.1";
 
 import {
     applySongVisuals, initializeSongVisualizer
-} from "./song-visuals.js?v=26.11.23.1";
+} from "./song-visuals.js?v=26.11.24.1";
 
 import {
     initializeWakeVolumeSlider
@@ -885,6 +886,9 @@ export function initializeMusicControls() {
     }
 
     musicControlsInitialized = true;
+    audioElement.addEventListener("loadstart", clearSiteArtwork);
+    audioElement.addEventListener("playing", () => updateLockScreen(audioElement, playlist));
+    if (!audioElement.paused) updateLockScreen(audioElement, playlist);
 
     previousSongButton
         ?.addEventListener(

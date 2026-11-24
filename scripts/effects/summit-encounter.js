@@ -64,11 +64,11 @@ function advanceBird(v, player, scale, dt) {
         b.facing = Math.sign(player.x - b.x) || b.facing;
         const near = Math.hypot(player.x - b.x, player.y - b.y) < 17 * scale;
         if (v.tutorial) {
-            const page = b.clock < guideStarts ? null : b.clock < farewellStarts ? "controls" : "farewell";
-            if (page === "controls" && !v.guidePage) b.callStarted = b.clock;
+            const page = b.clock < guideStarts ? null : !v.controllerOnly && b.clock < farewellStarts ? "controls" : "farewell";
+            if (page && !v.guidePage) b.callStarted = b.clock;
             v.guidePage = page;
         }
-        if (v.tutorial ? b.clock >= tutorialEnds : (near && b.clock > .35) || b.clock > v.birdDwell) leave(v, player.x);
+        if (v.tutorial ? b.clock >= (v.controllerOnly ? guideStarts + 2 : tutorialEnds) : (near && b.clock > .35) || b.clock > v.birdDwell) leave(v, player.x);
     } else if (b.phase === "departing") {
         const t = b.clock;
         b.x += b.facing * (85 + 165 * Math.min(t / .45, 1)) * scale * dt;
@@ -83,11 +83,12 @@ function advanceBird(v, player, scale, dt) {
 export function createEncounter(random = Math.random) {
     let visit = null, wait = 1.8;
     function reset(delay = 1.8) { visit = null; wait = delay; }
-    function greet(navbar, scale) {
+    function greet(navbar, scale, controllerOnly = false) {
         const r = navbar.getBoundingClientRect();
         const x = Math.min(innerWidth - 14*scale, r.right - Math.min(r.width*.13,28*scale));
         visit = startVisit({id:navbar, u:(x-r.left)/r.width, x, y:r.top, side:1}, scale, random);
         visit.tutorial = true;
+        visit.controllerOnly = controllerOnly;
         visit.readingTime = 0;
     }
     function abandon(playerX) {
@@ -216,7 +217,7 @@ export function createEncounterView(art, tutorialArt) {
             }
             const callTime = b.clock - b.callStarted;
             const clip = tutorialArt?.meta.animations.birdCall;
-            const call = clip && v.guidePage === "controls" && b.phase === "perched" && callTime < clip.frames.length * clip.delay;
+            const call = clip && v.guidePage && b.phase === "perched" && callTime < clip.frames.length * clip.delay;
             position(bird, b.x, b.y, scale);
             paintSprite(call ? tutorialArt : art, bird.ctx, call ? "birdCall" : action, call ? callTime : clock, b.facing);
         } else bird.el.remove();

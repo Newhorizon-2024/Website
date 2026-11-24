@@ -1,3 +1,4 @@
+import { mobileDevice, readPad } from "../device-input.js?v=26.11.24.1";
 import { applyShadowflameSong } from "../effects/shadowflame.js?v=26.11.21.5";
 import { syncPixelSnow } from "../effects/pixel-snow.js?v=26.11.22.6";
 import { trackWaveforms } from "./track-waveforms-data.js?v=26.11.21.7";
@@ -74,11 +75,22 @@ let graphUnavailable = false;
 let playing = false;
 let snowSelected = false;
 const summitDesktop = matchMedia("(hover: hover) and (pointer: fine)");
-const mobileDevice = navigator.userAgentData?.mobile || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const summitLandscape = matchMedia("(orientation: landscape)");
+let padPoll = 0, mobilePadPresent = false;
 let summitSelected = false, summitGame = null, summitLoading = null;
 function syncSummitGame() {
-    const selected = summitSelected && summitDesktop.matches && !mobileDevice && !backgroundMusic?.ended;
+    const landscapeSong = mobileDevice && summitSelected && summitLandscape.matches && !backgroundMusic?.ended;
+    mobilePadPresent = landscapeSong && !!readPad();
+    // Some mobile browsers expose an already-paired pad only after its first input.
+    if (landscapeSong && playing && !pageAway && !document.hidden) {
+        if (!padPoll) padPoll = window.setInterval(() => {
+            if (!!readPad() !== mobilePadPresent) syncSummitGame();
+        }, 650);
+    } else if (padPoll) {
+        clearInterval(padPoll); padPoll = 0;
+    }
+    const selected = mobileDevice ? mobilePadPresent :
+        summitSelected && summitDesktop.matches && !backgroundMusic?.ended;
     const active = selected && playing && !pageAway && !document.hidden;
     if (!selected) {
         summitGame?.destroy();
@@ -86,8 +98,8 @@ function syncSummitGame() {
     } else if (summitGame) {
         summitGame.setPlaying(playing && !pageAway);
     } else if (active && !summitLoading) {
-        summitLoading = import("../effects/summit-game.js?v=26.11.23.1")
-            .then(module => module.createSummitGame())
+        summitLoading = import("../effects/summit-game.js?v=26.11.24.1")
+            .then(module => module.createSummitGame({controllerOnly: mobileDevice}))
             .then(game => { summitGame = game; syncSummitGame(); })
             .catch(error => console.warn("Summit game could not start", error))
             .finally(() => { summitLoading = null; });
@@ -392,6 +404,11 @@ export function initializeSongVisualizer(volumeSpectrum) {
     listen(document, "visibilitychange", syncVisualizer);
     listen(reduceMotion, "change", syncVisualizer);
     listen(summitDesktop, "change", syncSummitGame);
+    if (mobileDevice) {
+        listen(summitLandscape, "change", syncSummitGame);
+        listen(window, "gamepadconnected", syncSummitGame);
+        listen(window, "gamepaddisconnected", syncSummitGame);
+    }
     listen(window, "pageshow", () => { pageAway = false; syncVisualizer(); });
     listen(window, "pagehide", event => {
         pageAway = true;

@@ -2,6 +2,7 @@
    播放列表
 =========================== */
 
+// useSiteArtwork 标记需要用站点图标补充封面的曲目。
 export const playlist = [
     {
         separator: true,
@@ -9,6 +10,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path: "media/Ensemble Of Fools - CDMusic.mp3",
         description:
             `游戏《泰拉瑞亚》"Terraria" Calamity Mod Boss Rush Tier 1`,
@@ -16,6 +18,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path: "media/Onslaught Of Beasts - CDMusic.mp3",
         description:
             `游戏《泰拉瑞亚》"Terraria" Calamity Mod Boss Rush Tier 2`,
@@ -23,6 +26,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path: "media/Reign Of Lords - CDMusic.mp3",
         description:
             `游戏《泰拉瑞亚》"Terraria" Calamity Mod Boss Rush Tier 3`,
@@ -30,6 +34,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path: "media/Trial of the Insane - CDMusic.mp3",
         description:
             `游戏《泰拉瑞亚》"Terraria" Calamity Mod Boss Rush Tier 4`,
@@ -42,6 +47,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Am I Dreaming of Sunflowers [Spider-Verse Soundtrack Mashup].mp3",
         description:
@@ -56,6 +62,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Blizzard - 三浦大知.mp3",
         description:
@@ -70,6 +77,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/CHA-LA HEAD-CHA-LA - 影山ヒロノブ.mp3",
         description:
@@ -84,6 +92,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/F1 - Hans Zimmer.mp3",
         description:
@@ -98,6 +107,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Falling Apart - Daniel Pemberton.mp3",
         description:
@@ -133,6 +143,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Kung Fu Fighting (Celebration Time) - Shanghai Roxi Musical Studio Choirs、Metro Voices London.mp3",
         description:
@@ -175,6 +186,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Try - 派伟俊、周杰伦.mp3",
         description:
@@ -224,6 +236,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/平凡之路 - 朴树.mp3",
         description:
@@ -278,6 +291,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Comforting Memories - Minecraft、谷岡久美.mp3",
         description:
@@ -299,6 +313,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/In Full Swing (游戏内录) - John Paesano.mp3",
         description:
@@ -313,6 +328,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Monster - STARSET.mp3",
         description:
@@ -320,6 +336,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/My Actual Code - Draw Me A Pixel.mp3",
         description:
@@ -334,6 +351,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Pokemon - Dr Pez - VGM.mp3",
         description:
@@ -349,6 +367,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Sleepwalking - The Chain Gang of 1974.mp3",
         description:
@@ -378,6 +397,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Summer of Monsters Main Menu - Brawl Stars.mp3",
         description:
@@ -385,6 +405,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/The Devourer of Gods (Nonstop Mix) - DM DOKURO.mp3",
         description:
@@ -448,6 +469,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/协议流 (游戏内录) - 铁痕电台-MSR、Mike Truman、Lottie Truman.mp3",
         description:
@@ -460,6 +482,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/2022欧美串烧王 - 陆鳐LuLu.mp3",
         description:
@@ -467,6 +490,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Deadman - 蔡徐坤.mp3",
         description:
@@ -481,6 +505,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Diamond King - MC Jams.mp3",
         description:
@@ -488,6 +513,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Earth Song - Michael Jackson.mp3",
         description:
@@ -516,6 +542,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Heal the World - Michael Jackson.mp3",
         description:
@@ -523,6 +550,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/HELL LIKE THIS - CG5.mp3",
         description:
@@ -530,6 +558,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/How Do I Craft This again - WoodenToaster.mp3",
         description:
@@ -551,6 +580,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Let Go - Beau Young Prince.mp3",
         description:
@@ -558,6 +588,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Let Her Go - Passenger.mp3",
         description:
@@ -642,6 +673,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Take On Me - a-ha.mp3",
         description:
@@ -663,6 +695,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Wake Me Up x After Hours (São Paulo Studio Version) - The Weeknd.mp3",
         description:
@@ -670,6 +703,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/We Are The World - USA for Africa.mp3",
         description:
@@ -677,6 +711,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/Witch Parade Assassin - Ugress.mp3",
         description:
@@ -691,6 +726,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/病名は愛だった (Cover 鏡音リン_鏡音レン) - まふまふ.mp3",
         description:
@@ -740,6 +776,7 @@ export const playlist = [
     },
 
     {
+        useSiteArtwork: true,
         path:
             "media/游戏的King - 小砍丶、小潮院长.mp3",
         description:

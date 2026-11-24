@@ -5,7 +5,7 @@ import {hitWorldviewCore, getWorldviewCoreScreenPosition,
     beginWorldviewPortalFocus, endWorldviewPortalFocus
 } from './worldview-core.js?v=26.11.19.3';
 import {createAnotherWorldRuntime} from './another-world/portal-runtime.js?v=26.10.21.6';
-import {createPortalAudioSession} from './another-world/portal-audio.js?v=26.10.21.7';
+import {createPortalAudioSession} from './another-world/portal-audio.js?v=26.11.24.1';
 
 const canvas = document.getElementById('worldview-canvas');
 const section = document.getElementById('worldview-section');
