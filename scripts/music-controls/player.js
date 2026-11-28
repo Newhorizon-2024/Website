@@ -6,7 +6,7 @@ import { playlist }
 
 import {
     applySongVisuals, initializeSongVisualizer
-} from "./song-visuals.js?v=26.11.24.1";
+} from "./song-visuals.js?v=26.11.28.1";
 
 import {
     initializeWakeVolumeSlider

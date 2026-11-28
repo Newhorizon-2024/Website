@@ -98,7 +98,7 @@ function syncSummitGame() {
     } else if (summitGame) {
         summitGame.setPlaying(playing && !pageAway);
     } else if (active && !summitLoading) {
-        summitLoading = import("../effects/summit-game.js?v=26.11.24.1")
+        summitLoading = import("../effects/summit-game.js?v=26.11.28.1")
             .then(module => module.createSummitGame({controllerOnly: mobileDevice}))
             .then(game => { summitGame = game; syncSummitGame(); })
             .catch(error => console.warn("Summit game could not start", error))

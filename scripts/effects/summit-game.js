@@ -66,6 +66,7 @@ export async function createSummitGame({controllerOnly = false} = {}) {
     let actor, intro = 0, frame = 0, last = 0, debt = 0, playing = false, disposed = false;
     let targets = [], nextScan = 0, support = null, launchScrolled = false, hintTimer;
     let jumpEdge = false, dashEdge = false, lastJump = false, lastDash = false, padIndex = null;
+    let cameraButtonHeld = null;
     let listeners = null;
     const scale = () => innerWidth >= 1024 ? 3 : 2;
     const showHint = msg => {
@@ -76,6 +77,7 @@ export async function createSummitGame({controllerOnly = false} = {}) {
     };
     function clearInput() {
         lastCaps = -Infinity;
+        cameraButtonHeld = null;
         held.clear(); jumpEdge = dashEdge = lastJump = lastDash = false;
     }
     let drag = null, eatenClick = -1;
@@ -130,13 +132,17 @@ export async function createSummitGame({controllerOnly = false} = {}) {
         endDrag();
     }
 
+    function toggleCamera() {
+        showHint(camera.toggle() ? "游戏视角已开启" : "游戏视角已关闭");
+    }
+
     function keyDown(event) {
         if (controllerOnly || drag || !supportsInput(event) || document.body.matches(blockedPage)) return;
         if (event.code === "CapsLock") {
             if (!event.repeat && !held.has(event.code)) {
                 const now = performance.now();
                 if (now-lastCaps <= 450) {
-                    showHint(camera.toggle() ? "游戏视角已开启" : "游戏视角已关闭");
+                    toggleCamera();
                     lastCaps = -Infinity;
                 } else lastCaps = now;
             }
@@ -152,13 +158,21 @@ export async function createSummitGame({controllerOnly = false} = {}) {
         held.add(event.code);
         event.preventDefault();
     }
-    function pollInput() {
+    function pollPad() {
         const pad = readPad();
         if ((pad?.index ?? null) !== padIndex) {
             if (!controllerOnly && (pad || padIndex !== null)) showHint(pad ? "手柄已连接" : "手柄已断开 · 键盘可继续操作");
             padIndex = pad?.index ?? null;
             lastJump = lastDash = false;
+            cameraButtonHeld = null;
         }
+        // R3 is button 11 in the standard mapping. Ignore keys already held on entry.
+        const pressed = Boolean(pad?.buttons[11]?.pressed);
+        if (pressed && cameraButtonHeld === false && !drag && (controllerOnly || !isEditing(document.activeElement))) toggleCamera();
+        cameraButtonHeld = pressed;
+        return pad;
+    }
+    function pollInput(pad) {
         if (!controllerOnly && isEditing(document.activeElement)) {
             clearInput();
             return {x:0,y:0,jump:false,grab:false,jumpPressed:false,dashPressed:false};
@@ -181,6 +195,7 @@ export async function createSummitGame({controllerOnly = false} = {}) {
         const dt = Math.min(elapsed, .08);
         last = time;
         const size = scale();
+        const pad = pollPad();
         if (camera.busy) { debt = 0; return; }
         if (!actor || intro < 1) {
             const r = navbar?.getBoundingClientRect();
@@ -226,7 +241,7 @@ export async function createSummitGame({controllerOnly = false} = {}) {
         const exits = camera.boundaries();
         debt += dt;
         while(debt >= step) {
-            const input = pollInput();
+            const input = pollInput(pad);
             if (drag) placeDraggedActor();
             const hand = actor.cubeGrip;
             const contactId = actor.support ?? hand?.id;
@@ -273,6 +288,9 @@ export async function createSummitGame({controllerOnly = false} = {}) {
             window.addEventListener("keyup",e=>held.delete(e.code),{capture:true,signal});
             window.addEventListener("focusin",e=>{if(isEditing(e.target)) clearInput();},{signal});
             window.addEventListener("contextmenu",clearInput,{signal});
+            window.addEventListener("gamepaddisconnected",e=>{
+                if (e.gamepad?.index === padIndex) cameraButtonHeld = null;
+            },{signal});
             window.addEventListener("pointerdown",beginDrag,{capture:true,signal});
             window.addEventListener("click",e=>{
                 if (e.detail && eatenClick >= 0 && performance.now()-eatenClick < 500) {
