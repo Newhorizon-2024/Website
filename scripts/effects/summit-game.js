@@ -161,7 +161,7 @@ export async function createSummitGame({controllerOnly = false} = {}) {
     function pollPad() {
         const pad = readPad();
         if ((pad?.index ?? null) !== padIndex) {
-            if (!controllerOnly && (pad || padIndex !== null)) showHint(pad ? "手柄已连接" : "手柄已断开 · 键盘可继续操作");
+            if (!controllerOnly && (pad || padIndex !== null)) showHint(pad ? "手柄已连接" : "手柄已断开");
             padIndex = pad?.index ?? null;
             lastJump = lastDash = false;
             cameraButtonHeld = null;
