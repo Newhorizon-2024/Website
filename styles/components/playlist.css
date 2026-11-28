@@ -120,28 +120,8 @@
     display: none;
 }
 
-/* 歌单展开时歌曲依次进入 */
-#playlist-container.is-open
-.playlist-song:not(.is-collapsed) {
-    animation:
-        playlist-item-enter
-        0.4s
-        ease
-        both;
-    animation-delay:
-        calc(
-            var(--playlist-item-index, 0)
-            * 35ms
-        );
-}
-
-/* 分组展开时歌曲依次进入 */
-.playlist-song:not(.is-collapsed) {
-    animation-delay:
-        calc(
-            var(--group-item-index, 0)
-            * 35ms
-        );
+#playlist-container.is-open .playlist-song.in-playlist-view {
+    animation: playlist-item-enter .36s ease-out var(--song-delay, 0ms) backwards;
 }
 
 /* 歌曲信息区域 */
@@ -283,6 +263,7 @@
 /* 歌曲列表项进入动画 */
 @keyframes playlist-item-enter {
     from {
+        translate: 0 5px;
         opacity: 0;
     }
 

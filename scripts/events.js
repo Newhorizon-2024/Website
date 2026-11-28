@@ -101,10 +101,10 @@ import {
 } from "./navigation/inline-section-links.js?v=26.11.12.1";
 
 import { initializeArticleReveal } from "./effects/article-reveal.js?v=26.11.21.3";
-import { initializeConservationFlame } from "./effects/conservation-flame.js?v=26.11.21.10";
+import { initializeConservationFlame } from "./effects/conservation-flame.js?v=26.11.28.4";
 import { initializeEnergyField } from "./effects/energy-metaballs.js?v=26.11.20.4";
 import { initializeObserverRelief } from "./effects/observer-relief.js?v=26.11.21.2";
-import { initializeNhnArchiveIndex } from "./navigation/nhn-archive.js?v=26.11.21.2";
+import { initializeNhnArchiveIndex } from "./navigation/nhn-archive.js?v=26.11.28.4";
 
 import {
     initializeNhnAccordion
@@ -138,6 +138,9 @@ function initializeEvents() {
     initializeInnerDomainSection();
     initializeInnerDomainCubes();
     initializeInnerworldSection();
+    const log = document.querySelector(".website-update-log");
+    const history = log?.querySelector(".website-update-history-entries");
+    if (history) history.prepend(...Array.from(log.querySelectorAll(":scope > .website-update-entry")).slice(1));
     initializeNhnArchiveIndex();
     initializeInlineSectionLinks();
     initializeArticleReveal();

@@ -225,15 +225,16 @@ function createSnowfall(sky, ctx, audio, score, bands) {
     return {resize,draw};
 }
 
-function makeWeather(audio, score, bands) {
+function makeWeather(audio, score, bands, layers) {
     const sky = document.createElement("canvas");
     sky.className = "pixel-snow-sky";
     sky.setAttribute("aria-hidden","true");
     const ctx = sky.getContext("2d");
     if (!ctx) return;
-    document.body.append(sky);
+    if (layers.has("snow")) document.body.append(sky);
     const snowfall = createSnowfall(sky,ctx,audio,score,bands);
-    const accents = createSummitCuePlayer(score?.path);
+    const accents = layers.has("flash") && createSummitCuePlayer(score?.path);
+    let previousHigh = null, lastFlash = -Infinity;
     const ledges = new Map();
     const visiblePanels = new Set();
     let frame = 0, last = 0, elapsed = 0, depth = 0, settledTime = 0, sincePaint = 0, mode = "";
@@ -289,8 +290,8 @@ function makeWeather(audio, score, bands) {
         }
         placeLedges();
     });
-    sizes.observe(sky);
-    for (const panel of document.querySelectorAll(panelSelector)) {
+    if (layers.has("snow")) sizes.observe(sky);
+    for (const panel of (layers.has("banks") ? document.querySelectorAll(panelSelector) : [])) {
         const bank = document.createElement("div");
         bank.className = "pixel-snow-bank";
         bank.setAttribute("aria-hidden","true");
@@ -335,8 +336,18 @@ function makeWeather(audio, score, bands) {
             placeLedges();
             if (mode === "fall") {
                 elapsed += dt;
-                accents?.advance(audio);
-                if (snowfall.draw(dt,elapsed)) {
+                if (accents) accents.advance(audio);
+                else if (layers.has("flash")) {
+                    // Other recordings use actual treble attacks instead of the Summit cue sheet.
+                    if (previousHigh !== null && bands.high > .13 && bands.high - previousHigh > .055 &&
+                        elapsed - lastFlash > .42 && !audio.muted && audio.volume > 0) {
+                        window.NewHorizonBackgroundCubes?.pulseVisibleCube();
+                        lastFlash = elapsed;
+                    }
+                    previousHigh = previousHigh === null ? bands.high : previousHigh + (bands.high - previousHigh) * .24;
+                }
+                const covered = !layers.has("snow") || snowfall.draw(dt,elapsed);
+                if (covered && layers.has("banks")) {
                     settledTime += dt;
                     sincePaint += dt;
                     if (sincePaint>=.5) {
@@ -352,7 +363,11 @@ function makeWeather(audio, score, bands) {
         setMode(next) {
             if (mode === next) return;
             mode = next;
-            if (mode !== "fall") accents?.reset();
+            if (mode !== "fall") {
+                if (accents) accents.reset();
+                else if (layers.has("flash")) window.NewHorizonBackgroundCubes?.clearCubePulse();
+                previousHigh = null;
+            }
             const fading = mode === "fade" || mode === "park";
             sky.classList.toggle("is-snow-fading",fading);
             for (const {bank} of ledges.values()) {
@@ -372,7 +387,7 @@ function makeWeather(audio, score, bands) {
                 for (const panel of visiblePanels) paintLedge(ledges.get(panel),depth);
             }
             if (mode === "still") {
-                snowfall.draw(0,elapsed,true);
+                if (layers.has("snow")) snowfall.draw(0,elapsed,true);
                 for (const ledge of ledges.values()) paintLedge(ledge,summitDepth,true);
             }
         },
@@ -389,7 +404,12 @@ function makeWeather(audio, score, bands) {
     };
 }
 
-export function syncPixelSnow(selected, playing, hidden, reduced, audio, score, bands) {
+export function syncPixelSnow(selected, playing, hidden, reduced, audio, score, bands, layers) {
+    const key = [audio.currentSrc || audio.src, score?.path, ...["snow","banks","flash"].filter(k => layers.has(k))].join("|");
+    if (selected && weather && weather.key !== key) {
+        clearTimeout(removal); removal = null;
+        weather.setMode("park"); weather.remove(); weather = null;
+    }
     // Pauses retain the flake positions and snowbanks; leaving the track releases them.
     if (!selected) {
         if (!weather) return;
@@ -402,7 +422,10 @@ export function syncPixelSnow(selected, playing, hidden, reduced, audio, score, 
         removal = null;
         return;
     }
-    if (!weather && playing && !hidden) weather = makeWeather(audio,score,bands);
+    if (!weather && playing && !hidden) {
+        weather = makeWeather(audio,score,bands,layers);
+        if (weather) weather.key = key;
+    }
     if (!weather) return;
     if (hidden || playing) {
         clearTimeout(removal);

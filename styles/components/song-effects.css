@@ -1,0 +1,25 @@
+.playlist-effects-heading, .effect-switches, .effect-options > div {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+}
+.playlist-effects-heading, .effect-options > div { justify-content: space-between; }
+#song-effects-btn, .effect-options select {
+    font: inherit; font-size: .85rem; color: #eee; background: #252527;
+    border: 1px solid #49494c; border-radius: 3px; padding: .3rem .65rem; cursor: pointer;
+}
+#song-effects-btn[aria-expanded="true"] { border-color: #aaa; }
+#song-effects-menu {
+    box-sizing: border-box; width: 80%; max-width: 1200px; margin: 1rem auto 0;
+    padding: 1rem 1.2rem; color: #eee; color-scheme: dark; background: #242425;
+    border-top: 1px solid #666; text-align: left;
+}
+#song-effects-menu[hidden] { display: none; }
+#song-effects-menu h3 { margin: 0 0 .65rem; font-size: 1rem; }
+.effect-switches { flex-wrap: wrap; padding-bottom: .65rem; border-bottom: 1px solid #444; }
+.effect-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: .25rem 1.5rem; padding-top: .45rem; }
+#song-effects-menu label { display: inline-flex; align-items: center; gap: .5rem; min-height: 2rem; cursor: pointer; user-select: none; }
+#song-effects-menu input { accent-color: #ddd; margin: 0; }
+@media (max-width: 768px) { #song-effects-menu { width: 88%; } }
+@media (max-width: 480px) { #song-effects-menu { width: 92%; } }
+#shadowflame-background.is-fallback.sparks-only { background: transparent; }

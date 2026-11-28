@@ -1,3 +1,4 @@
+import { initializeBlankDragGuard } from "./blank-drag.js?v=26.11.28.2";
 import {
     initializeNavigation
 } from "./navigation/navigation.js?v=26.11.23.1";
@@ -8,7 +9,7 @@ import {
 
 import {
     initializeMusicControls
-} from "./music-controls/player.js?v=26.11.28.1";
+} from "./music-controls/player.js?v=26.11.28.4";
 
 
 /* ===========================
@@ -16,6 +17,7 @@ import {
 =========================== */
 
 function initializeControls() {
+    initializeBlankDragGuard();
     initializeNavigation();
     initializeMusicControls();
     initializeBackToParent();

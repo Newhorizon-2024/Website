@@ -39,7 +39,13 @@ function shapeMaterial(material, mix, time) {
                 float strip = pow(max(0.,1.-abs(reflected.y+.22*sin(reflected.x*4.+waterTime*.7)) * 2.),5.);
                 float flow = sin(vLiquidPoint.y*18.-2.1*waterTime+3.*sin(vLiquidPoint.x*9.+waterTime));
                 float silver = .095+.34*rim+.37*strip+.075*pow(.5+.5*flow,6.);
-                gl_FragColor.rgb = mix(gl_FragColor.rgb,vec3(.92,.97,1.)*silver,waterMix);
+                // Solid tonal shapes follow the moving surface normals and caustics.
+                float edge = .013;
+                float tone = .09 + .17*smoothstep(.17-edge,.17+edge,silver)
+                                 + .24*smoothstep(.30-edge,.30+edge,silver)
+                                 + .28*smoothstep(.46-edge,.46+edge,silver)
+                                 + .18*smoothstep(.61-edge,.61+edge,silver);
+                gl_FragColor.rgb = mix(gl_FragColor.rgb,vec3(.92,.97,1.)*tone,waterMix);
                 #include <tonemapping_fragment>
             `);
     };
@@ -54,7 +60,7 @@ export function initializeConservationFlame() {
     if (!copy || !api) return;
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
     let lease, entry, originalGeometry, surfaceMesh, stopFrame;
-    let age=0, inView=false, away=false;
+    let age=0, inView=false, away=false, returning=null;
     const mix={value:0}, time={value:0};
     const pos=new THREE.Vector3(), target=new THREE.Vector3(), scale=new THREE.Vector3();
     const rotation=new THREE.Quaternion(), upright=new THREE.Quaternion(), pose=new THREE.Matrix4();
@@ -65,9 +71,21 @@ export function initializeConservationFlame() {
         lease.setPose(0,{matrix:pose.compose(pos,rotation,entry.sourceScale)});
         lease.release({atCurrent:true});
         surfaceMesh.dispose();
-        lease=null;
+        lease=null; returning=null;
     }
     function frame(_now,dt) {
+        if (returning && lease) {
+            returning.age += dt;
+            const p = Math.min(1, returning.age / .8);
+            const u = p*p*(3-2*p);
+            mix.value = returning.mix*(1-u);
+            time.value += dt;
+            scale.copy(returning.scale).lerp(entry.sourceScale,u);
+            lease.setPose(0,{matrix:pose.compose(pos,rotation,scale),opacity:1-.47*mix.value,
+                frontMix:entry.originalLayer ? 1-mix.value : 0,visible:true});
+            if (p === 1) { release(); sync(); }
+            return;
+        }
         const box=copy.getBoundingClientRect();
         if (!box.width || !box.height) return;
         const x=box.left+box.width/2,y=box.top+box.height/2;
@@ -101,12 +119,18 @@ export function initializeConservationFlame() {
     }
     function sync() {
         const active=section.classList.contains("is-active") && !away;
-        if (active && inView && !document.hidden) {
+        if (away || document.hidden) {
+            stopFrame?.(); stopFrame=null;
+            if (!active || returning) release();
+            return;
+        }
+        if (active && inView && !returning) {
+            if (!stopFrame) stopFrame=api.beforeRender(frame);
+        } else if (lease && !reduced.matches) {
+            returning ??= {age:0, mix:mix.value, scale:scale.clone()};
             if (!stopFrame) stopFrame=api.beforeRender(frame);
         } else {
-            stopFrame?.(); stopFrame=null;
-            if (!active) release();
-            else lease?.setPose(0,{visible:false});
+            stopFrame?.(); stopFrame=null; release();
         }
     }
     const visibility=new IntersectionObserver(([e])=>{inView=e.isIntersecting;sync();});

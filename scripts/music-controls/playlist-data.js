@@ -47,14 +47,6 @@ export const playlist = [
     },
 
     {
-        useSiteArtwork: true,
-        path:
-            "media/Am I Dreaming of Sunflowers [Spider-Verse Soundtrack Mashup].mp3",
-        description:
-            `电影《蜘蛛侠：平行宇宙》《蜘蛛侠：纵横宇宙》"Spider-Verse" Soundtrack Mashup`
-    },
-
-    {
         path:
             "media/Baby Blue (US Single Mix Remastered 2010) - Badfinger.mp3",
         description:
@@ -100,13 +92,6 @@ export const playlist = [
     },
 
     {
-        path:
-            "media/F1 (Symphonic Version)(Live) - Imperial Orchestra.mp3",
-        description:
-            '电影"F1"'
-    },
-
-    {
         useSiteArtwork: true,
         path:
             "media/Falling Apart - Daniel Pemberton.mp3",
@@ -133,13 +118,6 @@ export const playlist = [
             "media/I Really Want to Stay at Your House - Samuel Kim、Lorien.mp3",
         description:
             `动画《赛博朋克：边缘行者》"Cyberpunk: Edgerunners"`
-    },
-
-    {
-        path:
-            "media/Infinite Future (DRAGON BALL 40th Anniversary Special Video - Theme) - Hans Zimmer.mp3",
-        description:
-            `动画《龙珠》40周年特别视频 "Dragon Ball 40th Anniversary Special Video"`
     },
 
     {
@@ -330,14 +308,6 @@ export const playlist = [
     {
         useSiteArtwork: true,
         path:
-            "media/Monster - STARSET.mp3",
-        description:
-            `游戏《明日方舟》"Arknights"概念宣传PV`
-    },
-
-    {
-        useSiteArtwork: true,
-        path:
             "media/My Actual Code - Draw Me A Pixel.mp3",
         description:
             `游戏《这里没有游戏》"There Is No Game"`
@@ -390,26 +360,11 @@ export const playlist = [
     },
 
     {
-        path:
-            "media/Stellaris Suite Creation and Beyond - Andreas Waldetoft.mp3",
-        description:
-            `游戏《群星》"Stellaris"`
-    },
-
-    {
         useSiteArtwork: true,
         path:
             "media/Summer of Monsters Main Menu - Brawl Stars.mp3",
         description:
             `游戏《荒野乱斗》"Brawl Stars"`
-    },
-
-    {
-        useSiteArtwork: true,
-        path:
-            "media/The Devourer of Gods (Nonstop Mix) - DM DOKURO.mp3",
-        description:
-            `游戏《泰拉瑞亚》"Terraria" Calamity Mod`
     },
 
     {
@@ -421,7 +376,7 @@ export const playlist = [
 
     {
         path:
-            "media/The Piano - Cheetah Mobile.mp3",
+            "media/The Piano & The West - Cheetah Mobile.mp3",
         description:
             `游戏《跳舞的线》"Dancing Line"`
     },
@@ -434,17 +389,13 @@ export const playlist = [
     },
 
     {
-        path:
-            "media/The West - Cheetah Mobile.mp3",
-        description:
-            `游戏《跳舞的线》"Dancing Line"`
+        path: "media/To the Moon Medley - Kan Gao.mp3",
+        description: '游戏《去月球》"To the Moon"'
     },
 
     {
-        path:
-            "media/UNDERTALE三周年纪念·传说之下16首BGM四手联弹无缝串烧 - Kyle Xian.mp3",
-        description:
-            `游戏《传说之下》"UNDERTALE"`
+        path: "media/Undertale - Toby Fox.mp3",
+        description: '游戏《传说之下》"UNDERTALE"'
     },
 
     {
@@ -492,6 +443,14 @@ export const playlist = [
     {
         useSiteArtwork: true,
         path:
+            "media/Am I Dreaming of Sunflowers [Spider-Verse Soundtrack Mashup].mp3",
+        description:
+            "分享自 佚名"
+    },
+
+    {
+        useSiteArtwork: true,
+        path:
             "media/Deadman - 蔡徐坤.mp3",
         description:
             "分享自 佚名"
@@ -523,6 +482,13 @@ export const playlist = [
     {
         path:
             "media/Every Door - CG5.mp3",
+        description:
+            "分享自 佚名"
+    },
+
+    {
+        path:
+            "media/F1 (Symphonic Version)(Live) - Imperial Orchestra.mp3",
         description:
             "分享自 佚名"
     },
@@ -567,6 +533,13 @@ export const playlist = [
 
     {
         path:
+            "media/Infinite Future (DRAGON BALL 40th Anniversary Special Video - Theme) - Hans Zimmer.mp3",
+        description:
+            "分享自 佚名"
+    },
+
+    {
+        path:
             "media/Infinitely Falling - Fly By Midnight.mp3",
         description:
             "分享自 佚名"
@@ -600,6 +573,14 @@ export const playlist = [
             "media/LiMing_利明 - 艾志恒Asen、GALI、堵琳Caroline - 落幕 (Sunset Explicit) 伴奏.mp3",
         description:
             "分享自 星羽AsT3R"
+    },
+
+    {
+        useSiteArtwork: true,
+        path:
+            "media/Monster - STARSET.mp3",
+        description:
+            "分享自 佚名"
     },
 
     {

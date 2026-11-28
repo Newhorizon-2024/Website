@@ -90,25 +90,16 @@ void main(){
   float flame = clamp(body * taper * horiz, 0.0, 1.0);
   flame = pow(flame, 1.1);
 
-  // Colour ramp: background -> dark flame body -> amethyst core near the base.
-  vec3 col = uBgColor;
-  col = mix(col, uFlameColor, smoothstep(0.12, 0.55, flame));
-  // Amethyst self-illumination so the dark flame reads as light against the void,
-  // not black-on-black — the whole lick glows, the core just burns brightest.
-  col += uCoreColor * pow(flame, 1.6) * 0.32;
-
-  // Amethyst core: only the hottest density, weighted toward the base.
-  float baseWeight = 1.0 - smoothstep(localHeight * 0.35, localHeight * 0.95, vy);
-  float coreMask = smoothstep(0.45, 0.9, flame) * baseWeight;
-  col = mix(col, uCoreColor, coreMask);
-  // Soft additive bloom so the core reads as emitted light, not a flat fill.
-  col += uCoreColor * pow(coreMask, 2.0) * 0.35;
-
-  // Film grain — animated hash keyed off the pixel and fractional time.
-  float g = fract(sin(dot(gl_FragCoord.xy + fract(iTime), vec2(12.9898, 78.233))) * 43758.5453);
-  col += (g - 0.5) * uGrain;
-
-  col = clamp(col, 0.0, 1.0);
+  // Broad, nested tongues of graphite, ash and white. Screen-space edging
+  // keeps the tonal boundaries clean without changing the height envelope.
+  float aa = clamp(fwidth(flame)*1.4, .004, .028);
+  float foot = 1.0-smoothstep(localHeight*.25, localHeight*.95, vy);
+  float ink = .16*smoothstep(.105-aa,.105+aa,flame)
+            + .24*smoothstep(.23-aa,.23+aa,flame)
+            + .29*smoothstep(.39-aa,.39+aa,flame)
+            + .23*smoothstep(.53-aa,.53+aa,flame)*foot;
+  vec3 col = mix(uBgColor,uFlameColor,ink);
+  col += uCoreColor*.12*smoothstep(.65-aa,.65+aa,flame)*foot;
   fragColor = vec4(col, 1.0);
 }
 `;

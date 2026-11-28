@@ -1,4 +1,4 @@
-import { trackWaveforms } from "./track-waveforms-data.js?v=26.11.21.7";
+import { trackWaveforms } from "./track-waveforms-data.js?v=26.11.28.4";
 
 // 每个时间窗结合整体 RMS 与最强短音节。声道分别累加，反相立体声也能保留响度。
 function measureWaveform(buffer) {

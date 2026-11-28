@@ -46,12 +46,51 @@ export function initializeNhnArchiveIndex() {
         add("timeline-section", "历史事件", event.dataset.target);
     }
 
+    const motion = matchMedia("(prefers-reduced-motion: reduce)");
+    const summary = index.querySelector("summary");
+    const body = document.createElement("div");
+    body.className = "nhn-index-body";
+    initializeArchiveShredder(index, list);
+    body.append(...Array.from(index.children).filter(node => node !== summary));
+    index.append(body);
+    let transition = null, closing = false;
+    function setOpen(open) {
+        const height = index.open ? body.getBoundingClientRect().height : 0;
+        const opacity = index.open ? Number(getComputedStyle(body).opacity) : 0;
+        transition?.cancel();
+        closing = !open;
+        if (!open && body.contains(document.activeElement)) summary.focus();
+        body.inert = !open;
+        if (motion.matches) { index.open = open; closing = false; return; }
+        index.open = true;
+        const anim = body.animate([{height:height+"px", opacity}, {height:(open ? body.scrollHeight : 0)+"px", opacity:Number(open)}],
+            {duration:open ? 320 : 215, easing:"cubic-bezier(.22,.68,.23,1)",fill:"both"});
+        transition = anim;
+        anim.onfinish = () => {
+            if (transition !== anim) return;
+            index.open = open;
+            transition = null; closing = false;
+            anim.cancel();
+        };
+    }
+    summary.addEventListener("click", event => { event.preventDefault(); setOpen(!index.open || closing); });
     function filter() {
         const terms = clean(field.value).split(/\s+/).filter(Boolean);
         let count = 0;
         for (const row of rows) {
-            row.link.hidden = !terms.every(term => row.terms.includes(term));
-            if (!row.link.hidden) count++;
+            const match = terms.every(term => row.terms.includes(term));
+            if (match) count++;
+            if (row.match === match) continue;
+            row.match = match;
+            const link = row.link;
+            const alpha = link.hidden ? 0 : Number(getComputedStyle(link).opacity);
+            row.fade?.cancel();
+            link.inert = !match;
+            if (!index.open || motion.matches) { link.hidden = !match; continue; }
+            link.hidden = false;
+            const fade = link.animate([{opacity:alpha},{opacity:Number(match)}], {duration:match ? 180 : 115,easing:"ease-out"});
+            row.fade = fade;
+            fade.onfinish = () => { if (row.fade === fade) { link.hidden = !row.match; row.fade = null; } };
         }
         status.textContent = count ? count + " 条档案" : "没有匹配的档案";
     }
@@ -60,10 +99,10 @@ export function initializeNhnArchiveIndex() {
         if (event.isComposing) return;
         if (event.key === "Escape" && index.open) {
             event.preventDefault();
-            index.open = false;
+            setOpen(false);
             index.querySelector("summary").focus();
         } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-            const matches = rows.filter(row => !row.link.hidden);
+            const matches = rows.filter(row => row.match);
             if (!matches.length || (event.target !== field && !list.contains(event.target))) return;
             event.preventDefault();
             const pos = matches.findIndex(row => row.link === event.target);
@@ -72,7 +111,6 @@ export function initializeNhnArchiveIndex() {
             matches[next].link.focus();
         }
     });
-    initializeArchiveShredder(index, list);
     filter();
     index.dataset.ready = "true";
     index.hidden = false;

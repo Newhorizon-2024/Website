@@ -1,12 +1,12 @@
 import { clearSiteArtwork, updateLockScreen } from "./lock-screen.js?v=26.11.24.1";
 import { legacyLoginPaths } from "./legacy-login-paths.js?v=26.11.21.10";
-import { initializeTrackWaveform } from "./progress-spectrum.js?v=26.11.21.7";
+import { initializeTrackWaveform } from "./progress-spectrum.js?v=26.11.28.4";
 import { playlist }
-    from "./playlist-data.js?v=26.11.24.1";
+    from "./playlist-data.js?v=26.11.28.4";
 
 import {
     applySongVisuals, initializeSongVisualizer
-} from "./song-visuals.js?v=26.11.28.1";
+} from "./song-visuals.js?v=26.11.28.4";
 
 import {
     initializeWakeVolumeSlider
@@ -395,6 +395,29 @@ function seekAudio() {
    9. 歌单面板
 =========================== */
 
+let songVisibility;
+function observePlaylist(open) {
+    songVisibility?.disconnect();
+    songVisibility = null;
+    if (!open || !("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(entries => {
+        if (songVisibility !== observer) return;
+        let stagger = 0;
+        for (const entry of entries) {
+            const row = entry.target;
+            if (entry.isIntersecting && entry.intersectionRect.height > 0) {
+                row.style.setProperty("--song-delay", Math.min(stagger++, 5) * 35 + "ms");
+                row.classList.add("in-playlist-view");
+            } else row.classList.remove("in-playlist-view");
+        }
+    }, {root:playlistContainer, threshold:[0, .02]});
+    songVisibility = observer;
+    for (const row of playlistList.querySelectorAll(".playlist-song")) {
+        row.classList.remove("in-playlist-view");
+        observer.observe(row);
+    }
+}
+
 function togglePlaylist() {
     if (
         !playlistButton ||
@@ -420,6 +443,12 @@ function togglePlaylist() {
         !isOpen
     );
 
+    observePlaylist(!isOpen);
+    if (isOpen) {
+        document.getElementById("song-effects-menu").hidden = true;
+        document.getElementById("song-effects-btn").setAttribute("aria-expanded","false");
+    }
+
     playlistButton.classList.toggle(
         "active",
         !isOpen
@@ -439,7 +468,6 @@ function loadPlaylist() {
     playlistList.innerHTML = "";
 
     let lastSeparator = null;
-    let visibleSongIndex = 0;
 
     playlist.forEach(
         (song, index) => {
@@ -560,18 +588,6 @@ function loadPlaylist() {
             listItem.dataset.songIndex =
                 String(index);
 
-            listItem.style.setProperty(
-                "--playlist-item-index",
-                String(
-                    Math.min(
-                        visibleSongIndex,
-                        8
-                    )
-                )
-            );
-
-            visibleSongIndex += 1;
-
             if (
                 lastSeparator &&
                 lastSeparator.dataset
@@ -671,7 +687,6 @@ function togglePlaylistGroup(
     let nextItem =
         separatorItem.nextElementSibling;
 
-    let itemIndex = 0;
 
     while (
         nextItem &&
@@ -680,16 +695,6 @@ function togglePlaylistGroup(
         )
     ) {
         if (isCollapsed) {
-            nextItem.style.setProperty(
-                "--group-item-index",
-                String(
-                    Math.min(
-                        itemIndex,
-                        8
-                    )
-                )
-            );
-
             nextItem.classList.remove(
                 "is-collapsed"
             );
@@ -699,7 +704,6 @@ function togglePlaylistGroup(
             );
         }
 
-        itemIndex += 1;
 
         nextItem =
             nextItem.nextElementSibling;
@@ -821,7 +825,13 @@ function restoreDefaultLoginSong() {
         const saved = localStorage.getItem("defaultLoginSong");
         if (!saved) return;
 
-        const savedPath = /^\d+$/.test(saved) ? legacyLoginPaths[Number(saved)] : saved;
+        const oldPath = /^\d+$/.test(saved) ? legacyLoginPaths[Number(saved)] : saved;
+        const savedPath = [
+            "media/The Piano - Cheetah Mobile.mp3",
+            "media/The West - Cheetah Mobile.mp3",
+            "media/The Piano X The West - Cheetah Mobile.mp3"
+        ].includes(oldPath)
+            ? "media/The Piano & The West - Cheetah Mobile.mp3" : oldPath;
         savedIndex = playlist.findIndex(song => song.path && song.path === savedPath);
         if (savedIndex < 0) {
             localStorage.removeItem("defaultLoginSong");
@@ -962,7 +972,8 @@ export function initializeMusicControls() {
     const volumeSpectrum = initializeWakeVolumeSlider({ input: volumeSlider, panel: volumeSliderContainer });
     initializeElasticProgressBar({ input: progressBar });
     initializeTrackWaveform(audioElement, document.getElementById("track-waveform"));
-    initializeSongVisualizer(volumeSpectrum);
+    const source = audioElement.getAttribute("src") || audioElement.querySelector("source")?.getAttribute("src");
+    initializeSongVisualizer(volumeSpectrum, playlist.find(song => song.path === source));
     updateProgressDisplay();
     restoreDefaultLoginSong();
 }

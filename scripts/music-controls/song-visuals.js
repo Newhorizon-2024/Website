@@ -1,7 +1,8 @@
+import { songEffects, effectLevel, initializeEffectMenu } from "./effect-menu.js?v=26.11.28.4";
 import { mobileDevice, readPad } from "../device-input.js?v=26.11.24.1";
-import { applyShadowflameSong } from "../effects/shadowflame.js?v=26.11.21.5";
-import { syncPixelSnow } from "../effects/pixel-snow.js?v=26.11.22.6";
-import { trackWaveforms } from "./track-waveforms-data.js?v=26.11.21.7";
+import { applyShadowflameSong } from "../effects/shadowflame.js?v=26.11.28.4";
+import { syncPixelSnow } from "../effects/pixel-snow.js?v=26.11.28.2";
+import { trackWaveforms } from "./track-waveforms-data.js?v=26.11.28.4";
 
 /* ===========================
    Bossrush 视觉效果
@@ -32,8 +33,10 @@ const backgroundMusic =
    基础状态
 =========================== */
 
-let bossrushHideTimeout =
-    null;
+const bossLayers = new WeakMap();
+let currentSong = null;
+let effects = songEffects(null);
+let refreshEffectMenu;
 
 let cubeColorAnimationFrame =
     null;
@@ -196,20 +199,25 @@ const AUDIO_VISUALIZER_CONFIG = {
 export function applySongVisuals(
     song
 ) {
-    applyShadowflameSong(song, backgroundMusic);
-    summitSelected = song?.path === "media/Reach for the Summit - Lena Raine.mp3";
-    snowSelected = song?.visualEffect === "pixel-snow";
-    const row = snowSelected && trackWaveforms[song.path];
-    snowScore = row ? {path:song.path,duration:row[0],peaks:Uint8Array.from(atob(row[1]),c=>c.charCodeAt(0))} : null;
-    playing = !backgroundMusic?.paused && backgroundMusic?.readyState >= 3;
-    spectrum?.clear();
-    resetRhythm();
-    const speedMultiplier =
-        song?.speedMultiplier ||
-        1;
-
-    activeBossrushSpeed =
-        speedMultiplier;
+    const changedTrack = currentSong?.path !== song?.path;
+    currentSong = song;
+    effects = new Set(songEffects(song));
+    applyShadowflameSong(effects.has("flame"), effects.has("sparks"), backgroundMusic);
+    summitSelected = effects.has("game");
+    snowSelected = ["snow", "banks", "flash"].some(key => effects.has(key));
+    if (!snowSelected) snowScore = null;
+    else if (song?.path && snowScore?.path !== song.path) {
+        const row = trackWaveforms[song.path];
+        snowScore = row ? {path:song.path, duration:row[0], peaks:Uint8Array.from(atob(row[1]), c => c.charCodeAt(0))} : null;
+    }
+    if (changedTrack) {
+        playing = !backgroundMusic.paused && !backgroundMusic.ended && backgroundMusic.readyState >= 3;
+        spectrum?.clear();
+        resetRhythm();
+    }
+    refreshEffectMenu?.();
+    const speedMultiplier = effectLevel("eyes", song);
+    activeBossrushSpeed = speedMultiplier;
 
     const root =
         document.documentElement;
@@ -380,11 +388,12 @@ function resumeAudioGraph() {
     }
 }
 
-export function initializeSongVisualizer(volumeSpectrum) {
+export function initializeSongVisualizer(volumeSpectrum, initialSong) {
     if (!backgroundMusic || audioEvents) return;
     audioEvents = new AbortController();
     const listen = (target, name, fn) => target.addEventListener(name, fn, { signal: audioEvents.signal });
     spectrum = volumeSpectrum;
+    refreshEffectMenu = initializeEffectMenu(() => currentSong, () => applySongVisuals(currentSong));
     spectrum?.onVisibilityChange(syncVisualizer);
     listen(backgroundMusic, "volumechange", syncVisualizer);
     listen(backgroundMusic, "playing", () => {
@@ -419,24 +428,23 @@ export function initializeSongVisualizer(volumeSpectrum) {
         }
     });
     playing = !backgroundMusic.paused && backgroundMusic.readyState >= 3;
-    syncVisualizer();
+    applySongVisuals(initialSong);
 }
 
 function syncVisualizer() {
     syncSummitGame();
     syncPixelSnow(snowSelected && !backgroundMusic?.ended, playing, document.hidden || pageAway,
-        reduceMotion.matches, backgroundMusic, snowScore, snowBands);
-    const bossSelected = activeBossrushSpeed > 1 && playing;
-    const speed = bossSelected ? activeBossrushSpeed : 1;
+        reduceMotion.matches, backgroundMusic, snowScore, snowBands, effects);
+    const speed = playing && effects.has("cubes") ? effectLevel("cubes", currentSong) : 1;
     if (window.globalSpeedMultiplier !== speed) {
         window.globalSpeedMultiplier = speed;
         fadeCubeColor(({4:"#666666", 6:"#444444", 8:"#222222"})[speed] || "#888888");
     }
-    if (bossSelected !== bossVisible) {
-        bossVisible = bossSelected;
-        if (bossVisible) showBossrush();
-        else fadeOutBossrush();
+    if (playing && effects.has("wave") && !audioMask) createAudioMask();
+    for (const [element, key] of [[bossrushEyes, "eyes"], [bossrushEyesBackground, "eyes"], [bossrushFilter, "shade"], [audioMask, "wave"]]) {
+        setBossLayer(element, playing && effects.has(key));
     }
+    bossVisible = playing && (effects.has("eyes") || effects.has("wave"));
     const volumeVisible = spectrum?.visible && !backgroundMusic.muted && backgroundMusic.volume > 0;
     if (!volumeVisible) spectrum?.clear();
     const run = playing && !pageAway && !document.hidden && !reduceMotion.matches && (bossVisible || volumeVisible || snowSelected);
@@ -462,75 +470,29 @@ function syncVisualizer() {
    显示 Bossrush
 =========================== */
 
-function showBossrush() {
-    if (bossrushHideTimeout) {
-        window.clearTimeout(
-            bossrushHideTimeout
-        );
-
-        bossrushHideTimeout =
-            null;
+function setBossLayer(element, visible) {
+    if (!element) return;
+    const previous = bossLayers.get(element);
+    if ((previous?.visible ?? false) === visible) return;
+    const opacity = getComputedStyle(element).opacity;
+    previous?.animation?.cancel();
+    const state = {visible, animation:null};
+    bossLayers.set(element, state);
+    if (visible) {
+        element.style.display = "block";
+        if (element === audioMask) element.classList.add("is-active");
+        if (previous?.animation) state.animation = element.animate([{opacity}, {offset:1}], {duration:240, easing:"ease-out"});
+    } else {
+        state.animation = element.animate([{opacity}, {opacity:0}], {duration:reduceMotion.matches ? 160 : 600, easing:"ease-out"});
     }
-
-    if (!audioMask) createAudioMask();
-
-    const bossrushElements = [
-        bossrushEyes,
-        bossrushEyesBackground,
-        bossrushFilter,
-        audioMask
-    ].filter(Boolean);
-
-    bossrushElements.forEach(
-        element => {
-            const hiding = element.getAnimations().find(animation => animation.id === "bossrush-hide");
-            if (hiding) {
-                const opacity = getComputedStyle(element).opacity;
-                hiding.cancel();
-                element.animate([{opacity}, {offset:1}], {
-                    id:"bossrush-resume", duration:reduceMotion.matches ? 160 : 400, easing:"ease-out"
-                });
-            }
-
-            element.style.display =
-                "block";
-        }
-    );
-
-    if (audioMask) {
-        audioMask.classList.add(
-            "is-active"
-        );
-    }
-
-
-}
-
-
-/* ===========================
-   隐藏 Bossrush
-=========================== */
-
-function fadeOutBossrush() {
-    const elements = [bossrushEyes, bossrushEyesBackground, bossrushFilter, audioMask].filter(Boolean);
-    const duration = reduceMotion.matches ? 160 : 600;
-    clearTimeout(bossrushHideTimeout);
-    for (const element of elements) {
-        const opacity = getComputedStyle(element).opacity;
-        element.getAnimations().find(animation => animation.id === "bossrush-resume")?.cancel();
-        element.animate([{ opacity }, { opacity: 0 }],
-            { id: "bossrush-hide", duration, easing: "ease-out", fill: "forwards" });
-    }
-    bossrushHideTimeout = setTimeout(() => {
-        for (const element of elements) {
+    if (state.animation) state.animation.onfinish = () => {
+        if (bossLayers.get(element) !== state) return;
+        state.animation = null;
+        if (!visible) {
             element.style.display = "none";
-            element.getAnimations().find(animation => animation.id === "bossrush-hide")?.cancel();
+            if (element === audioMask) { element.classList.remove("is-active"); clearAudioMask(); }
         }
-        audioMask?.classList.remove("is-active");
-        clearAudioMask();
-        resetRhythm();
-        bossrushHideTimeout = null;
-    }, duration);
+    };
 }
 
 /* ===========================
@@ -1077,7 +1039,7 @@ function updateBossrushRhythm(hz, dt) {
     bossrushEyesBackground?.style.setProperty("--echo-scale", (1 + (.035 * smoothedBass + .085 * pulse) * weight).toFixed(4));
     bossrushEyesBackground?.style.setProperty("--echo-opacity", (.45 + .48 * pulse).toFixed(3));
     visualizerTime += dt * (1.55 + smoothedMid);
-    drawAudioMask();
+    if (effects.has("wave")) drawAudioMask();
 }
 
 function updateAudioVisualizer(now) {

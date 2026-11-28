@@ -15,8 +15,9 @@
 
     <link
         rel="stylesheet"
-        href="styles/main.css?v=26.11.22.8"
+        href="styles/main.css?v=26.11.28.4"
     >
+    <link rel="stylesheet" href="styles/components/song-effects.css?v=26.11.28.4">
     <link rel="stylesheet" href="styles/components/summit-game.css?v=26.11.23.1">
     <link rel="stylesheet" href="styles/components/another-world-portal.css?v=26.10.21.7">
 
@@ -341,9 +342,15 @@
             </div>
         </div>
 
+        <section id="song-effects-menu" aria-labelledby="song-effects-title" hidden>
+            <h3 id="song-effects-title">播放特效</h3>
+            <div class="effect-switches"></div>
+            <div class="effect-options"></div>
+        </section>
+
         <!-- 歌单面板 -->
         <div id="playlist-container" data-lenis-prevent>
-            <h2>歌单</h2>
+            <div class="playlist-effects-heading"><h2>歌单</h2><button id="song-effects-btn" type="button" aria-expanded="false" aria-controls="song-effects-menu">特效</button></div>
             <ul id="playlist"></ul>
         </div>
     </div>
@@ -374,90 +381,11 @@
                 aria-label="New Horizon 网站更新记录"
             >
                 <article class="website-update-entry">
-                    <time datetime="2026-11-22T10:26:51+08:00">
-                        2026年11月22日 10:26:51
-                    </time>
+                    <time datetime="2026-11-28T19:21:10+08:00">2026年11月28日 19:21:10</time>
                     <ul>
-                        <li>Madeline 登录New Horizon！</li>
-                    </ul>
-                </article>
-
-                <article class="website-update-entry">
-                    <time datetime="2026-11-21T15:18:52+08:00">
-                        2026年11月21日 15:18:52
-                    </time>
-
-                    <ul>
-                        <li>新增“能量”、“能量守恒定律”、“观察者效应”等内容的介绍，补充档案之间的关联导航；档案检索支持按名称、类别或年份查找。</li>
-                        <li>“事物”目录加入时钟效果和新的视觉动画。</li>
-                        <li>“场景”目录新增绕行的月球；为已开放的场景添加了进入效果。</li>
-                        <li>新增了“内域”方块阵列的更多效果表现。</li>
-                        <li>介绍内容的标题新增描边填充效果、正文滚动显现和时间线节点文字的效果。</li>
-                        <li>减轻了浏览“里世界”时的卡顿。</li>
-                        <li>统一目录的进场和退场动画，并为再次点击当前导航栏目加入了弹性反馈。</li>
-                        <li>基本重做了创作者模块；修复返回浏览器后重复播放捕获动画，以及没有图片描述时预览位置跳动的问题。</li>
-                        <li>现在作品与悬赏令预览的形变转场不再是单一角度。</li>
-                        <li>返回主页按钮改为可拉动的旋转方块，靠近一侧提示时，文字会逐渐淡出。</li>
-                        <li>作品动态新增四星评分、爱心点赞和气泡评论的图标交互。</li>
-                        <li>进度条可查看整首歌的强弱起伏，音量条随实时频谱产生运动。</li>
-                        <li>优化了歌单曲目的按钮表现。</li>
-                        <li>游戏曲新增包含特殊效果的《Reach for the Summit》。</li>
-                    </ul>
-                </article>
-
-                <article class="website-update-entry">
-                    <time datetime="2026-11-12T20:19:54+08:00">
-                        2026年11月12日 20:19:54
-                    </time>
-
-                    <ul>
-                        <li>更新了世界观介绍。</li>
-                    </ul>
-                </article>
-
-                <article class="website-update-entry">
-                    <time datetime="2026-10-23T00:43:16+08:00">
-                        2026年10月23日 00:43:16
-                    </time>
-
-                    <ul>
-                        <li>优化世界观目录拖动范围与移动端滑动，十字线的效果延伸至全屏。</li>
-                        <li>“内域”交互方块能够与背景方块的光照渲染保持一致。</li>
-                    </ul>
-                </article>
-
-                <article class="website-update-entry">
-                    <time datetime="2026-10-22T23:47:45+08:00">
-                        2026年10月22日 23:47:45
-                    </time>
-
-                    <ul>
-                        <li>背景方块现在支持惯性投掷，甩动后松手即可扔出。</li>
-                        <li>优化按钮、目录及拖拽控件的防误选。</li>
-                    </ul>
-                </article>
-
-                <article class="website-update-entry">
-                    <time datetime="2026-10-21T23:06:45+08:00">
-                        2026年10月21日 23:06:45
-                    </time>
-
-                    <ul>
-                        <li>现在背景方块可以被拽动。</li>
-                        <li>世界观目录模块新增“彩蛋”。</li>
-                        <li>细化了 Bossrush 双眼背景层级。</li>
-                    </ul>
-                </article>
-
-                <article class="website-update-entry">
-                    <time datetime="2026-10-21T09:10:49+08:00">
-                        2026年10月21日 09:10:49
-                    </time>
-
-                    <ul>
-                        <li>优化了世界观目录模块的出场和退场方式。</li>
-                        <li>“内域”新增互动模块。</li>
-                        <li>优化方块衔接、移动端显示与离页释放，并补齐部分部件缺失的返回上级按钮。</li>
+                        <li>歌单新增特效面板，可跨曲搭配效果，分别调整 Bossrush 和方块速度。落雪与积雪联动，刷新后恢复歌曲默认效果。</li>
+                        <li>游戏曲新增《To the Moon Medley》《Undertale》，收录合并曲《The Piano &amp; The West》，并整理了分享曲。</li>
+                        <li>歌单随滚动逐项显现，档案检索新增展开与收起动画。火焰与水体改用灰阶色块，火花从屏幕下方升起，离开“能量守恒定律”时水体重新化为漂浮方块。</li>
                     </ul>
                 </article>
 
@@ -465,6 +393,94 @@
                     <summary>以往更新</summary>
 
                     <div class="website-update-history-entries">
+                        <article class="website-update-entry">
+                            <time datetime="2026-11-22T10:26:51+08:00">
+                                2026年11月22日 10:26:51
+                            </time>
+                            <ul>
+                                <li>Madeline 登录New Horizon！</li>
+                            </ul>
+                        </article>
+
+                        <article class="website-update-entry">
+                            <time datetime="2026-11-21T15:18:52+08:00">
+                                2026年11月21日 15:18:52
+                            </time>
+
+                            <ul>
+                                <li>新增“能量”、“能量守恒定律”、“观察者效应”等内容的介绍，补充档案之间的关联导航；档案检索支持按名称、类别或年份查找。</li>
+                                <li>“事物”目录加入时钟效果和新的视觉动画。</li>
+                                <li>“场景”目录新增绕行的月球；为已开放的场景添加了进入效果。</li>
+                                <li>新增了“内域”方块阵列的更多效果表现。</li>
+                                <li>介绍内容的标题新增描边填充效果、正文滚动显现和时间线节点文字的效果。</li>
+                                <li>减轻了浏览“里世界”时的卡顿。</li>
+                                <li>统一目录的进场和退场动画，并为再次点击当前导航栏目加入了弹性反馈。</li>
+                                <li>基本重做了创作者模块；修复返回浏览器后重复播放捕获动画，以及没有图片描述时预览位置跳动的问题。</li>
+                                <li>现在作品与悬赏令预览的形变转场不再是单一角度。</li>
+                                <li>返回主页按钮改为可拉动的旋转方块，靠近一侧提示时，文字会逐渐淡出。</li>
+                                <li>作品动态新增四星评分、爱心点赞和气泡评论的图标交互。</li>
+                                <li>进度条可查看整首歌的强弱起伏，音量条随实时频谱产生运动。</li>
+                                <li>优化了歌单曲目的按钮表现。</li>
+                                <li>游戏曲新增包含特殊效果的《Reach for the Summit》。</li>
+                            </ul>
+                        </article>
+
+                        <article class="website-update-entry">
+                            <time datetime="2026-11-12T20:19:54+08:00">
+                                2026年11月12日 20:19:54
+                            </time>
+
+                            <ul>
+                                <li>更新了世界观介绍。</li>
+                            </ul>
+                        </article>
+
+                        <article class="website-update-entry">
+                            <time datetime="2026-10-23T00:43:16+08:00">
+                                2026年10月23日 00:43:16
+                            </time>
+
+                            <ul>
+                                <li>优化世界观目录拖动范围与移动端滑动，十字线的效果延伸至全屏。</li>
+                                <li>“内域”交互方块能够与背景方块的光照渲染保持一致。</li>
+                            </ul>
+                        </article>
+
+                        <article class="website-update-entry">
+                            <time datetime="2026-10-22T23:47:45+08:00">
+                                2026年10月22日 23:47:45
+                            </time>
+
+                            <ul>
+                                <li>背景方块现在支持惯性投掷，甩动后松手即可扔出。</li>
+                                <li>优化按钮、目录及拖拽控件的防误选。</li>
+                            </ul>
+                        </article>
+
+                        <article class="website-update-entry">
+                            <time datetime="2026-10-21T23:06:45+08:00">
+                                2026年10月21日 23:06:45
+                            </time>
+
+                            <ul>
+                                <li>现在背景方块可以被拽动。</li>
+                                <li>世界观目录模块新增“彩蛋”。</li>
+                                <li>细化了 Bossrush 双眼背景层级。</li>
+                            </ul>
+                        </article>
+
+                        <article class="website-update-entry">
+                            <time datetime="2026-10-21T09:10:49+08:00">
+                                2026年10月21日 09:10:49
+                            </time>
+
+                            <ul>
+                                <li>优化了世界观目录模块的出场和退场方式。</li>
+                                <li>“内域”新增互动模块。</li>
+                                <li>优化方块衔接、移动端显示与离页释放，并补齐部分部件缺失的返回上级按钮。</li>
+                            </ul>
+                        </article>
+
                         <article class="website-update-entry">
                             <time datetime="2026-10-20T00:25:23+08:00">
                                 2026年10月20日 00:25:23
@@ -6705,12 +6721,12 @@
 
     <script
         type="module"
-        src="scripts/controls.js?v=26.11.28.1"
+        src="scripts/controls.js?v=26.11.28.4"
     ></script>
 
     <script
         type="module"
-        src="scripts/events.js?v=26.11.21.10"
+        src="scripts/events.js?v=26.11.28.4"
     ></script>
     <script type="module" src="scripts/effects/another-world-portal.js?v=26.11.24.1"></script>
 </body>

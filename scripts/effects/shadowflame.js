@@ -1,4 +1,4 @@
-import { vertex, fragment } from "./shadowflame-shaders.js?v=26.10.19.1";
+import { vertex, fragment } from "./shadowflame-shaders.js?v=26.11.28.4";
 import { createAnimationLoop } from "./animation-loop.js?v=26.10.18.12";
 
 /* 保留 Shadowflame 噪声和火星运动；高度与火星起点匹配当前两侧抬高的设计。 */
@@ -8,10 +8,7 @@ const CONFIG = Object.freeze({
     flameWidth: 1.6, sparkCount: 60, sparkSize: 1.2, sparkSpeed: 1
 });
 const TIME_WRAP = 300.0;
-const SPARK_ORIGIN = 0.28;
-const SPARK_ORIGIN_JITTER = 0.14;
 const SPRITE_PX = 32;
-const TARGET_FILE = "stained, brutal calamity - dm dokuro.mp3";
 
 const hexToRgb = hex => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -46,16 +43,17 @@ function createShadowflame(container, reducedMotion) {
     canvas.setAttribute("aria-hidden","true");
     let gl = null;
     try { gl = canvas.getContext("webgl2", { alpha: false, antialias: false, powerPreference: "low-power" }); } catch { /* 下方使用静态兜底 */ }
-    if (!gl) { container.classList.add("is-fallback"); return { setState() {}, suspend() {}, destroy() {} }; }
+    if (!gl) container.classList.add("is-fallback");
     const shaders = [];
     let program = null, buffer = null;
     const disposeGL = () => {
+        if (!gl) return;
         if (buffer) gl.deleteBuffer(buffer);
         if (program) gl.deleteProgram(program);
         shaders.forEach(shader => gl.deleteShader(shader));
         canvas.remove();
     };
-    try {
+    if (gl) try {
         const compile = (type, source) => {
             const shader = gl.createShader(type);
             shaders.push(shader);
@@ -79,10 +77,10 @@ function createShadowflame(container, reducedMotion) {
         console.warn("Shadowflame 不可用，已使用静态背景。",error.message);
         disposeGL(); gl.getExtension("WEBGL_lose_context")?.loseContext();
         container.classList.add("is-fallback");
-        return { setState() {}, suspend() {}, destroy() {} };
+        gl = null;
     }
-    container.append(canvas);
-    const u = Object.fromEntries(["iResolution","iTime","uSpeed","uWarp","uDetail","uShimmer","uHeight","uWidth","uGrain","uCoreColor","uFlameColor","uBgColor"].map(name => [name,gl.getUniformLocation(program,name)]));
+    if (gl) container.append(canvas);
+    const u = gl && Object.fromEntries(["iResolution","iTime","uSpeed","uWarp","uDetail","uShimmer","uHeight","uWidth","uGrain","uCoreColor","uFlameColor","uBgColor"].map(name => [name,gl.getUniformLocation(program,name)]));
     const sparkCanvas = document.createElement("canvas");
     sparkCanvas.className = "shadowflame-sparks";
     sparkCanvas.setAttribute("aria-hidden","true");
@@ -91,27 +89,18 @@ function createShadowflame(container, reducedMotion) {
     const sparkDpr = Math.min(devicePixelRatio || 1,2);
     let sparkW = 0, sparkH = 0, sparks = [], sprite = null, spriteKey = "";
 
-    // 起点随横向位置略抬高，寿命、运动与亮度公式继续沿用原设计。
-    const makeSpark = fresh => {
-        const L = live;
-        const halfW = sparkW * 0.3 * L.flameWidth;
-        const rx = Math.random() + Math.random() - 1;
-        const sparkX = sparkW/2 + rx*halfW;
-        const side = Math.min(1,Math.abs((sparkX-sparkW/2)/Math.max(1,sparkW/2)));
-        const originVy = SPARK_ORIGIN + side*0.14 + (Math.random()*2-1)*SPARK_ORIGIN_JITTER;
-        const s = {
-            x: sparkX, y: sparkH*(1-originVy), vy: 0.5+Math.random()*1.2,
-            sway: Math.random()*Math.PI*2,
-            size: L.sparkSize*(0.35+Math.random()*Math.random()*1.9),
-            life: fresh ? 0 : Math.random(), maxLife: 70+Math.random()*110, seed: Math.random()*Math.PI*2
-        };
-        if (!fresh) s.y -= Math.random()*sparkH*0.35;
-        return s;
+    const makeSpark = initial => {
+        const travel = sparkH + 16;
+        const delay = Math.random() * sparkH * (initial ? .96 : .08);
+        const start = live.reducedMotion && initial ? Math.random() * travel : -delay;
+        return { x:Math.random()*sparkW, distance:start, travel,
+            vy:.55+Math.random()*1.25, sway:Math.random()*Math.PI*2,
+            size:live.sparkSize*(.35+Math.random()*Math.random()*1.9), seed:Math.random()*Math.PI*2 };
     };
     const syncSparkCount = () => {
         const target = Math.max(0,Math.round(live.sparkCount));
         if (sparks.length > target) sparks.length = target;
-        else while (sparks.length < target) sparks.push(makeSpark(false));
+        else while (sparks.length < target) sparks.push(makeSpark(true));
     };
     const stepAndDrawSparks = (dt,m) => {
         if (!sctx) return;
@@ -127,18 +116,20 @@ function createShadowflame(container, reducedMotion) {
         sctx.globalCompositeOperation = "lighter";
         for (let i=0;i<sparks.length;i++) {
             const s = sparks[i];
-            s.y -= s.vy*rise*1.4*fscale;
-            s.x += Math.sin(s.sway+s.y*0.03)*0.6*rise*fscale;
-            s.life += (1/s.maxLife)*(0.4+m)*fscale;
-            if (s.y < -6 || s.life >= 1) { sparks[i] = makeSpark(true); continue; }
-            const fadeIn = Math.min(1,s.life*9);
-            const fadeOut = Math.max(0,1-Math.max(0,s.life-0.4)/0.6);
-            const flick = 0.55+0.45*Math.sin(s.seed+s.y*0.2);
+            s.distance += s.vy*rise*1.4*fscale;
+            if (s.distance >= s.travel) { sparks[i] = makeSpark(false); continue; }
+            if (s.distance < 0) continue;
+            const life = s.distance/s.travel;
+            const y = sparkH+8-s.distance;
+            const x = s.x + 12*Math.sin(s.sway+s.distance*.009);
+            const fadeIn = Math.min(1,life*15);
+            const fadeOut = Math.min(1,(1-life)*9);
+            const flick = 0.55+0.45*Math.sin(s.seed+y*0.2);
             const a = fadeIn*fadeOut*flick*(0.45+0.55*m);
             if (a <= 0.01) continue;
-            const rad = (s.size*(1-s.life*0.35)+0.5)*1.9;
+            const rad = (s.size*(1-life*0.35)+0.5)*1.9;
             sctx.globalAlpha = Math.min(1,a);
-            sctx.drawImage(sprite,s.x-rad,s.y-rad,rad*2,rad*2);
+            sctx.drawImage(sprite,x-rad,y-rad,rad*2,rad*2);
         }
         sctx.globalAlpha = 1;
     };
@@ -156,7 +147,10 @@ function createShadowflame(container, reducedMotion) {
         gl.uniform3fv(u.uFlameColor,hexToRgb(live.flameColor));
         gl.uniform3fv(u.uBgColor,hexToRgb(live.backgroundColor));
     };
-    const renderStill = () => { syncUniforms(); gl.drawArrays(gl.TRIANGLES,0,3); stepAndDrawSparks(0,motion); };
+    const renderStill = () => {
+        if (gl && !contextLost && live.flame) { syncUniforms(); gl.drawArrays(gl.TRIANGLES,0,3); }
+        if (live.sparks) stepAndDrawSparks(0,motion);
+    };
     const loop = createAnimationLoop({
         target: container,
         // 只控制绘制分辨率/帧率，不更改着色器或运动公式。
@@ -165,8 +159,10 @@ function createShadowflame(container, reducedMotion) {
         onResize: ({width,height,dpr}) => {
             const w = Math.max(1,Math.floor(width)), h = Math.max(1,Math.floor(height));
             canvas.width = Math.max(1,Math.round(w*dpr)); canvas.height = Math.max(1,Math.round(h*dpr));
-            gl.viewport(0,0,canvas.width,canvas.height);
-            gl.uniform2f(u.iResolution,gl.drawingBufferWidth,gl.drawingBufferHeight);
+            if (gl && !contextLost) {
+                gl.viewport(0,0,canvas.width,canvas.height);
+                gl.uniform2f(u.iResolution,gl.drawingBufferWidth,gl.drawingBufferHeight);
+            }
             if (sctx) {
                 sparkCanvas.width = Math.floor(w*sparkDpr); sparkCanvas.height = Math.floor(h*sparkDpr);
                 sparkW = w; sparkH = h;
@@ -181,26 +177,30 @@ function createShadowflame(container, reducedMotion) {
             if (wantMotion === 0 && motion < 0.001) motion = 0;
             simTime += dt*motion;
             if (simTime > TIME_WRAP) simTime -= TIME_WRAP;
-            syncUniforms(); gl.drawArrays(gl.TRIANGLES,0,3); stepAndDrawSparks(dt,motion);
-            if (wantMotion === 0 && motion === 0) return false;
+            if (L.flame && gl && !contextLost) { syncUniforms(); gl.drawArrays(gl.TRIANGLES,0,3); }
+            if (L.sparks) stepAndDrawSparks(dt,motion);
+            if ((!L.sparks && (!gl || contextLost)) || (wantMotion === 0 && motion === 0)) return false;
         },
         onDispose: () => { sprite = null; sparks = []; disposeGL(); sparkCanvas.remove(); }
     });
     const io = new IntersectionObserver(([entry]) => {
         isVisible = entry.isIntersecting;
-        if (isVisible && isPageVisible && !contextLost) loop.start(); else loop.stop();
+        if (isVisible && isPageVisible) loop.start(); else loop.stop();
     },{threshold:0});
     io.observe(container);
     const onContextLost = event => {
-        event.preventDefault(); contextLost = true; loop.stop();
-        container.classList.add("is-fallback"); canvas.style.visibility = "hidden"; sparkCanvas.style.visibility = "hidden";
+        event.preventDefault(); contextLost = true;
+        container.classList.add("is-fallback"); canvas.style.visibility = "hidden";
     };
     canvas.addEventListener("webglcontextlost",onContextLost);
     loop.resize(); loop.start();
     return {
-        setState({paused = false, reducedMotion = false, pageVisible = true}) {
+        setState({flame, sparks, paused = false, reducedMotion = false, pageVisible = true}) {
+            live.flame = flame; live.sparks = sparks;
+            canvas.style.opacity = flame ? "1" : "0";
+            sparkCanvas.style.opacity = sparks ? "1" : "0";
             live.paused = paused; live.reducedMotion = reducedMotion; isPageVisible = pageVisible;
-            if (contextLost) return;
+
             if (!pageVisible) { loop.stop(); return; }
             if (reducedMotion) motion = 0;
             loop.start();
@@ -211,22 +211,18 @@ function createShadowflame(container, reducedMotion) {
 }
 
 let connection = null;
-function fileName(value) {
-    try { return decodeURIComponent(new URL(value,document.baseURI).pathname).split("/").pop().toLowerCase(); }
-    catch { return ""; }
-}
 
-export function applyShadowflameSong(song, audio) {
+export function applyShadowflameSong(flame, sparks, audio) {
     if (!audio) return;
     if (!connection) connection = connectAudio(audio);
-    connection.select(song);
+    connection.select(flame, sparks);
 }
 
 function connectAudio(audio) {
     const controller = new AbortController();
     const listen = (target,type,callback) => target.addEventListener(type,callback,{signal:controller.signal});
     const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-    let selected = false, playing = !audio.paused && !audio.ended;
+    let flame = false, sparks = false, playing = !audio.paused && !audio.ended;
     let engine = null, layer = null, hideTimer = null;
     const destroy = () => {
         clearTimeout(hideTimer); hideTimer = null;
@@ -235,8 +231,8 @@ function connectAudio(audio) {
     };
     const sync = () => {
         const foregroundBlocked = document.body.classList.contains("locked") || document.body.classList.contains("creator-lightbox-open") || document.body.classList.contains("is-another-world-obscured");
-        const wanted = selected && playing && !audio.paused && !audio.ended && !audio.error &&
-            fileName(audio.src) === TARGET_FILE && !document.hidden && !foregroundBlocked;
+        const wanted = (flame || sparks) && playing && !audio.paused && !audio.ended && !audio.error &&
+            !document.hidden && !foregroundBlocked;
         if (wanted) {
             clearTimeout(hideTimer); hideTimer = null;
             if (!layer) {
@@ -244,9 +240,10 @@ function connectAudio(audio) {
                 layer.setAttribute("aria-hidden","true"); document.body.append(layer);
             }
             layer.hidden = false;
+            layer.classList.toggle("sparks-only", !flame);
             if (!engine) engine = createShadowflame(layer,reduced.matches);
             layer.classList.add("is-visible");
-            engine.setState({ reducedMotion: reduced.matches, pageVisible: true });
+            engine.setState({ flame, sparks, reducedMotion: reduced.matches, pageVisible: true });
         } else if (layer) {
             layer.classList.remove("is-visible");
             engine?.suspend();
@@ -265,5 +262,5 @@ function connectAudio(audio) {
         if (!event.persisted) { observer.disconnect(); controller.abort(); }
     });
     listen(window,"pageshow",sync);
-    return { select(song) { selected = fileName(song?.path || "") === TARGET_FILE; sync(); } };
+    return { select(showFlame, showSparks) { flame = showFlame; sparks = showSparks; sync(); } };
 }
